@@ -1,0 +1,266 @@
+# Copy bank — Service Crew
+
+Principles:
+- Short
+- Readable
+- One message at a time
+- Tone: real workshop, slightly funny, not childish (target ~10 years)
+- Never block play — always allow a way forward
+
+---
+
+## Landing page
+
+Titles / headings:
+- Välkommen till verkstaden
+- Logga in
+- Välj mekaniker
+- Skapa mekaniker
+- Verkstad
+
+Buttons:
+- Logga in
+- Lägg till mekaniker
+- Skapa ny verkstad
+- Spara
+- Avbryt
+- Stäng
+
+Empty state (no workshop):
+- Ingen verkstad än. Skapa en ny för att börja.
+- Skapa verkstad och öppna portarna.
+
+Empty state (no mechanics):
+- Inga mekaniker ännu. Lägg till första mekanikern.
+- Lägg till en mekaniker så kan ni börja jobba.
+
+---
+
+## Skapa ny verkstad (reset)
+
+Dialog title:
+- Skapa ny verkstad
+
+Body text variants:
+- Starta om allt och skapa en ny verkstad?
+- Ny verkstad = tom kalender, nya mekaniker och nya jobb.
+- Ska vi öppna en helt ny verkstad från noll?
+
+Buttons:
+- Skapa verkstad
+- Avbryt
+
+Success:
+- Ny verkstad skapad
+
+---
+
+## Login (PIN / lösenord)
+
+Labels:
+- Mekaniker
+- PIN-kod
+- Lösenord
+
+Numpad helper:
+- Ange din 4-siffriga kod
+
+Wrong code dialog title:
+- 🚫 Fel kod i verkstaden
+
+Wrong code messages (randomize one):
+
+Olja & verktyg:
+- Nä… händerna var så oljiga att knapparna gled iväg!
+- Fel kod. Skiftnyckeln tryckte visst på fel siffra.
+- Oops! Det blev mer olja än kod.
+- Tangenterna fick verktyg i sig… fel kod.
+
+Maskiner & ljud:
+- Motorn sa klonk… fel kod!
+- Startmotorn hostade till – det där var inte rätt.
+- Det skramlade lite… koden blev fel.
+- Verkstaden blinkar rött – prova igen?
+
+Mekaniker-humor:
+- Mekanikern kliade sig i hjälmen – fel kod.
+- Fel kod. Kaffepaus kanske?
+- Nästan! Men verkstaden säger nej.
+- Fel kod. Tur att det inte exploderade 😅
+
+Wrong code buttons:
+- Försök igen
+- Logga in ändå
+
+Login success:
+- Porten är öppen
+- Verkstaden är igång
+- Du är inne
+
+---
+
+## Kalender
+
+Navigation buttons:
+- Idag
+- Föregående vecka
+- Nästa vecka
+
+Selected workday badge:
+- IDAG
+
+Hint (optional):
+- Klicka på en dag för att sätta IDAG
+
+---
+
+## Ej planerade (vänsterkolumn)
+
+Column title:
+- Ej planerade
+
+Empty state:
+- Inga jobb här just nu.
+- Skapa ett jobbkort så dyker det upp här.
+
+Microcopy:
+- Dra ett jobb hit till kalendern när ni hittat en lucka.
+
+---
+
+## Skapa jobbkort (Steg A)
+
+Form labels:
+- Kund
+- Telefon
+- Typ
+- Åtgärd
+- Tid
+
+Helpers:
+- Skriv vad kunden sa
+- Hur lång tid tar det?
+
+Time buttons:
+- − 1h
+- + 1h
+
+Buttons:
+- Skapa jobbkort
+- Avbryt
+
+Success:
+- Jobbkort skapat
+- Uppskrivet i verkstadsboken
+- Jobbet ligger i Ej planerade
+
+---
+
+## Drag & drop-planering (Steg B)
+
+While dragging:
+- Släpp för att planera
+- Hitta en lucka och släpp
+
+Invalid drop:
+- Får inte plats där
+- Upptaget här
+- För tight, prova en annan tid
+- Den luckan är full
+
+Valid drop success:
+- Planerat
+- Inlagt i kalendern
+- Jobbet är bokat
+
+---
+
+## Bokningskort (kalender)
+
+Shown content:
+- Fordonstyp
+- Åtgärd (trunkerad)
+
+Optional hint:
+- Klicka för detaljer
+
+---
+
+## Detaljvy (bokning)
+
+Sections:
+- Kund
+- Åtgärd
+- Status
+- Mekaniker
+
+Buttons:
+- Öppna meny
+- Stäng
+
+---
+
+## Status & context-meny
+
+Status names:
+- Ej planerad
+- Planerad
+- Pågår
+- Klar
+- Hämtad
+
+Context menu sections:
+- Status
+- Mekaniker
+
+Save:
+- Spara
+
+Rule message:
+- Välj en mekaniker först
+
+---
+
+## Status change messages
+
+Planerad:
+- Inplanerat
+- Ligger i kalendern nu
+
+Pågår:
+- Jobbet är igång
+- Mekanikern tar den
+- Nu kör vi
+
+Klar:
+- Klart!
+- Fixat
+- Godkänt
+
+Hämtad:
+- Utlämnat
+- Kunden hämtade
+- Borta från verkstan
+
+---
+
+## Generic success
+- Klart
+- Sparat
+- Uppdaterat
+- Fixat
+
+## Generic error (non-blocking)
+- Något blev fel, men vi kör ändå
+- Det blev knas, prova igen
+
+---
+
+## Workshop one-liners (generic)
+- Rullar in…
+- Skruvar lite…
+- Kollar läget…
+- Testar…
+- Nästan klar…
+- Stämplar…
+- Allt ser bra ut…
