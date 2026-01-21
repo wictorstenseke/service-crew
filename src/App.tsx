@@ -1,6 +1,6 @@
 import React from "react";
 
-function App() {
+function App(): React.JSX.Element {
   return (
     <div className="gradient-bg flex min-h-screen items-center justify-center from-blue-500 to-purple-600 p-8">
       <div className="max-w-xl transform rounded-lg bg-white p-8 shadow-lg transition duration-500 hover:scale-105">

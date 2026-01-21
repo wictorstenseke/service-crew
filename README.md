@@ -15,7 +15,8 @@ Appen är byggd för att kännas "på riktigt" men vara helt ofarlig: tydlig fee
 
 ## Tech Stack
 
-- **Vite + React** – snabb och modern utvecklingsmiljö
+- **Vite + React 19** – snabb och modern utvecklingsmiljö
+- **TypeScript** – type-safe utveckling
 - **Tailwind CSS** – utility-first styling
 - **LocalStorage** – all data lagras lokalt, ingen backend krävs
 
@@ -61,6 +62,30 @@ npm run dev
 ```
 
 Öppna `http://localhost:5173` i din webbläsare.
+
+### Building
+
+```bash
+npm run build
+```
+
+### Type Checking
+
+```bash
+npm run typecheck
+```
+
+### Linting
+
+```bash
+npm run lint
+```
+
+### Formatting
+
+```bash
+npm run format
+```
 
 ## Projektstruktur
 
