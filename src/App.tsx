@@ -1,12 +1,12 @@
-import { useState } from "react";
-import { AppProvider } from "./context/AppContext";
+import { AppProvider, useApp } from "./context/AppContext";
 import LandingPage from "./pages/LandingPage";
 
-function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+function AppContent() {
+  const { currentMechanicId, setCurrentMechanicId } = useApp();
+  const isLoggedIn = currentMechanicId !== null;
 
   return (
-    <AppProvider>
+    <>
       {!isLoggedIn ? (
         <LandingPage />
       ) : (
@@ -15,7 +15,7 @@ function App() {
             <h1 className="mb-4 text-3xl font-bold">Calendar View</h1>
             <p className="text-gray-600">Coming soon...</p>
             <button
-              onClick={() => setIsLoggedIn(false)}
+              onClick={() => setCurrentMechanicId(null)}
               className="mt-4 rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700"
             >
               Logga ut
@@ -23,6 +23,14 @@ function App() {
           </div>
         </div>
       )}
+    </>
+  );
+}
+
+function App() {
+  return (
+    <AppProvider>
+      <AppContent />
     </AppProvider>
   );
 }

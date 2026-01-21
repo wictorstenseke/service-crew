@@ -11,10 +11,13 @@
 - [x] Form validation
 - [x] Save functionality
 - [x] Mechanic grid display on landing page
-- [ ] Login flow with PIN numpad (in progress)
-- [ ] Login flow with password (in progress)
-- [ ] Playful error messages for wrong codes (in progress)
-- [ ] "Login anyway" bypass option (in progress)
+- [x] Login modal with PIN numpad (0-9, backspace, OK)
+- [x] Login modal with password entry
+- [x] PIN indicators (4 dots)
+- [x] Playful error messages for wrong codes (12 different messages)
+- [x] "Försök igen" button
+- [x] "Logga in ändå" bypass option
+- [x] Successful login redirects to calendar placeholder
 
 ---
 

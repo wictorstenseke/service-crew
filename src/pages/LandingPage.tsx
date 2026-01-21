@@ -2,14 +2,19 @@
 import { useState } from "react";
 import { useApp } from "../context/AppContext";
 import { generateId } from "../utils/idGenerator";
-import type { Workshop } from "../types";
+import type { Workshop, Mechanic } from "../types";
 import AddMechanicModal from "../components/AddMechanicModal";
+import LoginModal from "../components/LoginModal";
 
 export default function LandingPage() {
   const { workshop, mechanics, setWorkshop, resetWorkshop } = useApp();
   const [showCreateWorkshop, setShowCreateWorkshop] = useState(false);
   const [showAddMechanic, setShowAddMechanic] = useState(false);
   const [workshopName, setWorkshopName] = useState("");
+  const [selectedMechanic, setSelectedMechanic] = useState<Mechanic | null>(
+    null,
+  );
+  const [showLogin, setShowLogin] = useState(false);
 
   const handleCreateWorkshop = () => {
     if (!workshopName.trim()) return;
@@ -130,8 +135,8 @@ export default function LandingPage() {
                   <button
                     key={mechanic.id}
                     onClick={() => {
-                      /* TODO: Open login form */
-                      alert(`Login as ${mechanic.name} - coming soon!`);
+                      setSelectedMechanic(mechanic);
+                      setShowLogin(true);
                     }}
                     className="rounded-lg border-2 border-gray-300 bg-white p-6 text-center font-semibold transition hover:border-blue-500 hover:bg-blue-50"
                   >
@@ -156,6 +161,20 @@ export default function LandingPage() {
       <AddMechanicModal
         isOpen={showAddMechanic}
         onClose={() => setShowAddMechanic(false)}
+      />
+
+      <LoginModal
+        isOpen={showLogin}
+        mechanic={selectedMechanic}
+        onClose={() => {
+          setShowLogin(false);
+          setSelectedMechanic(null);
+        }}
+        onSuccess={() => {
+          setShowLogin(false);
+          setSelectedMechanic(null);
+          // Redirect to calendar will be handled by parent App component
+        }}
       />
     </div>
   );
