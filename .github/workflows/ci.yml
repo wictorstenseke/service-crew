@@ -11,8 +11,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  lint-and-typecheck:
-    name: Lint & Typecheck
+  qa-process:
+    name: Quality Assurance Checks
     runs-on: ubuntu-latest
 
     steps:
