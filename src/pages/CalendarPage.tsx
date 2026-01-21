@@ -2,6 +2,8 @@
 import { useState, useMemo } from "react";
 import { useApp } from "../context/AppContext";
 import CreateJobCardModal from "../components/CreateJobCardModal";
+import BookingDetailsModal from "../components/BookingDetailsModal";
+import type { Booking } from "../types";
 import {
   format,
   startOfWeek,
@@ -13,6 +15,16 @@ import {
   parseISO,
 } from "date-fns";
 import { sv } from "date-fns/locale";
+import type { BookingStatus } from "../types";
+
+// Status colors for booking cards
+const statusColors: Record<BookingStatus, string> = {
+  EJ_PLANERAD: "bg-orange-200 hover:bg-orange-300",
+  PLANERAD: "bg-blue-200 hover:bg-blue-300",
+  PAGAR: "bg-yellow-200 hover:bg-yellow-300",
+  KLAR: "bg-green-200 hover:bg-green-300",
+  HAMTAD: "bg-gray-200 hover:bg-gray-300",
+};
 
 export default function CalendarPage() {
   const {
@@ -27,6 +39,8 @@ export default function CalendarPage() {
   );
   const [showCreateJobCard, setShowCreateJobCard] = useState(false);
   const [draggedBookingId, setDraggedBookingId] = useState<string | null>(null);
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [showBookingDetails, setShowBookingDetails] = useState(false);
 
   // Generate days for the current week (Monday-Sunday)
   const weekDays = useMemo(() => {
@@ -118,6 +132,16 @@ export default function CalendarPage() {
     setDraggedBookingId(null);
   };
 
+  const handleBookingClick = (booking: Booking) => {
+    setSelectedBooking(booking);
+    setShowBookingDetails(true);
+  };
+
+  const handleCloseBookingDetails = () => {
+    setShowBookingDetails(false);
+    setSelectedBooking(null);
+  };
+
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
@@ -191,6 +215,7 @@ export default function CalendarPage() {
                       draggable
                       onDragStart={() => handleDragStart(booking.id)}
                       onDragEnd={handleDragEnd}
+                      onClick={() => handleBookingClick(booking)}
                       className="cursor-move rounded-lg bg-orange-200 p-2 text-xs shadow-sm hover:shadow-md"
                     >
                       <div className="font-semibold">{booking.vehicleType}</div>
@@ -257,7 +282,8 @@ export default function CalendarPage() {
                           {slotBookings.map((booking) => (
                             <div
                               key={booking.id}
-                              className="mt-1 cursor-pointer rounded bg-blue-100 p-1 text-xs hover:bg-blue-200"
+                              onClick={() => handleBookingClick(booking)}
+                              className={`mt-1 cursor-pointer rounded p-1 text-xs ${statusColors[booking.status]}`}
                               style={{
                                 height: `${booking.durationHours * 60 - 10}px`,
                               }}
@@ -285,6 +311,13 @@ export default function CalendarPage() {
       <CreateJobCardModal
         isOpen={showCreateJobCard}
         onClose={() => setShowCreateJobCard(false)}
+      />
+
+      {/* Booking Details Modal */}
+      <BookingDetailsModal
+        booking={selectedBooking}
+        isOpen={showBookingDetails}
+        onClose={handleCloseBookingDetails}
       />
     </div>
   );
