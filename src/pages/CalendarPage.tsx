@@ -176,18 +176,22 @@ export default function CalendarPage() {
     }
 
     // Update booking with scheduled date and time
+    // Keep current status if already planned, otherwise set to PLANERAD
     const updatedBooking = {
       ...booking,
       scheduledDate: format(day, "yyyy-MM-dd"),
       scheduledStartHour: hour,
-      status: "PLANERAD" as const,
+      status:
+        booking.status === "EJ_PLANERAD"
+          ? ("PLANERAD" as const)
+          : booking.status,
       updatedAt: new Date().toISOString(),
     };
 
     updateBooking(updatedBooking);
     setDraggedBookingId(null);
     setHoveredSlot(null);
-    showToast("Planerat");
+    showToast(booking.status === "EJ_PLANERAD" ? "Planerat" : "Omplanerat");
   };
 
   const handleBookingClick = (booking: Booking) => {
@@ -422,16 +426,25 @@ export default function CalendarPage() {
                         const height =
                           booking.durationHours * HOUR_HEIGHT_PX -
                           BOOKING_MARGIN_PX;
+                        const isDragging = draggedBookingId === booking.id;
 
                         return (
                           <div
                             key={booking.id}
+                            draggable
+                            onDragStart={(e) => {
+                              e.stopPropagation();
+                              handleDragStart(booking.id);
+                            }}
+                            onDragEnd={handleDragEnd}
                             onClick={() => handleBookingClick(booking)}
-                            className={`absolute left-1 right-1 cursor-pointer rounded-lg p-2 text-xs shadow-md transition-shadow hover:shadow-lg ${statusColors[booking.status]}`}
+                            className={`absolute left-1 right-1 cursor-move rounded-lg p-2 text-xs shadow-md transition-all hover:shadow-lg ${statusColors[booking.status]} ${
+                              isDragging ? "opacity-50" : ""
+                            }`}
                             style={{
                               top: `${topPosition + BOOKING_MARGIN_PX / 2}px`,
                               height: `${height}px`,
-                              zIndex: 5,
+                              zIndex: isDragging ? 1 : 5,
                             }}
                           >
                             <div className="font-semibold">
