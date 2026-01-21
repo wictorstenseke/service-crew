@@ -336,7 +336,7 @@ export default function CalendarPage() {
                   {timeSlots.map((hour) => (
                     <div
                       key={hour}
-                      className="flex items-center justify-end border-b border-gray-300 pr-2 text-xs font-medium text-gray-500"
+                      className="flex items-center justify-end border-b border-gray-200 pr-2 text-xs font-medium text-gray-500"
                       style={{ height: `${HOUR_HEIGHT_PX}px` }}
                     >
                       {hour}:00
