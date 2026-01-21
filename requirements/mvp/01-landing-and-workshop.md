@@ -2,6 +2,17 @@
 
 [← Tillbaka till översikt](00-overview.md)
 
+## Implementation Status
+- [x] Landing page component created
+- [x] Empty state for no workshop
+- [x] "Skapa verkstad" button and modal
+- [x] Workshop creation with name input
+- [x] Workshop display with name
+- [x] "Skapa ny verkstad" button in top right corner
+- [x] Reset functionality with confirmation
+- [ ] Add mechanic functionality (in progress)
+- [ ] Mechanic login (in progress)
+
 ---
 
 ## Landing page

@@ -2,6 +2,12 @@
 
 [← Tillbaka till översikt](00-overview.md)
 
+## Implementation Status
+- [x] TypeScript types defined (Workshop, Mechanic, Booking, etc.)
+- [x] StorageService class implemented with all CRUD operations
+- [x] AppContext created for global state management
+- [x] LocalStorage abstraction layer complete
+
 ---
 
 ## Lagring (MVP)

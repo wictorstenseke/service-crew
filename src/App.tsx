@@ -1,34 +1,29 @@
-import React from "react";
+import { useState } from "react";
+import { AppProvider } from "./context/AppContext";
+import LandingPage from "./pages/LandingPage";
 
-function App(): React.JSX.Element {
+function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
   return (
-    <div className="gradient-bg flex min-h-screen items-center justify-center from-blue-500 to-purple-600 p-8">
-      <div className="max-w-xl transform rounded-lg bg-white p-8 shadow-lg transition duration-500 hover:scale-105">
-        <h1 className="mb-4 animate-bounce text-center text-4xl font-bold text-gray-800">
-          Hello World
-        </h1>
-        <p className="mb-6 rounded-md bg-amber-100 p-6 text-gray-600">
-          Welcome to our React application enhanced with Tailwind CSS. This
-          application is built using the modern web development stack: Vite,
-          React, Tailwind CSS, and Prettier.
-        </p>
-        <div className="prose mt-6">
-          <p>
-            Tailwind CSS is a utility-first CSS framework that provides
-            low-level utility classes to build custom designs without any
-            annoying opinionated styles you have to fight to override. Paired
-            with React, it makes building beautiful and interactive user
-            interfaces a breeze.
-          </p>
-          <p>
-            Explore the power of combining these technologies to create
-            stunning, responsive, and animated web applications. Enjoy the
-            seamless development experience with Prettier ensuring your code
-            stays clean and consistent.
-          </p>
+    <AppProvider>
+      {!isLoggedIn ? (
+        <LandingPage />
+      ) : (
+        <div className="flex min-h-screen items-center justify-center bg-gray-100 p-8">
+          <div className="rounded-lg bg-white p-8 shadow-lg">
+            <h1 className="mb-4 text-3xl font-bold">Calendar View</h1>
+            <p className="text-gray-600">Coming soon...</p>
+            <button
+              onClick={() => setIsLoggedIn(false)}
+              className="mt-4 rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700"
+            >
+              Logga ut
+            </button>
+          </div>
         </div>
-      </div>
-    </div>
+      )}
+    </AppProvider>
   );
 }
 
