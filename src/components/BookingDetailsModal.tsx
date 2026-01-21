@@ -84,7 +84,7 @@ export default function BookingDetailsModal({
     updateBooking(updatedBooking);
     setShowContextMenu(false);
     setErrorMessage(null);
-    
+
     // Show success toast based on status
     const statusMessages: Record<BookingStatus, string> = {
       EJ_PLANERAD: "Status uppdaterad",

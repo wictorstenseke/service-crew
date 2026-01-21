@@ -38,7 +38,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setState(storageService.loadState());
   };
 
-  const showToast = (message: string, type: "info" | "error" | "success" = "success") => {
+  const showToast = (
+    message: string,
+    type: "info" | "error" | "success" = "success",
+  ) => {
     const id = `toast-${Date.now()}-${Math.random()}`;
     setToasts((prev) => [...prev, { id, message, type }]);
   };

@@ -133,7 +133,7 @@ export default function CalendarPage() {
 
   const isValidDropZone = (day: Date, hour: number): boolean => {
     if (!draggedBookingId) return false;
-    
+
     const booking = bookings.find((b) => b.id === draggedBookingId);
     if (!booking) return false;
 
@@ -147,7 +147,9 @@ export default function CalendarPage() {
       const existingBookings = getBookingsForSlot(day, checkHour);
       if (existingBookings.length > 0) {
         // Allow if it's the same booking (dragging to same position)
-        const hasConflict = existingBookings.some((b) => b.id !== draggedBookingId);
+        const hasConflict = existingBookings.some(
+          (b) => b.id !== draggedBookingId,
+        );
         if (hasConflict) return false;
       }
     }
@@ -327,7 +329,8 @@ export default function CalendarPage() {
                       const slotBookings = getBookingsForSlot(day, hour);
                       const dayStr = format(day, "yyyy-MM-dd");
                       const isHovered =
-                        hoveredSlot?.day === dayStr && hoveredSlot?.hour === hour;
+                        hoveredSlot?.day === dayStr &&
+                        hoveredSlot?.hour === hour;
                       const isValid = isHovered && isValidDropZone(day, hour);
                       const isDragging = draggedBookingId !== null;
 
