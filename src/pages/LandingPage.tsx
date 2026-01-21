@@ -8,7 +8,8 @@ import AddMechanicModal from "../components/AddMechanicModal";
 import LoginModal from "../components/LoginModal";
 
 export default function LandingPage() {
-  const { workshop, mechanics, setWorkshop, resetWorkshop, showToast } = useApp();
+  const { workshop, mechanics, setWorkshop, resetWorkshop, showToast } =
+    useApp();
   const [showCreateWorkshop, setShowCreateWorkshop] = useState(false);
   const [showAddMechanic, setShowAddMechanic] = useState(false);
   const [workshopName, setWorkshopName] = useState("");
