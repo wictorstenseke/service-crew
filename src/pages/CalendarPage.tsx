@@ -201,7 +201,7 @@ export default function CalendarPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-white">
       {/* Header */}
       <header className="bg-white shadow">
         <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
@@ -300,15 +300,24 @@ export default function CalendarPage() {
           {/* Week view */}
           <div className="flex-1 overflow-x-auto">
             <div className="inline-block min-w-full">
-              {/* Day headers */}
-              <div className="mb-2 grid grid-cols-7 gap-2">
+              {/* Unified grid layout for day headers and calendar */}
+              <div
+                className="grid"
+                style={{
+                  gridTemplateColumns: "60px repeat(7, minmax(120px, 1fr))",
+                }}
+              >
+                {/* Empty cell for time axis corner */}
+                <div className="bg-white"></div>
+
+                {/* Day headers aligned with columns */}
                 {weekDays.map((day) => {
                   const isWorkday = isSelectedWorkday(day);
                   return (
                     <div
                       key={day.toISOString()}
                       onClick={() => handleDayClick(day)}
-                      className={`cursor-pointer rounded-lg p-3 text-center transition ${
+                      className={`cursor-pointer rounded-t-lg border-x border-t border-gray-300 p-3 text-center transition ${
                         isWorkday
                           ? "bg-blue-600 text-white shadow-lg"
                           : "bg-white hover:bg-gray-50"
@@ -326,16 +335,13 @@ export default function CalendarPage() {
                     </div>
                   );
                 })}
-              </div>
 
-              {/* Unified grid: time axis + day columns */}
-              <div className="flex">
-                {/* Time axis on the left */}
-                <div className="flex-shrink-0" style={{ width: "60px" }}>
+                {/* Time axis column */}
+                <div className="flex flex-col border-r border-gray-300 bg-white">
                   {timeSlots.map((hour) => (
                     <div
                       key={hour}
-                      className="flex items-center justify-end pr-2 text-xs font-medium text-gray-500"
+                      className="flex items-center justify-end border-b border-gray-200 pr-2 text-xs font-medium text-gray-500"
                       style={{ height: `${HOUR_HEIGHT_PX}px` }}
                     >
                       {hour}:00
@@ -343,109 +349,106 @@ export default function CalendarPage() {
                   ))}
                 </div>
 
-                {/* Day columns with unified grid */}
-                <div className="flex flex-1 border-l border-gray-300">
-                  {weekDays.map((day, dayIndex) => {
-                    const dayStr = format(day, "yyyy-MM-dd");
-                    const dayBookings = getBookingsForDay(day);
+                {/* Day columns with time slots */}
+                {weekDays.map((day, dayIndex) => {
+                  const dayStr = format(day, "yyyy-MM-dd");
+                  const dayBookings = getBookingsForDay(day);
+                  const isLastDay = dayIndex === weekDays.length - 1;
 
-                    return (
-                      <div
-                        key={day.toISOString()}
-                        className={`relative flex-1 ${dayIndex < 6 ? "border-r border-gray-300" : ""}`}
-                        style={{ minWidth: "120px" }}
-                      >
-                        {/* Hour grid lines */}
-                        {timeSlots.map((hour) => {
-                          const isHovered =
-                            hoveredSlot?.day === dayStr &&
-                            hoveredSlot?.hour === hour;
-                          const isValid =
-                            isHovered && isValidDropZone(day, hour);
-                          const isDragging = draggedBookingId !== null;
-                          const draggedBooking = isDragging
-                            ? bookings.find((b) => b.id === draggedBookingId)
-                            : null;
+                  return (
+                    <div
+                      key={day.toISOString()}
+                      className={`relative bg-white ${isLastDay ? "" : "border-r border-gray-300"}`}
+                    >
+                      {/* Hour grid lines */}
+                      {timeSlots.map((hour) => {
+                        const isHovered =
+                          hoveredSlot?.day === dayStr &&
+                          hoveredSlot?.hour === hour;
+                        const isValid = isHovered && isValidDropZone(day, hour);
+                        const isDragging = draggedBookingId !== null;
+                        const draggedBooking = isDragging
+                          ? bookings.find((b) => b.id === draggedBookingId)
+                          : null;
 
-                          return (
-                            <div
-                              key={hour}
-                              onDragOver={(e) => handleDragOver(e, day, hour)}
-                              onDragLeave={handleDragLeave}
-                              onDrop={() => handleDrop(day, hour)}
-                              className={`relative border-b border-gray-200 transition-colors ${
-                                isDragging
-                                  ? isHovered
-                                    ? isValid
-                                      ? "bg-green-50"
-                                      : "bg-red-50"
-                                    : "bg-blue-50"
-                                  : "hover:bg-blue-50"
-                              }`}
-                              style={{ height: `${HOUR_HEIGHT_PX}px` }}
-                            >
-                              {/* Drag preview: show placeholder for the full duration */}
-                              {isDragging && isHovered && draggedBooking && (
-                                <div
-                                  className={`absolute left-1 right-1 rounded border-2 ${
-                                    isValid
-                                      ? "border-green-500 bg-green-100"
-                                      : "border-red-500 bg-red-100"
-                                  } pointer-events-none opacity-75`}
-                                  style={{
-                                    top: `${BOOKING_MARGIN_PX / 2}px`,
-                                    height: `${draggedBooking.durationHours * HOUR_HEIGHT_PX - BOOKING_MARGIN_PX}px`,
-                                    zIndex: 10,
-                                  }}
-                                >
-                                  <div className="p-1 text-center text-xs font-medium">
-                                    {isValid ? "Släpp här" : "Upptaget"}
-                                  </div>
+                        return (
+                          <div
+                            key={hour}
+                            onDragOver={(e) => handleDragOver(e, day, hour)}
+                            onDragLeave={handleDragLeave}
+                            onDrop={() => handleDrop(day, hour)}
+                            className={`relative border-b border-gray-200 transition-colors ${
+                              isDragging
+                                ? isHovered
+                                  ? isValid
+                                    ? "bg-green-50"
+                                    : "bg-red-50"
+                                  : "bg-blue-50"
+                                : "hover:bg-blue-50"
+                            }`}
+                            style={{ height: `${HOUR_HEIGHT_PX}px` }}
+                          >
+                            {/* Drag preview: show placeholder for the full duration */}
+                            {isDragging && isHovered && draggedBooking && (
+                              <div
+                                className={`absolute left-1 right-1 rounded border-2 ${
+                                  isValid
+                                    ? "border-green-500 bg-green-100"
+                                    : "border-red-500 bg-red-100"
+                                } pointer-events-none opacity-75`}
+                                style={{
+                                  top: `${BOOKING_MARGIN_PX / 2}px`,
+                                  height: `${draggedBooking.durationHours * HOUR_HEIGHT_PX - BOOKING_MARGIN_PX}px`,
+                                  zIndex: 10,
+                                }}
+                              >
+                                <div className="p-1 text-center text-xs font-medium">
+                                  {isValid ? "Släpp här" : "Upptaget"}
                                 </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+
+                      {/* Bookings rendered as absolute positioned blocks */}
+                      {dayBookings.map((booking) => {
+                        const startHour = booking.scheduledStartHour!;
+                        const topPosition =
+                          (startHour - WORK_START_HOUR) * HOUR_HEIGHT_PX;
+                        const height =
+                          booking.durationHours * HOUR_HEIGHT_PX -
+                          BOOKING_MARGIN_PX;
+
+                        return (
+                          <div
+                            key={booking.id}
+                            onClick={() => handleBookingClick(booking)}
+                            className={`absolute left-1 right-1 cursor-pointer rounded p-2 text-xs shadow-sm ${statusColors[booking.status]}`}
+                            style={{
+                              top: `${topPosition + BOOKING_MARGIN_PX / 2}px`,
+                              height: `${height}px`,
+                              zIndex: 5,
+                            }}
+                          >
+                            <div className="font-semibold">
+                              {booking.vehicleType}
+                            </div>
+                            <div className="truncate">
+                              {booking.action.substring(
+                                0,
+                                MAX_ACTION_PREVIEW_LENGTH,
                               )}
                             </div>
-                          );
-                        })}
-
-                        {/* Bookings rendered as absolute positioned blocks */}
-                        {dayBookings.map((booking) => {
-                          const startHour = booking.scheduledStartHour!;
-                          const topPosition =
-                            (startHour - WORK_START_HOUR) * HOUR_HEIGHT_PX;
-                          const height =
-                            booking.durationHours * HOUR_HEIGHT_PX -
-                            BOOKING_MARGIN_PX;
-
-                          return (
-                            <div
-                              key={booking.id}
-                              onClick={() => handleBookingClick(booking)}
-                              className={`absolute left-1 right-1 cursor-pointer rounded p-2 text-xs shadow-sm ${statusColors[booking.status]}`}
-                              style={{
-                                top: `${topPosition + BOOKING_MARGIN_PX / 2}px`,
-                                height: `${height}px`,
-                                zIndex: 5,
-                              }}
-                            >
-                              <div className="font-semibold">
-                                {booking.vehicleType}
-                              </div>
-                              <div className="truncate">
-                                {booking.action.substring(
-                                  0,
-                                  MAX_ACTION_PREVIEW_LENGTH,
-                                )}
-                              </div>
-                              <div className="mt-1 text-xs opacity-75">
-                                {startHour}:00 ({booking.durationHours}h)
-                              </div>
+                            <div className="mt-1 text-xs opacity-75">
+                              {startHour}:00 ({booking.durationHours}h)
                             </div>
-                          );
-                        })}
-                      </div>
-                    );
-                  })}
-                </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
