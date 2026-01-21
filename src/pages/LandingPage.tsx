@@ -6,9 +6,10 @@ import { useEscapeKey } from "../hooks/useEscapeKey";
 import type { Workshop, Mechanic } from "../types";
 import AddMechanicModal from "../components/AddMechanicModal";
 import LoginModal from "../components/LoginModal";
+import { Plus, Building2, RotateCcw, X, Sun, Moon } from "lucide-react";
 
 export default function LandingPage() {
-  const { workshop, mechanics, setWorkshop, resetWorkshop, showToast } =
+  const { workshop, mechanics, setWorkshop, resetWorkshop, showToast, theme, toggleTheme } =
     useApp();
   const [showCreateWorkshop, setShowCreateWorkshop] = useState(false);
   const [showAddMechanic, setShowAddMechanic] = useState(false);
@@ -43,29 +44,79 @@ export default function LandingPage() {
 
   if (!workshop) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 p-8">
-        <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-xl">
-          <h1 className="mb-6 text-center text-3xl font-bold text-gray-800">
+      <div className={`flex min-h-screen items-center justify-center p-8 relative ${
+        theme === "dark"
+          ? "bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-950"
+          : "bg-gradient-to-br from-gray-100 via-blue-50 to-indigo-50"
+      }`}>
+        <div className="absolute right-8 top-8">
+          <button
+            onClick={toggleTheme}
+            className={`flex items-center justify-center gap-2 rounded-lg border-2 px-4 py-2 font-semibold transition ${
+              theme === "dark"
+                ? "border-white text-white hover:bg-white hover:text-blue-600"
+                : "border-gray-300 text-gray-700 hover:bg-gray-100"
+            }`}
+            title={theme === "dark" ? "Växla till ljust läge" : "Växla till mörkt läge"}
+          >
+            {theme === "dark" ? (
+              <>
+                <Sun className="h-5 w-5" />
+                Ljust läge
+              </>
+            ) : (
+              <>
+                <Moon className="h-5 w-5" />
+                Mörkt läge
+              </>
+            )}
+          </button>
+        </div>
+        <div className={`w-full max-w-md rounded-lg backdrop-blur-sm border p-8 shadow-2xl ${
+          theme === "dark"
+            ? "bg-slate-800/90 border-blue-700/30"
+            : "bg-white border-gray-200"
+        }`}>
+          <h1 className={`mb-6 text-center text-3xl font-bold ${
+            theme === "dark" ? "text-white" : "text-gray-800"
+          }`}>
             Välkommen till verkstaden
           </h1>
-          <div className="rounded-md bg-amber-50 p-6 text-center">
-            <p className="mb-4 text-gray-700">
+          <div className={`rounded-md border p-6 text-center ${
+            theme === "dark"
+              ? "bg-blue-900/40 border-blue-700/30"
+              : "bg-blue-50 border-blue-200"
+          }`}>
+            <p className={`mb-4 ${
+              theme === "dark" ? "text-blue-100" : "text-blue-900"
+            }`}>
               Ingen verkstad än. Skapa en ny för att börja.
             </p>
-            <button
-              onClick={() => setShowCreateWorkshop(true)}
-              className="rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-700"
-            >
-              Skapa verkstad
-            </button>
+            <div className="flex justify-center">
+              <button
+                onClick={() => setShowCreateWorkshop(true)}
+                className="flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-500"
+              >
+                <Building2 className="h-5 w-5" />
+                Skapa verkstad
+              </button>
+            </div>
           </div>
         </div>
 
         {showCreateWorkshop && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
-              <h2 className="mb-4 text-2xl font-bold">Skapa ny verkstad</h2>
-              <p className="mb-4 text-gray-600">
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-sm">
+            <div className={`w-full max-w-md rounded-lg backdrop-blur-sm border p-6 shadow-2xl ${
+              theme === "dark"
+                ? "bg-slate-800/95 border-blue-700/30"
+                : "bg-white border-gray-200"
+            }`}>
+              <h2 className={`mb-4 text-2xl font-bold ${
+                theme === "dark" ? "text-white" : "text-gray-800"
+              }`}>Skapa ny verkstad</h2>
+              <p className={`mb-4 ${
+                theme === "dark" ? "text-blue-100" : "text-gray-600"
+              }`}>
                 Skapa verkstad och öppna portarna.
               </p>
               <input
@@ -73,14 +124,19 @@ export default function LandingPage() {
                 value={workshopName}
                 onChange={(e) => setWorkshopName(e.target.value)}
                 placeholder="Verkstadsnamn"
-                className="mb-4 w-full rounded-md border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
+                className={`mb-4 w-full rounded-md border px-4 py-2 focus:outline-none focus:ring-2 ${
+                  theme === "dark"
+                    ? "border-blue-700/50 bg-slate-700/50 text-white placeholder-blue-300 focus:border-blue-500 focus:ring-blue-500/50"
+                    : "border-gray-300 bg-white text-gray-800 placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500/50"
+                }`}
                 autoFocus
               />
               <div className="flex gap-2">
                 <button
                   onClick={handleCreateWorkshop}
-                  className="flex-1 rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700"
+                  className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700"
                 >
+                  <Building2 className="h-5 w-5" />
                   Skapa verkstad
                 </button>
                 <button
@@ -88,8 +144,13 @@ export default function LandingPage() {
                     setShowCreateWorkshop(false);
                     setWorkshopName("");
                   }}
-                  className="flex-1 rounded-lg border border-gray-300 px-4 py-2 font-semibold text-gray-700 hover:bg-gray-50"
+                  className={`flex flex-1 items-center justify-center gap-2 rounded-lg border px-4 py-2 font-semibold ${
+                    theme === "dark"
+                      ? "border-blue-700/50 text-blue-200 hover:bg-blue-900/50"
+                      : "border-gray-300 text-gray-700 hover:bg-gray-50"
+                  }`}
                 >
+                  <X className="h-5 w-5" />
                   Avbryt
                 </button>
               </div>
@@ -101,8 +162,33 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-gradient-to-br from-blue-500 to-purple-600 p-8">
-      <div className="absolute right-8 top-8">
+    <div className={`flex min-h-screen flex-col p-8 ${
+      theme === "dark"
+        ? "bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-950"
+        : "bg-gradient-to-br from-gray-100 via-blue-50 to-indigo-50"
+    }`}>
+      <div className="absolute right-8 top-8 flex items-center gap-2">
+        <button
+          onClick={toggleTheme}
+          className={`flex items-center justify-center gap-2 rounded-lg border-2 px-4 py-2 font-semibold transition ${
+            theme === "dark"
+              ? "border-white text-white hover:bg-white hover:text-blue-600"
+              : "border-gray-300 text-gray-700 hover:bg-gray-100"
+          }`}
+          title={theme === "dark" ? "Växla till ljust läge" : "Växla till mörkt läge"}
+        >
+          {theme === "dark" ? (
+            <>
+              <Sun className="h-5 w-5" />
+              Ljust läge
+            </>
+          ) : (
+            <>
+              <Moon className="h-5 w-5" />
+              Mörkt läge
+            </>
+          )}
+        </button>
         <button
           onClick={() => {
             if (
@@ -113,30 +199,52 @@ export default function LandingPage() {
               resetWorkshop();
             }
           }}
-          className="rounded-lg border-2 border-white px-4 py-2 font-semibold text-white transition hover:bg-white hover:text-blue-600"
+          className={`flex items-center gap-2 rounded-lg border-2 px-4 py-2 font-semibold transition ${
+            theme === "dark"
+              ? "border-white text-white hover:bg-white hover:text-blue-600"
+              : "border-gray-300 text-gray-700 hover:bg-gray-100"
+          }`}
         >
+          <RotateCcw className="h-5 w-5" />
           Skapa ny verkstad
         </button>
       </div>
 
       <div className="flex flex-1 items-center justify-center">
-        <div className="w-full max-w-2xl rounded-lg bg-white p-8 shadow-xl">
-          <h1 className="mb-2 text-center text-4xl font-bold text-gray-800">
+        <div className={`w-full max-w-2xl rounded-lg backdrop-blur-sm border p-8 shadow-2xl ${
+          theme === "dark"
+            ? "bg-slate-800/90 border-blue-700/30"
+            : "bg-white border-gray-200"
+        }`}>
+          <h1 className={`mb-2 text-center text-4xl font-bold ${
+            theme === "dark" ? "text-white" : "text-gray-800"
+          }`}>
             {workshop.name}
           </h1>
-          <p className="mb-8 text-center text-gray-600">Välj mekaniker</p>
+          <p className={`mb-8 text-center ${
+            theme === "dark" ? "text-blue-100" : "text-gray-600"
+          }`}>Välj mekaniker</p>
 
           {mechanics.length === 0 ? (
-            <div className="rounded-md bg-amber-50 p-6 text-center">
-              <p className="mb-4 text-gray-700">
+            <div className={`rounded-md border p-6 text-center ${
+              theme === "dark"
+                ? "bg-blue-900/40 border-blue-700/30"
+                : "bg-blue-50 border-blue-200"
+            }`}>
+              <p className={`mb-4 ${
+                theme === "dark" ? "text-blue-100" : "text-blue-900"
+              }`}>
                 Inga mekaniker ännu. Lägg till första mekanikern.
               </p>
-              <button
-                onClick={() => setShowAddMechanic(true)}
-                className="rounded-lg bg-green-600 px-6 py-3 font-semibold text-white transition hover:bg-green-700"
-              >
-                Lägg till mekaniker
-              </button>
+              <div className="flex justify-center">
+                <button
+                  onClick={() => setShowAddMechanic(true)}
+                  className="flex items-center justify-center gap-2 rounded-lg bg-green-600 px-6 py-3 font-semibold text-white transition hover:bg-green-500"
+                >
+                  <Plus className="h-5 w-5" />
+                  Lägg till mekaniker
+                </button>
+              </div>
             </div>
           ) : (
             <>
@@ -148,7 +256,11 @@ export default function LandingPage() {
                       setSelectedMechanic(mechanic);
                       setShowLogin(true);
                     }}
-                    className={`rounded-lg border-2 border-gray-300 bg-white p-6 text-center font-semibold transition hover:border-blue-500 hover:bg-blue-50 ${
+                    className={`rounded-lg border-2 p-6 text-center font-semibold transition ${
+                      theme === "dark"
+                        ? "border-blue-700/50 bg-slate-700/50 text-white hover:border-blue-500 hover:bg-blue-800/50"
+                        : "border-gray-300 bg-white text-gray-800 hover:border-blue-500 hover:bg-blue-50"
+                    } ${
                       mechanics.length === 1
                         ? "w-full max-w-xs"
                         : "w-full max-w-[calc(50%-0.5rem)]"
@@ -159,11 +271,12 @@ export default function LandingPage() {
                 ))}
               </div>
 
-              <div className="text-center">
+              <div className="flex justify-center">
                 <button
                   onClick={() => setShowAddMechanic(true)}
-                  className="rounded-lg bg-green-600 px-6 py-3 font-semibold text-white transition hover:bg-green-700"
+                  className="flex items-center justify-center gap-2 rounded-lg bg-green-600 px-6 py-3 font-semibold text-white transition hover:bg-green-500"
                 >
+                  <Plus className="h-5 w-5" />
                   Lägg till mekaniker
                 </button>
               </div>

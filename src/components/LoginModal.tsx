@@ -1,8 +1,9 @@
 // Login Modal - PIN numpad and password entry for mechanic login
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useApp } from "../context/AppContext";
 import { useEscapeKey } from "../hooks/useEscapeKey";
 import type { Mechanic } from "../types";
+import { ArrowLeft, Check, X } from "lucide-react";
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -40,14 +41,18 @@ export default function LoginModal({
   onClose,
   onSuccess,
 }: LoginModalProps) {
-  const { setCurrentMechanicId } = useApp();
+  const { setCurrentMechanicId, theme } = useApp();
   const [pin, setPin] = useState("");
   const [showError, setShowError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const pinRef = useRef(pin);
+
+  // Keep ref in sync with state
+  useEffect(() => {
+    pinRef.current = pin;
+  }, [pin]);
 
   useEscapeKey(onClose, isOpen);
-
-  if (!isOpen || !mechanic) return null;
 
   const handlePinClick = (digit: string) => {
     if (pin.length < 4) {
@@ -60,7 +65,7 @@ export default function LoginModal({
   };
 
   const handlePinSubmit = () => {
-    if (pin === mechanic.credential) {
+    if (pin === mechanic?.credential) {
       // Success!
       setCurrentMechanicId(mechanic.id);
       setPin("");
@@ -72,6 +77,54 @@ export default function LoginModal({
       setPin("");
     }
   };
+
+  // Handle keyboard input
+  useEffect(() => {
+    if (!isOpen || !mechanic || showError) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Handle number keys (0-9)
+      if (e.key >= "0" && e.key <= "9") {
+        e.preventDefault();
+        setPin((currentPin) => {
+          if (currentPin.length < 4) {
+            return currentPin + e.key;
+          }
+          return currentPin;
+        });
+      }
+      // Handle Backspace or Delete
+      else if (e.key === "Backspace" || e.key === "Delete") {
+        e.preventDefault();
+        setPin((currentPin) => currentPin.slice(0, -1));
+      }
+      // Handle Enter to submit
+      else if (e.key === "Enter") {
+        e.preventDefault();
+        const currentPin = pinRef.current;
+        if (currentPin.length === 4) {
+          if (currentPin === mechanic.credential) {
+            // Success!
+            setCurrentMechanicId(mechanic.id);
+            setPin("");
+            onSuccess();
+          } else {
+            // Wrong code - show playful error
+            setErrorMessage(getRandomErrorMessage());
+            setShowError(true);
+            setPin("");
+          }
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen, mechanic, showError, setCurrentMechanicId, onSuccess]);
+
+  if (!isOpen || !mechanic) return null;
 
   const handleLoginAnyway = () => {
     // Bypass - allow login anyway
@@ -89,20 +142,33 @@ export default function LoginModal({
 
   if (showError) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-        <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
-          <h2 className="mb-4 text-2xl font-bold">🚫 Fel kod i verkstaden</h2>
-          <p className="mb-6 text-lg text-gray-700">{errorMessage}</p>
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-sm">
+        <div className={`w-full max-w-md rounded-lg backdrop-blur-sm border p-6 shadow-2xl ${
+          theme === "dark"
+            ? "bg-slate-800/95 border-blue-700/30"
+            : "bg-white border-gray-200"
+        }`}>
+          <h2 className={`mb-4 text-2xl font-bold ${
+            theme === "dark" ? "text-white" : "text-gray-800"
+          }`}>🚫 Fel kod i verkstaden</h2>
+          <p className={`mb-6 text-lg ${
+            theme === "dark" ? "text-blue-100" : "text-gray-700"
+          }`}>{errorMessage}</p>
           <div className="flex gap-2">
             <button
               onClick={() => setShowError(false)}
-              className="flex-1 rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700"
+              className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700"
             >
+              <Check className="h-5 w-5" />
               Försök igen
             </button>
             <button
               onClick={handleLoginAnyway}
-              className="flex-1 rounded-lg border border-gray-300 px-4 py-2 font-semibold text-gray-700 hover:bg-gray-50"
+              className={`flex flex-1 items-center justify-center gap-2 rounded-lg border px-4 py-2 font-semibold ${
+                theme === "dark"
+                  ? "border-blue-700/50 text-blue-200 hover:bg-blue-900/50"
+                  : "border-gray-300 text-gray-700 hover:bg-gray-50"
+              }`}
             >
               Logga in ändå
             </button>
@@ -113,20 +179,34 @@ export default function LoginModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
-        <h2 className="mb-2 text-2xl font-bold">Logga in</h2>
-        <p className="mb-4 text-gray-600">{mechanic.name}</p>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-sm">
+      <div className={`w-full max-w-md rounded-lg backdrop-blur-sm border p-6 shadow-2xl ${
+        theme === "dark"
+          ? "bg-slate-800/95 border-blue-700/30"
+          : "bg-white border-gray-200"
+      }`}>
+        <h2 className={`mb-2 text-2xl font-bold ${
+          theme === "dark" ? "text-white" : "text-gray-800"
+        }`}>Logga in</h2>
+        <p className={`mb-4 ${
+          theme === "dark" ? "text-blue-100" : "text-gray-600"
+        }`}>{mechanic.name}</p>
 
         <div className="mb-6">
-          <p className="mb-3 text-center text-sm text-gray-600">
+          <p className={`mb-3 text-center text-sm ${
+            theme === "dark" ? "text-blue-200" : "text-gray-600"
+          }`}>
             Ange din 4-siffriga kod
           </p>
           <div className="mb-4 flex justify-center gap-2">
             {[0, 1, 2, 3].map((index) => (
               <div
                 key={index}
-                className="flex h-12 w-12 items-center justify-center rounded-md border-2 border-gray-300 bg-gray-50 text-2xl font-bold"
+                className={`flex h-12 w-12 items-center justify-center rounded-md border-2 text-2xl font-bold ${
+                  theme === "dark"
+                    ? "border-blue-700/50 bg-slate-700/50 text-white"
+                    : "border-gray-300 bg-gray-50 text-gray-800"
+                }`}
               >
                 {pin[index] ? "•" : ""}
               </div>
@@ -140,36 +220,60 @@ export default function LoginModal({
             <button
               key={digit}
               onClick={() => handlePinClick(digit.toString())}
-              className="rounded-lg border-2 border-gray-300 bg-white py-4 text-2xl font-bold transition hover:bg-gray-50 active:bg-gray-100"
+              className={`rounded-lg border-2 py-4 text-2xl font-bold transition ${
+                theme === "dark"
+                  ? "border-blue-700/50 bg-slate-700/50 text-white hover:bg-slate-600/50 active:bg-slate-500/50"
+                  : "border-gray-300 bg-white text-gray-800 hover:bg-gray-50 active:bg-gray-100"
+              }`}
             >
               {digit}
             </button>
           ))}
           <button
             onClick={handlePinBackspace}
-            className="rounded-lg border-2 border-gray-300 bg-white py-4 text-lg font-semibold transition hover:bg-gray-50 active:bg-gray-100"
+            className={`flex items-center justify-center rounded-lg border-2 py-4 transition ${
+              theme === "dark"
+                ? "border-blue-700/50 bg-slate-700/50 text-white hover:bg-slate-600/50 active:bg-slate-500/50"
+                : "border-gray-300 bg-white text-gray-800 hover:bg-gray-50 active:bg-gray-100"
+            }`}
           >
-            ←
+            <ArrowLeft className="h-5 w-5" />
           </button>
           <button
             onClick={() => handlePinClick("0")}
-            className="rounded-lg border-2 border-gray-300 bg-white py-4 text-2xl font-bold transition hover:bg-gray-50 active:bg-gray-100"
+            className={`rounded-lg border-2 py-4 text-2xl font-bold transition ${
+              theme === "dark"
+                ? "border-blue-700/50 bg-slate-700/50 text-white hover:bg-slate-600/50 active:bg-slate-500/50"
+                : "border-gray-300 bg-white text-gray-800 hover:bg-gray-50 active:bg-gray-100"
+            }`}
           >
             0
           </button>
           <button
             onClick={handlePinSubmit}
             disabled={pin.length !== 4}
-            className="rounded-lg bg-green-600 py-4 text-lg font-semibold text-white transition hover:bg-green-700 disabled:bg-gray-300"
+            className={`flex items-center justify-center gap-2 rounded-lg py-4 text-lg font-semibold text-white transition ${
+              pin.length !== 4
+                ? theme === "dark"
+                  ? "bg-gray-600 text-gray-400"
+                  : "bg-gray-300 text-gray-500"
+                : "bg-green-600 hover:bg-green-500"
+            }`}
           >
+            <Check className="h-5 w-5" />
             OK
           </button>
         </div>
 
         <button
           onClick={handleClose}
-          className="w-full rounded-lg border border-gray-300 px-4 py-2 font-semibold text-gray-700 hover:bg-gray-50"
+          className={`flex w-full items-center justify-center gap-2 rounded-lg border px-4 py-2 font-semibold ${
+            theme === "dark"
+              ? "border-blue-700/50 text-blue-200 hover:bg-blue-900/50"
+              : "border-gray-300 text-gray-700 hover:bg-gray-50"
+          }`}
         >
+          <X className="h-5 w-5" />
           Avbryt
         </button>
       </div>

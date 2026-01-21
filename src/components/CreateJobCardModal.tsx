@@ -4,7 +4,9 @@ import { useApp } from "../context/AppContext";
 import { generateId } from "../utils/idGenerator";
 import { useEscapeKey } from "../hooks/useEscapeKey";
 import { storageService } from "../services/StorageService";
-import type { VehicleType, Booking } from "../types";
+import type { VehicleType, Booking, Customer } from "../types";
+import { Plus, Minus, FilePlus, X } from "lucide-react";
+import CustomerCombobox from "./CustomerCombobox";
 
 interface CreateJobCardModalProps {
   isOpen: boolean;
@@ -25,9 +27,12 @@ export default function CreateJobCardModal({
   isOpen,
   onClose,
 }: CreateJobCardModalProps) {
-  const { addBooking, showToast } = useApp();
+  const { addBooking, addCustomer, customers, showToast, theme } = useApp();
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
+    null,
+  );
   const [selectedVehicleType, setSelectedVehicleType] =
     useState<VehicleType>("CYKEL");
   const [action, setAction] = useState("");
@@ -47,10 +52,22 @@ export default function CreateJobCardModal({
   // Combine default and custom types
   const allVehicleTypes = [...defaultVehicleTypes, ...customVehicleTypes];
 
+  // Handle customer selection from combobox
+  const handleCustomerSelect = (customer: Customer | null) => {
+    setSelectedCustomer(customer);
+    if (customer) {
+      setCustomerPhone(customer.phone);
+    } else {
+      // Clear phone when customer is cleared
+      setCustomerPhone("");
+    }
+  };
+
   const handleCancel = () => {
     // Reset form
     setCustomerName("");
     setCustomerPhone("");
+    setSelectedCustomer(null);
     setSelectedVehicleType("CYKEL");
     setAction("");
     setDurationHours(1);
@@ -96,9 +113,47 @@ export default function CreateJobCardModal({
       return;
     }
 
+    // Save or update customer if it's a new customer or phone changed
+    let customerId: string;
+    if (selectedCustomer) {
+      // Existing customer - use their ID
+      customerId = selectedCustomer.id;
+      // Update customer if phone number changed
+      if (selectedCustomer.phone !== customerPhone.trim()) {
+        const updatedCustomer: Customer = {
+          ...selectedCustomer,
+          phone: customerPhone.trim(),
+        };
+        addCustomer(updatedCustomer);
+      }
+    } else {
+      // New customer - check if customer with same name exists
+      const existingCustomer = customers.find(
+        (c) => c.name.toLowerCase() === customerName.trim().toLowerCase(),
+      );
+      if (existingCustomer) {
+        // Update existing customer with new phone
+        customerId = existingCustomer.id;
+        const updatedCustomer: Customer = {
+          ...existingCustomer,
+          phone: customerPhone.trim(),
+        };
+        addCustomer(updatedCustomer);
+      } else {
+        // Create new customer
+        const newCustomer: Customer = {
+          id: generateId(),
+          name: customerName.trim(),
+          phone: customerPhone.trim(),
+        };
+        addCustomer(newCustomer);
+        customerId = newCustomer.id;
+      }
+    }
+
     const newBooking: Booking = {
       id: generateId(),
-      customerId: generateId(), // Simple customer ID for now
+      customerId,
       customerName: customerName.trim(),
       customerPhone: customerPhone.trim(),
       vehicleType: selectedVehicleType,
@@ -114,6 +169,7 @@ export default function CreateJobCardModal({
     // Reset form
     setCustomerName("");
     setCustomerPhone("");
+    setSelectedCustomer(null);
     setSelectedVehicleType("CYKEL");
     setAction("");
     setDurationHours(1);
@@ -124,8 +180,14 @@ export default function CreateJobCardModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-      <div className="w-full max-w-2xl rounded-lg bg-white p-6 shadow-xl">
-        <h2 className="mb-6 text-2xl font-bold text-gray-800">
+      <div className={`w-full max-w-2xl rounded-lg p-6 shadow-xl ${
+        theme === "dark"
+          ? "bg-slate-800/95 backdrop-blur-sm border border-blue-700/30"
+          : "bg-white"
+      }`}>
+        <h2 className={`mb-6 text-2xl font-bold ${
+          theme === "dark" ? "text-white" : "text-gray-800"
+        }`}>
           Skapa jobbkort
         </h2>
 
@@ -135,16 +197,17 @@ export default function CreateJobCardModal({
             <div>
               <label
                 htmlFor="customerName"
-                className="mb-2 block text-sm font-medium text-gray-700"
+                className={`mb-2 block text-sm font-medium ${
+                  theme === "dark" ? "text-blue-200" : "text-gray-700"
+                }`}
               >
                 Kund
               </label>
-              <input
-                id="customerName"
-                type="text"
+              <CustomerCombobox
                 value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
-                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                onChange={setCustomerName}
+                onSelect={handleCustomerSelect}
+                customers={customers}
                 placeholder="Namn"
                 required
               />
@@ -152,7 +215,9 @@ export default function CreateJobCardModal({
             <div>
               <label
                 htmlFor="customerPhone"
-                className="mb-2 block text-sm font-medium text-gray-700"
+                className={`mb-2 block text-sm font-medium ${
+                  theme === "dark" ? "text-blue-200" : "text-gray-700"
+                }`}
               >
                 Telefon
               </label>
@@ -161,7 +226,11 @@ export default function CreateJobCardModal({
                 type="tel"
                 value={customerPhone}
                 onChange={(e) => setCustomerPhone(e.target.value)}
-                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                className={`w-full rounded-lg border px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 ${
+                  theme === "dark"
+                    ? "border-blue-700/50 bg-slate-700/50 text-white placeholder-blue-300 focus:ring-blue-500/50"
+                    : "border-gray-300 bg-white text-gray-800 focus:ring-blue-200"
+                }`}
                 placeholder="Telefonnummer"
                 required
               />
@@ -179,7 +248,9 @@ export default function CreateJobCardModal({
                   className={`rounded-full px-4 py-2 text-sm font-medium transition ${
                     selectedVehicleType === type
                       ? "bg-blue-600 text-white"
-                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                      : theme === "dark"
+                        ? "bg-slate-700 text-blue-200 hover:bg-slate-600"
+                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                   }`}
                 >
                   {type}
@@ -193,7 +264,11 @@ export default function CreateJobCardModal({
                     onChange={(e) => setNewTypeInput(e.target.value)}
                     onKeyDown={handleAddTypeKeyPress}
                     placeholder="Ny typ..."
-                    className="rounded-full border-2 border-blue-500 px-4 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-200"
+                    className={`rounded-full border-2 border-blue-500 px-4 py-2 text-sm font-medium focus:outline-none focus:ring-2 ${
+                      theme === "dark"
+                        ? "bg-slate-700 text-white focus:ring-blue-500/50"
+                        : "bg-white focus:ring-blue-200"
+                    }`}
                     autoFocus
                   />
                   <button
@@ -209,7 +284,11 @@ export default function CreateJobCardModal({
                       setShowAddTypeInput(false);
                       setNewTypeInput("");
                     }}
-                    className="rounded-full bg-gray-200 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-300"
+                    className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                      theme === "dark"
+                        ? "bg-slate-700 text-blue-200 hover:bg-slate-600"
+                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                    }`}
                   >
                     Avbryt
                   </button>
@@ -218,9 +297,14 @@ export default function CreateJobCardModal({
                 <button
                   type="button"
                   onClick={() => setShowAddTypeInput(true)}
-                  className="rounded-full border-2 border-dashed border-gray-400 px-4 py-2 text-sm font-medium text-gray-600 transition hover:border-blue-500 hover:bg-blue-50 hover:text-blue-600"
+                  className={`flex items-center gap-1 rounded-full border-2 border-dashed px-4 py-2 text-sm font-medium transition ${
+                    theme === "dark"
+                      ? "border-blue-700/50 text-blue-300 hover:border-blue-500 hover:bg-blue-900/30"
+                      : "border-gray-400 text-gray-600 hover:border-blue-500 hover:bg-blue-50 hover:text-blue-600"
+                  }`}
                 >
-                  + ADD
+                  <Plus className="h-4 w-4" />
+                  ADD
                 </button>
               )}
             </div>
@@ -230,7 +314,9 @@ export default function CreateJobCardModal({
           <div>
             <label
               htmlFor="action"
-              className="mb-2 block text-sm font-medium text-gray-700"
+              className={`mb-2 block text-sm font-medium ${
+                theme === "dark" ? "text-blue-200" : "text-gray-700"
+              }`}
             >
               Åtgärd
             </label>
@@ -238,7 +324,11 @@ export default function CreateJobCardModal({
               id="action"
               value={action}
               onChange={(e) => setAction(e.target.value)}
-              className="m-0 w-full resize-none rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+              className={`m-0 w-full resize-none rounded-lg border px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 ${
+                theme === "dark"
+                  ? "border-blue-700/50 bg-slate-700/50 text-white placeholder-blue-300 focus:ring-blue-500/50"
+                  : "border-gray-300 bg-white text-gray-800 focus:ring-blue-200"
+              }`}
               rows={4}
               placeholder="Skriv vad kunden sa"
               required
@@ -247,25 +337,37 @@ export default function CreateJobCardModal({
 
           {/* Duration */}
           <div className="w-full">
-            <div className="flex w-full items-center justify-center gap-6 rounded-lg bg-blue-50 px-6 py-4">
+            <div className={`flex w-full items-center justify-center gap-6 rounded-lg px-6 py-4 ${
+              theme === "dark" ? "bg-blue-900/30" : "bg-blue-50"
+            }`}>
               <button
                 type="button"
                 onClick={() => setDurationHours(Math.max(1, durationHours - 1))}
-                className="flex h-12 w-12 items-center justify-center rounded-lg border-2 border-gray-300 bg-white text-xl font-semibold text-gray-700 transition hover:border-blue-500 hover:bg-blue-50 hover:text-blue-600"
+                className={`flex h-12 w-12 items-center justify-center rounded-lg border-2 transition ${
+                  theme === "dark"
+                    ? "border-blue-700/50 bg-slate-700 text-blue-200 hover:border-blue-500 hover:bg-blue-900/30"
+                    : "border-gray-300 bg-white text-gray-700 hover:border-blue-500 hover:bg-blue-50 hover:text-blue-600"
+                }`}
               >
-                −
+                <Minus className="h-5 w-5" />
               </button>
               <div className="flex min-w-[140px] items-center justify-center">
-                <span className="text-2xl font-bold text-gray-800">
+                <span className={`text-2xl font-bold ${
+                  theme === "dark" ? "text-white" : "text-gray-800"
+                }`}>
                   {durationHours} timmar
                 </span>
               </div>
               <button
                 type="button"
                 onClick={() => setDurationHours(durationHours + 1)}
-                className="flex h-12 w-12 items-center justify-center rounded-lg border-2 border-gray-300 bg-white text-xl font-semibold text-gray-700 transition hover:border-blue-500 hover:bg-blue-50 hover:text-blue-600"
+                className={`flex h-12 w-12 items-center justify-center rounded-lg border-2 transition ${
+                  theme === "dark"
+                    ? "border-blue-700/50 bg-slate-700 text-blue-200 hover:border-blue-500 hover:bg-blue-900/30"
+                    : "border-gray-300 bg-white text-gray-700 hover:border-blue-500 hover:bg-blue-50 hover:text-blue-600"
+                }`}
               >
-                +
+                <Plus className="h-5 w-5" />
               </button>
             </div>
           </div>
@@ -274,15 +376,21 @@ export default function CreateJobCardModal({
           <div className="flex gap-4">
             <button
               type="submit"
-              className="flex-1 rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-700"
+              className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-700"
             >
+              <FilePlus className="h-5 w-5" />
               Skapa jobbkort
             </button>
             <button
               type="button"
               onClick={handleCancel}
-              className="rounded-lg bg-gray-200 px-6 py-3 font-semibold text-gray-700 transition hover:bg-gray-300"
+              className={`flex items-center gap-2 rounded-lg px-6 py-3 font-semibold transition ${
+                theme === "dark"
+                  ? "bg-slate-700 text-blue-200 hover:bg-slate-600"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+              }`}
             >
+              <X className="h-5 w-5" />
               Avbryt
             </button>
           </div>

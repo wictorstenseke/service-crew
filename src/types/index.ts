@@ -50,6 +50,7 @@ export interface Booking {
 export interface AppState {
   workshop: Workshop | null;
   mechanics: Mechanic[];
+  customers: Customer[];
   bookings: Booking[];
   currentMechanicId: string | null;
   selectedWorkday: string | null; // ISO date string for "IDAG"

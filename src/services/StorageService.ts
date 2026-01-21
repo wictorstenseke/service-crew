@@ -1,5 +1,5 @@
 // StorageService - Abstraction layer for LocalStorage
-import type { AppState, Workshop, Mechanic, Booking } from "../types";
+import type { AppState, Workshop, Mechanic, Booking, Customer } from "../types";
 
 const STORAGE_KEY = "service-crew-data";
 const STORAGE_VERSION = "1.0";
@@ -9,6 +9,7 @@ class StorageService {
     return {
       workshop: null,
       mechanics: [],
+      customers: [],
       bookings: [],
       currentMechanicId: null,
       selectedWorkday: null,
@@ -30,7 +31,12 @@ class StorageService {
         return this.getDefaultState();
       }
 
-      return parsed.state || this.getDefaultState();
+      const state = parsed.state || this.getDefaultState();
+      // Ensure customers array exists for backward compatibility
+      if (!state.customers) {
+        state.customers = [];
+      }
+      return state;
     } catch (error) {
       console.error("Error loading state from LocalStorage:", error);
       return this.getDefaultState();
@@ -147,6 +153,39 @@ class StorageService {
   // Check if workshop exists
   hasWorkshop(): boolean {
     return this.getWorkshop() !== null;
+  }
+
+  // Customer operations
+  getCustomers(): Customer[] {
+    const state = this.loadState();
+    return state.customers || [];
+  }
+
+  saveCustomer(customer: Customer): void {
+    const state = this.loadState();
+    if (!state.customers) {
+      state.customers = [];
+    }
+    const existingIndex = state.customers.findIndex(
+      (c) => c.id === customer.id,
+    );
+
+    if (existingIndex >= 0) {
+      state.customers[existingIndex] = customer;
+    } else {
+      state.customers.push(customer);
+    }
+
+    this.saveState(state);
+  }
+
+  deleteCustomer(id: string): void {
+    const state = this.loadState();
+    if (!state.customers) {
+      state.customers = [];
+    }
+    state.customers = state.customers.filter((c) => c.id !== id);
+    this.saveState(state);
   }
 
   // Custom vehicle types operations

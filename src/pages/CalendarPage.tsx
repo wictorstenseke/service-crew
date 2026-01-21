@@ -16,22 +16,34 @@ import {
 } from "date-fns";
 import { sv } from "date-fns/locale";
 import type { BookingStatus } from "../types";
+import { Plus, ChevronLeft, ChevronRight, Calendar, Moon, Sun } from "lucide-react";
 
 // Constants
 const MINUTES_PER_HOUR = 60;
-const MAX_ACTION_PREVIEW_LENGTH = 20;
 const WORK_START_HOUR = 7;
 const WORK_END_HOUR = 17;
 const HOUR_HEIGHT_PX = 60;
 const BOOKING_MARGIN_PX = 4;
 
-// Status colors for booking cards
-const statusColors: Record<BookingStatus, string> = {
-  EJ_PLANERAD: "bg-orange-200 hover:bg-orange-300",
-  PLANERAD: "bg-blue-200 hover:bg-blue-300",
-  PAGAR: "bg-yellow-200 hover:bg-yellow-300",
-  KLAR: "bg-green-200 hover:bg-green-300",
-  HAMTAD: "bg-gray-200 hover:bg-gray-300",
+// Status colors for booking cards - theme-aware
+const getStatusColors = (theme: "dark" | "light"): Record<BookingStatus, string> => {
+  if (theme === "dark") {
+    return {
+      EJ_PLANERAD: "bg-orange-600/40 hover:bg-orange-600/50 text-orange-100 border border-orange-600/30",
+      PLANERAD: "bg-blue-600/40 hover:bg-blue-600/50 text-blue-100 border border-blue-600/30",
+      PAGAR: "bg-yellow-600/40 hover:bg-yellow-600/50 text-yellow-100 border border-yellow-600/30",
+      KLAR: "bg-green-600/40 hover:bg-green-600/50 text-green-100 border border-green-600/30",
+      HAMTAD: "bg-gray-600/40 hover:bg-gray-600/50 text-gray-100 border border-gray-600/30",
+    };
+  } else {
+    return {
+      EJ_PLANERAD: "bg-orange-100 hover:bg-orange-200 text-orange-900 border border-orange-300",
+      PLANERAD: "bg-blue-100 hover:bg-blue-200 text-blue-900 border border-blue-300",
+      PAGAR: "bg-yellow-100 hover:bg-yellow-200 text-yellow-900 border border-yellow-300",
+      KLAR: "bg-green-100 hover:bg-green-200 text-green-900 border border-green-300",
+      HAMTAD: "bg-gray-100 hover:bg-gray-200 text-gray-900 border border-gray-300",
+    };
+  }
 };
 
 export default function CalendarPage() {
@@ -43,6 +55,8 @@ export default function CalendarPage() {
     updateBooking,
     showToast,
     mechanics,
+    theme,
+    toggleTheme,
   } = useApp();
   const [currentWeekStart, setCurrentWeekStart] = useState<Date>(() =>
     startOfWeek(new Date(), { weekStartsOn: 1 }),
@@ -61,6 +75,17 @@ export default function CalendarPage() {
     const weekEnd = endOfWeek(currentWeekStart, { weekStartsOn: 1 });
     return eachDayOfInterval({ start: currentWeekStart, end: weekEnd });
   }, [currentWeekStart]);
+
+  // Find the index of the day with IDAG (selected workday)
+  const idagDayIndex = useMemo(() => {
+    if (!selectedWorkday) return -1;
+    try {
+      const selectedDate = parseISO(selectedWorkday);
+      return weekDays.findIndex((day) => isSameDay(day, selectedDate));
+    } catch {
+      return -1;
+    }
+  }, [selectedWorkday, weekDays]);
 
   // Time slots (07:00-17:00)
   const timeSlots = useMemo(() => {
@@ -206,7 +231,11 @@ export default function CalendarPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 relative">
+    <div className={`min-h-screen relative ${
+      theme === "dark" 
+        ? "bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-950" 
+        : "bg-gradient-to-br from-gray-100 via-blue-50 to-indigo-50"
+    }`}>
       {/* Main content */}
       <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-4">
         {/* Week navigation */}
@@ -219,28 +248,41 @@ export default function CalendarPage() {
             <div className="flex items-center gap-4">
               <button
                 onClick={goToPreviousWeek}
-                className="rounded-lg bg-white px-4 py-2 shadow hover:bg-gray-50"
+                className={`flex items-center gap-2 rounded-lg border px-4 py-2 shadow-lg transition ${
+                  theme === "dark"
+                    ? "bg-slate-800/90 border-blue-700/30 text-white hover:bg-slate-700/90"
+                    : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                }`}
               >
-                ← Föregående vecka
+                <ChevronLeft className="h-4 w-4" />
+                Föregående vecka
               </button>
               <button
                 onClick={goToToday}
-                className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-500 transition"
               >
+                <Calendar className="h-4 w-4" />
                 Idag
               </button>
             </div>
             {/* Center: Date */}
-            <span className="font-medium text-gray-700">
+            <span className={`font-medium ${
+              theme === "dark" ? "text-blue-100" : "text-gray-700"
+            }`}>
               {format(currentWeekStart, "d MMM", { locale: sv })} -{" "}
               {format(weekDays[6], "d MMM yyyy", { locale: sv })}
             </span>
             {/* Right side: Next week */}
             <button
               onClick={goToNextWeek}
-              className="rounded-lg bg-white px-4 py-2 shadow hover:bg-gray-50"
+              className={`flex items-center gap-2 rounded-lg border px-4 py-2 shadow-lg transition ${
+                theme === "dark"
+                  ? "bg-slate-800/90 border-blue-700/30 text-white hover:bg-slate-700/90"
+                  : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+              }`}
             >
-              Nästa vecka →
+              Nästa vecka
+              <ChevronRight className="h-4 w-4" />
             </button>
           </div>
         </div>
@@ -248,20 +290,31 @@ export default function CalendarPage() {
         {/* Calendar grid */}
         <div className="flex gap-4">
           {/* Unplanned jobs column */}
-          <div className="flex w-48 flex-shrink-0 flex-col">
+          <div className="flex w-48 flex-shrink-0 flex-col gap-4">
             <button
               onClick={() => setShowCreateJobCard(true)}
-              className="mb-2 w-full rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
             >
-              + Skapa jobbkort
+              <Plus className="h-4 w-4" />
+              Skapa jobbkort
             </button>
-            <div className="flex-1 rounded-lg bg-orange-50 p-4 shadow">
-              <h3 className="mb-3 text-sm font-semibold text-orange-900">
+            <div className={`rounded-lg p-4 shadow-lg ${
+              unplannedBookings.length === 0 ? "" : "flex-1"
+            } ${
+              theme === "dark"
+                ? "bg-slate-800/90 border border-blue-700/30"
+                : "bg-white border border-gray-200"
+            }`}>
+              <h3 className={`mb-4 text-sm font-semibold ${
+                theme === "dark" ? "text-orange-300" : "text-orange-700"
+              }`}>
                 Ej planerade
               </h3>
-              <div className="space-y-2">
+              <div className={`space-y-2 ${unplannedBookings.length === 0 ? "min-h-0" : ""}`}>
                 {unplannedBookings.length === 0 ? (
-                  <p className="text-xs text-orange-700">
+                  <p className={`text-xs ${
+                    theme === "dark" ? "text-blue-200" : "text-gray-500"
+                  }`}>
                     Inga jobb här just nu.
                   </p>
                 ) : (
@@ -272,21 +325,31 @@ export default function CalendarPage() {
                       onDragStart={() => handleDragStart(booking.id)}
                       onDragEnd={handleDragEnd}
                       onClick={() => handleBookingClick(booking)}
-                      className={`cursor-move rounded-lg p-2 text-xs shadow-sm transition-all hover:shadow-md ${
-                        draggedBookingId === booking.id
-                          ? "bg-orange-300 opacity-50"
-                          : "bg-orange-200"
+                      className={`relative cursor-move rounded-lg p-2 text-xs shadow-sm transition-all hover:shadow-md border ${
+                        theme === "dark"
+                          ? draggedBookingId === booking.id
+                            ? "bg-orange-700/50 opacity-50 border-orange-600/30"
+                            : "bg-orange-600/20 text-orange-100 border-orange-600/30"
+                          : draggedBookingId === booking.id
+                            ? "bg-orange-200 opacity-50 border-orange-400"
+                            : "bg-orange-100 text-orange-900 border-orange-300"
                       }`}
                       style={{
                         height: `${booking.durationHours * MINUTES_PER_HOUR}px`,
                       }}
                     >
-                      <div className="font-semibold">{booking.vehicleType}</div>
-                      <div className="truncate text-orange-900">
-                        {booking.action}
-                      </div>
-                      <div className="mt-1 text-orange-700">
+                      <div className={`absolute top-2 right-2 font-medium ${
+                        theme === "dark" ? "text-orange-300" : "text-orange-700"
+                      }`}>
                         {booking.durationHours}h
+                      </div>
+                      <div className={`font-semibold pr-12 ${
+                        theme === "dark" ? "text-orange-100" : "text-orange-900"
+                      }`}>{booking.vehicleType}</div>
+                      <div className={`truncate ${
+                        theme === "dark" ? "text-orange-100" : "text-orange-800"
+                      }`}>
+                        {booking.action}
                       </div>
                     </div>
                   ))
@@ -294,8 +357,33 @@ export default function CalendarPage() {
               </div>
             </div>
             <button
+              onClick={toggleTheme}
+              className={`flex w-full items-center justify-center gap-2 rounded-lg border-2 px-4 py-2 text-sm font-medium transition ${
+                theme === "dark"
+                  ? "border-blue-700/50 bg-slate-800/90 text-blue-200 hover:bg-blue-900/30"
+                  : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50 shadow-sm"
+              }`}
+              title={theme === "dark" ? "Växla till ljust läge" : "Växla till mörkt läge"}
+            >
+              {theme === "dark" ? (
+                <>
+                  <Sun className="h-4 w-4" />
+                  Ljust läge
+                </>
+              ) : (
+                <>
+                  <Moon className="h-4 w-4" />
+                  Mörkt läge
+                </>
+              )}
+            </button>
+            <button
               onClick={() => setCurrentMechanicId(null)}
-              className="mt-4 w-full rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+              className={`flex w-full items-center justify-center rounded-lg border-2 px-4 py-2 text-sm font-medium transition ${
+                theme === "dark"
+                  ? "border-blue-700/50 text-blue-200 hover:bg-blue-900/30"
+                  : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50 shadow-sm"
+              }`}
             >
               Logga ut
             </button>
@@ -303,17 +391,33 @@ export default function CalendarPage() {
 
           {/* Week view */}
           <div className="flex-1 overflow-x-auto">
-            {/* White container with shadow */}
-            <div className="rounded-lg bg-white shadow-md">
+            {/* Theme-aware container with shadow */}
+            <div className={`rounded-lg backdrop-blur-sm shadow-2xl overflow-hidden ${
+              theme === "dark"
+                ? "bg-slate-800/90 border border-blue-700/30"
+                : "bg-white border border-gray-200"
+            }`}>
               {/* Unified grid layout for day headers and calendar */}
               <div
-                className="grid"
+                className="grid transition-all duration-500 ease-in-out"
                 style={{
-                  gridTemplateColumns: "60px repeat(7, minmax(120px, 1fr))",
+                  gridTemplateColumns: idagDayIndex >= 0
+                    ? `60px ${weekDays
+                        .map((_, index) =>
+                          index === idagDayIndex
+                            ? "minmax(250px, 2fr)"
+                            : "minmax(120px, 1fr)"
+                        )
+                        .join(" ")}`
+                    : "60px repeat(7, minmax(120px, 1fr))",
                 }}
               >
                 {/* Empty cell for time axis corner */}
-                <div className="border-b border-r border-gray-200 bg-white"></div>
+                <div className={`border-b border-r ${
+                  theme === "dark"
+                    ? "border-blue-700/30 bg-slate-700/50"
+                    : "border-gray-200 bg-gray-50"
+                }`}></div>
 
                 {/* Day headers aligned with columns */}
                 {weekDays.map((day) => {
@@ -322,33 +426,46 @@ export default function CalendarPage() {
                     <div
                       key={day.toISOString()}
                       onClick={() => handleDayClick(day)}
-                      className={`cursor-pointer border-b border-r border-gray-200 p-3 text-center transition ${
-                        isWorkday
-                          ? "bg-blue-50 font-bold text-blue-600"
-                          : "bg-white hover:bg-gray-50"
+                      className={`cursor-pointer border-b border-r text-center transition-all duration-500 ease-in-out p-3 ${
+                        theme === "dark"
+                          ? isWorkday
+                            ? "border-blue-700/30 bg-blue-800/50 font-bold text-blue-200 border-t-[3px] border-t-blue-500"
+                            : "border-blue-700/30 bg-slate-700/50 hover:bg-slate-600/50 text-white"
+                          : isWorkday
+                            ? "border-gray-200 bg-blue-100 font-bold text-blue-700 border-t-[3px] border-t-blue-600"
+                            : "border-gray-200 bg-white hover:bg-gray-50 text-gray-800"
                       }`}
                     >
-                      <div className="text-xs font-medium uppercase text-gray-600">
+                      <div className={`text-xs font-medium uppercase ${
+                        theme === "dark"
+                          ? isWorkday ? "text-blue-200" : "text-blue-300"
+                          : isWorkday ? "text-blue-700" : "text-gray-600"
+                      }`}>
                         {format(day, "EEE", { locale: sv })}
                       </div>
-                      <div className="text-lg font-bold">
+                      <div className={`text-lg font-bold ${
+                        theme === "dark" ? "text-white" : "text-gray-800"
+                      }`}>
                         {format(day, "d", { locale: sv })}
                       </div>
-                      {isWorkday && (
-                        <div className="mt-1 text-xs font-semibold text-blue-600">
-                          IDAG
-                        </div>
-                      )}
                     </div>
                   );
                 })}
 
                 {/* Time axis column */}
-                <div className="flex flex-col border-r border-gray-200 bg-gray-50">
+                <div className={`flex flex-col border-r ${
+                  theme === "dark"
+                    ? "border-blue-700/30 bg-slate-700/50"
+                    : "border-gray-200 bg-gray-50"
+                }`}>
                   {timeSlots.map((hour) => (
                     <div
                       key={hour}
-                      className="flex items-start justify-end border-b border-gray-200 pr-2 pt-1 text-xs text-gray-500"
+                      className={`flex items-start justify-end border-b pr-2 pt-1 text-xs ${
+                        theme === "dark"
+                          ? "border-blue-700/20 text-blue-300"
+                          : "border-gray-200 text-gray-500"
+                      }`}
                       style={{ height: `${HOUR_HEIGHT_PX}px` }}
                     >
                       {hour}:00
@@ -365,7 +482,11 @@ export default function CalendarPage() {
                   return (
                     <div
                       key={day.toISOString()}
-                      className={`relative bg-white ${isLastDay ? "" : "border-r border-gray-200"}`}
+                      className={`relative ${
+                        theme === "dark"
+                          ? "bg-slate-700/30"
+                          : "bg-white"
+                      } ${isLastDay ? "" : theme === "dark" ? "border-r border-blue-700/20" : "border-r border-gray-200"}`}
                     >
                       {/* Hour grid lines */}
                       {timeSlots.map((hour) => {
@@ -384,32 +505,40 @@ export default function CalendarPage() {
                             onDragOver={(e) => handleDragOver(e, day, hour)}
                             onDragLeave={handleDragLeave}
                             onDrop={() => handleDrop(day, hour)}
-                            className={`relative border-b border-gray-100 transition-colors ${
+                            className={`relative border-b border-blue-700/10 transition-colors ${
                               isDragging
                                 ? isHovered
                                   ? isValid
-                                    ? "bg-green-50"
-                                    : "bg-red-50"
-                                  : "bg-gray-50"
-                                : "hover:bg-gray-50"
+                                    ? "bg-green-900/30"
+                                    : "bg-red-900/30"
+                                  : "bg-slate-700/20"
+                                : "hover:bg-slate-600/20"
                             }`}
                             style={{ height: `${HOUR_HEIGHT_PX}px` }}
                           >
                             {/* Drag preview: show placeholder for the full duration */}
                             {isDragging && isHovered && draggedBooking && (
                               <div
-                                className={`absolute left-1 right-1 rounded-lg border-2 shadow-sm ${
-                                  isValid
-                                    ? "border-green-500 bg-green-100"
-                                    : "border-red-500 bg-red-100"
-                                } pointer-events-none opacity-75`}
+                                className={`absolute left-1 right-1 rounded-lg border-2 shadow-sm pointer-events-none opacity-75 ${
+                                  theme === "dark"
+                                    ? isValid
+                                      ? "border-green-500 bg-green-900/40 text-green-100"
+                                      : "border-red-500 bg-red-900/40 text-red-100"
+                                    : isValid
+                                      ? "border-green-500 bg-green-100 text-green-900"
+                                      : "border-red-500 bg-red-100 text-red-900"
+                                }`}
                                 style={{
                                   top: `${BOOKING_MARGIN_PX / 2}px`,
                                   height: `${draggedBooking.durationHours * HOUR_HEIGHT_PX - BOOKING_MARGIN_PX}px`,
                                   zIndex: 10,
                                 }}
                               >
-                                <div className="p-1 text-center text-xs font-medium">
+                                <div className={`p-1 text-center text-xs font-medium ${
+                                  theme === "dark"
+                                    ? isValid ? "text-green-100" : "text-red-100"
+                                    : isValid ? "text-green-900" : "text-red-900"
+                                }`}>
                                   {isValid ? "Släpp här" : "Upptaget"}
                                 </div>
                               </div>
@@ -441,7 +570,7 @@ export default function CalendarPage() {
                             }}
                             onDragEnd={handleDragEnd}
                             onClick={() => handleBookingClick(booking)}
-                            className={`absolute left-1 right-1 cursor-move rounded-lg p-2 text-xs shadow-md transition-all hover:shadow-lg flex flex-col ${statusColors[booking.status]} ${
+                            className={`absolute left-1 right-1 cursor-move rounded-lg p-2 text-xs shadow-md transition-all hover:shadow-lg flex flex-col ${getStatusColors(theme)[booking.status]} ${
                               isDragging ? "opacity-50" : ""
                             }`}
                             style={{
@@ -451,16 +580,24 @@ export default function CalendarPage() {
                             }}
                           >
                             <div className="flex-1">
-                              <div className="font-semibold">
+                              <div className={`font-semibold ${
+                                theme === "dark" ? "" : "text-gray-900"
+                              }`}>
                                 {booking.vehicleType}
                               </div>
-                              <div className="break-words leading-tight">
+                              <div className={`break-words leading-tight ${
+                                theme === "dark" ? "" : "text-gray-800"
+                              }`}>
                                 {booking.action}
                               </div>
                             </div>
                             {assignedMechanic && (
                               <div className="mt-auto pt-1">
-                                <span className="inline-block rounded bg-white bg-opacity-70 px-2 py-0.5 text-xs font-medium">
+                                <span className={`inline-block rounded px-2 py-0.5 text-xs font-medium ${
+                                  theme === "dark"
+                                    ? "bg-black/30 text-white"
+                                    : "bg-white/90 text-gray-800"
+                                }`}>
                                   {assignedMechanic.name}
                                 </span>
                               </div>

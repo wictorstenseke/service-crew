@@ -4,6 +4,7 @@ import { useApp } from "../context/AppContext";
 import { generateId } from "../utils/idGenerator";
 import { useEscapeKey } from "../hooks/useEscapeKey";
 import type { Mechanic } from "../types";
+import { Save, X } from "lucide-react";
 
 interface AddMechanicModalProps {
   isOpen: boolean;
@@ -14,7 +15,7 @@ export default function AddMechanicModal({
   isOpen,
   onClose,
 }: AddMechanicModalProps) {
-  const { addMechanic, showToast } = useApp();
+  const { addMechanic, showToast, theme } = useApp();
   const [name, setName] = useState("");
   const [credential, setCredential] = useState("");
 
@@ -55,11 +56,19 @@ export default function AddMechanicModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
-        <h2 className="mb-4 text-2xl font-bold">Lägg till mekaniker</h2>
+      <div className={`w-full max-w-md rounded-lg p-6 shadow-xl ${
+        theme === "dark"
+          ? "bg-slate-800/95 backdrop-blur-sm border border-blue-700/30"
+          : "bg-white"
+      }`}>
+        <h2 className={`mb-4 text-2xl font-bold ${
+          theme === "dark" ? "text-white" : "text-gray-800"
+        }`}>Lägg till mekaniker</h2>
 
         <div className="mb-4">
-          <label className="mb-2 block text-sm font-semibold text-gray-700">
+          <label className={`mb-2 block text-sm font-semibold ${
+            theme === "dark" ? "text-blue-200" : "text-gray-700"
+          }`}>
             Namn
           </label>
           <input
@@ -67,13 +76,19 @@ export default function AddMechanicModal({
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="För- och efternamn"
-            className="w-full rounded-md border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
+            className={`w-full rounded-md border px-4 py-2 focus:border-blue-500 focus:outline-none ${
+              theme === "dark"
+                ? "border-blue-700/50 bg-slate-700/50 text-white placeholder-blue-300"
+                : "border-gray-300 bg-white text-gray-800"
+            }`}
             autoFocus
           />
         </div>
 
         <div className="mb-6">
-          <label className="mb-2 block text-sm font-semibold text-gray-700">
+          <label className={`mb-2 block text-sm font-semibold ${
+            theme === "dark" ? "text-blue-200" : "text-gray-700"
+          }`}>
             PIN-kod
           </label>
           <input
@@ -87,21 +102,31 @@ export default function AddMechanicModal({
               setCredential(value);
             }}
             placeholder="Ange 4 siffror"
-            className="w-full rounded-md border border-gray-300 px-4 py-2 text-center text-2xl tracking-widest focus:border-blue-500 focus:outline-none"
+            className={`w-full rounded-md border px-4 py-2 text-center text-2xl tracking-widest focus:border-blue-500 focus:outline-none ${
+              theme === "dark"
+                ? "border-blue-700/50 bg-slate-700/50 text-white placeholder-blue-300"
+                : "border-gray-300 bg-white text-gray-800"
+            }`}
           />
         </div>
 
         <div className="flex gap-2">
           <button
             onClick={handleSubmit}
-            className="flex-1 rounded-lg bg-green-600 px-4 py-2 font-semibold text-white hover:bg-green-700"
+            className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-2 font-semibold text-white hover:bg-green-700"
           >
+            <Save className="h-5 w-5" />
             Spara
           </button>
           <button
             onClick={handleClose}
-            className="flex-1 rounded-lg border border-gray-300 px-4 py-2 font-semibold text-gray-700 hover:bg-gray-50"
+            className={`flex flex-1 items-center justify-center gap-2 rounded-lg border px-4 py-2 font-semibold ${
+              theme === "dark"
+                ? "border-blue-700/50 text-blue-200 hover:bg-blue-900/50"
+                : "border-gray-300 text-gray-700 hover:bg-gray-50"
+            }`}
           >
+            <X className="h-5 w-5" />
             Avbryt
           </button>
         </div>
