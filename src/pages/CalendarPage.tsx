@@ -76,7 +76,9 @@ export default function CalendarPage() {
       (b) =>
         b.scheduledDate === dayStr &&
         b.scheduledStartHour !== undefined &&
-        b.scheduledStartHour === hour &&
+        // Check if this hour falls within the booking's time range
+        hour >= b.scheduledStartHour &&
+        hour < b.scheduledStartHour + b.durationHours &&
         b.status !== "EJ_PLANERAD",
     );
   };
@@ -275,6 +277,9 @@ export default function CalendarPage() {
                           ? "bg-orange-300 opacity-50"
                           : "bg-orange-200"
                       }`}
+                      style={{
+                        height: `${booking.durationHours * MINUTES_PER_HOUR}px`,
+                      }}
                     >
                       <div className="font-semibold">{booking.vehicleType}</div>
                       <div className="truncate text-orange-900">
