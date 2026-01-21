@@ -10,8 +10,9 @@
 - [x] Workshop display with name
 - [x] "Skapa ny verkstad" button in top right corner
 - [x] Reset functionality with confirmation
-- [ ] Add mechanic functionality (in progress)
-- [ ] Mechanic login (in progress)
+- [x] Add mechanic modal integrated
+- [x] Mechanic grid display (2-column layout)
+- [ ] Login flow (next step)
 
 ---
 

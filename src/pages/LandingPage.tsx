@@ -3,10 +3,12 @@ import { useState } from "react";
 import { useApp } from "../context/AppContext";
 import { generateId } from "../utils/idGenerator";
 import type { Workshop } from "../types";
+import AddMechanicModal from "../components/AddMechanicModal";
 
 export default function LandingPage() {
   const { workshop, mechanics, setWorkshop, resetWorkshop } = useApp();
   const [showCreateWorkshop, setShowCreateWorkshop] = useState(false);
+  const [showAddMechanic, setShowAddMechanic] = useState(false);
   const [workshopName, setWorkshopName] = useState("");
 
   const handleCreateWorkshop = () => {
@@ -115,10 +117,7 @@ export default function LandingPage() {
                 Inga mekaniker ännu. Lägg till första mekanikern.
               </p>
               <button
-                onClick={() => {
-                  /* TODO: Open add mechanic form */
-                  alert("Add mechanic form - coming soon!");
-                }}
+                onClick={() => setShowAddMechanic(true)}
                 className="rounded-lg bg-green-600 px-6 py-3 font-semibold text-white transition hover:bg-green-700"
               >
                 Lägg till mekaniker
@@ -143,10 +142,7 @@ export default function LandingPage() {
 
               <div className="text-center">
                 <button
-                  onClick={() => {
-                    /* TODO: Open add mechanic form */
-                    alert("Add mechanic form - coming soon!");
-                  }}
+                  onClick={() => setShowAddMechanic(true)}
                   className="rounded-lg bg-green-600 px-6 py-3 font-semibold text-white transition hover:bg-green-700"
                 >
                   Lägg till mekaniker
@@ -156,6 +152,11 @@ export default function LandingPage() {
           )}
         </div>
       </div>
+
+      <AddMechanicModal
+        isOpen={showAddMechanic}
+        onClose={() => setShowAddMechanic(false)}
+      />
     </div>
   );
 }
