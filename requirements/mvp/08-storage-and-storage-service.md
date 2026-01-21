@@ -2,6 +2,14 @@
 
 [← Tillbaka till översikt](00-overview.md)
 
+## Implementation Status
+- [x] TypeScript interfaces for all data models (Workshop, Mechanic, Booking, etc.)
+- [x] StorageService with LocalStorage abstraction
+- [x] CRUD operations for all entities
+- [x] AppContext for global state management
+- [x] Reset/clear functionality
+- [x] ID generator utility
+
 ---
 
 ## Lagring (MVP)

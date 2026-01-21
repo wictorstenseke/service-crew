@@ -2,6 +2,23 @@
 
 [← Tillbaka till översikt](00-overview.md)
 
+## Implementation Status
+- [x] Add mechanic modal component created
+- [x] Name field
+- [x] Login method toggle (PIN/Password)
+- [x] PIN input (4 digits, numeric only)
+- [x] Password input (free text)
+- [x] Form validation
+- [x] Save functionality
+- [x] Mechanic grid display on landing page
+- [x] Login modal with PIN numpad (0-9, backspace, OK)
+- [x] Login modal with password entry
+- [x] PIN indicators (4 dots)
+- [x] Playful error messages for wrong codes (12 different messages)
+- [x] "Försök igen" button
+- [x] "Logga in ändå" bypass option
+- [x] Successful login redirects to calendar placeholder
+
 ---
 
 ## Mekaniker
