@@ -301,10 +301,15 @@ export default function CalendarPage() {
           <div className="flex-1 overflow-x-auto">
             <div className="inline-block min-w-full">
               {/* Unified grid layout for day headers and calendar */}
-              <div className="grid" style={{ gridTemplateColumns: "60px repeat(7, minmax(120px, 1fr))" }}>
+              <div
+                className="grid"
+                style={{
+                  gridTemplateColumns: "60px repeat(7, minmax(120px, 1fr))",
+                }}
+              >
                 {/* Empty cell for time axis corner */}
                 <div className="bg-white"></div>
-                
+
                 {/* Day headers aligned with columns */}
                 {weekDays.map((day) => {
                   const isWorkday = isSelectedWorkday(day);
@@ -360,8 +365,7 @@ export default function CalendarPage() {
                         const isHovered =
                           hoveredSlot?.day === dayStr &&
                           hoveredSlot?.hour === hour;
-                        const isValid =
-                          isHovered && isValidDropZone(day, hour);
+                        const isValid = isHovered && isValidDropZone(day, hour);
                         const isDragging = draggedBookingId !== null;
                         const draggedBooking = isDragging
                           ? bookings.find((b) => b.id === draggedBookingId)
