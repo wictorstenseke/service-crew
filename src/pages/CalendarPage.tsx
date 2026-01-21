@@ -19,9 +19,11 @@ import type { BookingStatus } from "../types";
 
 // Constants
 const MINUTES_PER_HOUR = 60;
-const BOOKING_CARD_PADDING = 10;
 const MAX_ACTION_PREVIEW_LENGTH = 20;
+const WORK_START_HOUR = 7;
 const WORK_END_HOUR = 17;
+const HOUR_HEIGHT_PX = 60;
+const BOOKING_MARGIN_PX = 4;
 
 // Status colors for booking cards
 const statusColors: Record<BookingStatus, string> = {
@@ -69,16 +71,13 @@ export default function CalendarPage() {
     return bookings.filter((b) => b.status === "EJ_PLANERAD");
   }, [bookings]);
 
-  // Get bookings for a specific day and hour
-  const getBookingsForSlot = (day: Date, hour: number) => {
+  // Get bookings for a specific day (not per hour - render once)
+  const getBookingsForDay = (day: Date) => {
     const dayStr = format(day, "yyyy-MM-dd");
     return bookings.filter(
       (b) =>
         b.scheduledDate === dayStr &&
         b.scheduledStartHour !== undefined &&
-        // Check if this hour falls within the booking's time range
-        hour >= b.scheduledStartHour &&
-        hour < b.scheduledStartHour + b.durationHours &&
         b.status !== "EJ_PLANERAD",
     );
   };
@@ -141,18 +140,21 @@ export default function CalendarPage() {
 
     const duration = booking.durationHours;
 
-    // Check if there are any conflicting bookings in the time range
-    for (let i = 0; i < duration; i++) {
-      const checkHour = hour + i;
-      if (checkHour > WORK_END_HOUR) return false; // Out of working hours
+    // Check if booking extends beyond work hours
+    if (hour + duration > WORK_END_HOUR + 1) return false;
 
-      const existingBookings = getBookingsForSlot(day, checkHour);
-      if (existingBookings.length > 0) {
-        // Allow if it's the same booking (dragging to same position)
-        const hasConflict = existingBookings.some(
-          (b) => b.id !== draggedBookingId,
-        );
-        if (hasConflict) return false;
+    // Check if there are any conflicting bookings in the time range
+    const dayBookings = getBookingsForDay(day);
+    for (const existingBooking of dayBookings) {
+      if (existingBooking.id === draggedBookingId) continue; // Skip self
+
+      const existingStart = existingBooking.scheduledStartHour!;
+      const existingEnd = existingStart + existingBooking.durationHours;
+      const newEnd = hour + duration;
+
+      // Check for overlap
+      if (hour < existingEnd && newEnd > existingStart) {
+        return false;
       }
     }
 
@@ -326,52 +328,103 @@ export default function CalendarPage() {
                 })}
               </div>
 
-              {/* Time slots */}
-              <div className="grid grid-cols-7 gap-2">
-                {weekDays.map((day) => (
-                  <div key={day.toISOString()} className="space-y-1">
-                    {timeSlots.map((hour) => {
-                      const slotBookings = getBookingsForSlot(day, hour);
-                      const dayStr = format(day, "yyyy-MM-dd");
-                      const isHovered =
-                        hoveredSlot?.day === dayStr &&
-                        hoveredSlot?.hour === hour;
-                      const isValid = isHovered && isValidDropZone(day, hour);
-                      const isDragging = draggedBookingId !== null;
+              {/* Unified grid: time axis + day columns */}
+              <div className="flex">
+                {/* Time axis on the left */}
+                <div className="flex-shrink-0" style={{ width: "60px" }}>
+                  {timeSlots.map((hour) => (
+                    <div
+                      key={hour}
+                      className="flex items-center justify-end pr-2 text-xs font-medium text-gray-500"
+                      style={{ height: `${HOUR_HEIGHT_PX}px` }}
+                    >
+                      {hour}:00
+                    </div>
+                  ))}
+                </div>
 
-                      return (
-                        <div
-                          key={hour}
-                          onDragOver={(e) => handleDragOver(e, day, hour)}
-                          onDragLeave={handleDragLeave}
-                          onDrop={() => handleDrop(day, hour)}
-                          className={`relative min-h-[60px] rounded border p-1 transition-all ${
-                            isDragging
-                              ? isHovered
-                                ? isValid
-                                  ? "border-green-500 bg-green-50 shadow-lg"
-                                  : "border-red-500 bg-red-50"
-                                : "border-blue-300 bg-blue-50"
-                              : "border-gray-200 bg-white hover:border-blue-400 hover:bg-blue-50"
-                          }`}
-                        >
-                          <div className="text-xs text-gray-400">{hour}:00</div>
-                          {isDragging && isHovered && (
+                {/* Day columns with unified grid */}
+                <div className="flex flex-1 border-l border-gray-300">
+                  {weekDays.map((day, dayIndex) => {
+                    const dayStr = format(day, "yyyy-MM-dd");
+                    const dayBookings = getBookingsForDay(day);
+
+                    return (
+                      <div
+                        key={day.toISOString()}
+                        className={`relative flex-1 ${dayIndex < 6 ? "border-r border-gray-300" : ""}`}
+                        style={{ minWidth: "120px" }}
+                      >
+                        {/* Hour grid lines */}
+                        {timeSlots.map((hour) => {
+                          const isHovered =
+                            hoveredSlot?.day === dayStr &&
+                            hoveredSlot?.hour === hour;
+                          const isValid =
+                            isHovered && isValidDropZone(day, hour);
+                          const isDragging = draggedBookingId !== null;
+                          const draggedBooking = isDragging
+                            ? bookings.find((b) => b.id === draggedBookingId)
+                            : null;
+
+                          return (
                             <div
-                              className={`absolute bottom-1 left-1 right-1 text-xs font-medium ${
-                                isValid ? "text-green-700" : "text-red-700"
+                              key={hour}
+                              onDragOver={(e) => handleDragOver(e, day, hour)}
+                              onDragLeave={handleDragLeave}
+                              onDrop={() => handleDrop(day, hour)}
+                              className={`relative border-b border-gray-200 transition-colors ${
+                                isDragging
+                                  ? isHovered
+                                    ? isValid
+                                      ? "bg-green-50"
+                                      : "bg-red-50"
+                                    : "bg-blue-50"
+                                  : "hover:bg-blue-50"
                               }`}
+                              style={{ height: `${HOUR_HEIGHT_PX}px` }}
                             >
-                              {isValid ? "Släpp här" : "Upptaget"}
+                              {/* Drag preview: show placeholder for the full duration */}
+                              {isDragging && isHovered && draggedBooking && (
+                                <div
+                                  className={`absolute left-1 right-1 rounded border-2 ${
+                                    isValid
+                                      ? "border-green-500 bg-green-100"
+                                      : "border-red-500 bg-red-100"
+                                  } pointer-events-none opacity-75`}
+                                  style={{
+                                    top: `${BOOKING_MARGIN_PX / 2}px`,
+                                    height: `${draggedBooking.durationHours * HOUR_HEIGHT_PX - BOOKING_MARGIN_PX}px`,
+                                    zIndex: 10,
+                                  }}
+                                >
+                                  <div className="p-1 text-center text-xs font-medium">
+                                    {isValid ? "Släpp här" : "Upptaget"}
+                                  </div>
+                                </div>
+                              )}
                             </div>
-                          )}
-                          {slotBookings.map((booking) => (
+                          );
+                        })}
+
+                        {/* Bookings rendered as absolute positioned blocks */}
+                        {dayBookings.map((booking) => {
+                          const startHour = booking.scheduledStartHour!;
+                          const topPosition =
+                            (startHour - WORK_START_HOUR) * HOUR_HEIGHT_PX;
+                          const height =
+                            booking.durationHours * HOUR_HEIGHT_PX -
+                            BOOKING_MARGIN_PX;
+
+                          return (
                             <div
                               key={booking.id}
                               onClick={() => handleBookingClick(booking)}
-                              className={`mt-1 cursor-pointer rounded p-1 text-xs ${statusColors[booking.status]}`}
+                              className={`absolute left-1 right-1 cursor-pointer rounded p-2 text-xs shadow-sm ${statusColors[booking.status]}`}
                               style={{
-                                height: `${booking.durationHours * MINUTES_PER_HOUR - BOOKING_CARD_PADDING}px`,
+                                top: `${topPosition + BOOKING_MARGIN_PX / 2}px`,
+                                height: `${height}px`,
+                                zIndex: 5,
                               }}
                             >
                               <div className="font-semibold">
@@ -383,13 +436,16 @@ export default function CalendarPage() {
                                   MAX_ACTION_PREVIEW_LENGTH,
                                 )}
                               </div>
+                              <div className="mt-1 text-xs opacity-75">
+                                {startHour}:00 ({booking.durationHours}h)
+                              </div>
                             </div>
-                          ))}
-                        </div>
-                      );
-                    })}
-                  </div>
-                ))}
+                          );
+                        })}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </div>
