@@ -38,6 +38,7 @@ export default function CalendarPage() {
     setCurrentMechanicId,
     bookings,
     updateBooking,
+    showToast,
   } = useApp();
   const [currentWeekStart, setCurrentWeekStart] = useState<Date>(() =>
     startOfWeek(new Date(), { weekStartsOn: 1 }),
@@ -135,6 +136,7 @@ export default function CalendarPage() {
 
     updateBooking(updatedBooking);
     setDraggedBookingId(null);
+    showToast("Planerat");
   };
 
   const handleBookingClick = (booking: Booking) => {

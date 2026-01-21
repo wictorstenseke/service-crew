@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useApp } from "../context/AppContext";
 import { generateId } from "../utils/idGenerator";
+import { useEscapeKey } from "../hooks/useEscapeKey";
 import type { VehicleType, Booking } from "../types";
 
 interface CreateJobCardModalProps {
@@ -24,7 +25,7 @@ export default function CreateJobCardModal({
   isOpen,
   onClose,
 }: CreateJobCardModalProps) {
-  const { addBooking } = useApp();
+  const { addBooking, showToast } = useApp();
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [selectedVehicleType, setSelectedVehicleType] =
@@ -63,6 +64,7 @@ export default function CreateJobCardModal({
     setAction("");
     setDurationHours(1);
 
+    showToast("Jobbkort skapat");
     onClose();
   };
 
@@ -75,6 +77,8 @@ export default function CreateJobCardModal({
     setDurationHours(1);
     onClose();
   };
+
+  useEscapeKey(handleCancel, isOpen);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">

@@ -1,6 +1,7 @@
 // Login Modal - PIN numpad and password entry for mechanic login
 import { useState } from "react";
 import { useApp } from "../context/AppContext";
+import { useEscapeKey } from "../hooks/useEscapeKey";
 import type { Mechanic } from "../types";
 
 interface LoginModalProps {
@@ -44,6 +45,8 @@ export default function LoginModal({
   const [password, setPassword] = useState("");
   const [showError, setShowError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+
+  useEscapeKey(onClose, isOpen);
 
   if (!isOpen || !mechanic) return null;
 

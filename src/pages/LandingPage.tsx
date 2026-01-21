@@ -2,12 +2,13 @@
 import { useState } from "react";
 import { useApp } from "../context/AppContext";
 import { generateId } from "../utils/idGenerator";
+import { useEscapeKey } from "../hooks/useEscapeKey";
 import type { Workshop, Mechanic } from "../types";
 import AddMechanicModal from "../components/AddMechanicModal";
 import LoginModal from "../components/LoginModal";
 
 export default function LandingPage() {
-  const { workshop, mechanics, setWorkshop, resetWorkshop } = useApp();
+  const { workshop, mechanics, setWorkshop, resetWorkshop, showToast } = useApp();
   const [showCreateWorkshop, setShowCreateWorkshop] = useState(false);
   const [showAddMechanic, setShowAddMechanic] = useState(false);
   const [workshopName, setWorkshopName] = useState("");
@@ -15,6 +16,13 @@ export default function LandingPage() {
     null,
   );
   const [showLogin, setShowLogin] = useState(false);
+
+  useEscapeKey(() => {
+    if (showCreateWorkshop) {
+      setShowCreateWorkshop(false);
+      setWorkshopName("");
+    }
+  }, showCreateWorkshop);
 
   const handleCreateWorkshop = () => {
     if (!workshopName.trim()) return;
@@ -29,6 +37,7 @@ export default function LandingPage() {
     setWorkshop(newWorkshop);
     setWorkshopName("");
     setShowCreateWorkshop(false);
+    showToast("Ny verkstad skapad");
   };
 
   if (!workshop) {

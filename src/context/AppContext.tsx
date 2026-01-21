@@ -3,6 +3,12 @@ import { createContext, useContext, useState } from "react";
 import type { AppState, Workshop, Mechanic, Booking } from "../types";
 import { storageService } from "../services/StorageService";
 
+export interface ToastMessage {
+  id: string;
+  message: string;
+  type: "info" | "error" | "success";
+}
+
 interface AppContextType extends AppState {
   setWorkshop: (workshop: Workshop) => void;
   addMechanic: (mechanic: Mechanic) => void;
@@ -15,6 +21,9 @@ interface AppContextType extends AppState {
   setSelectedWorkday: (date: string | null) => void;
   resetWorkshop: () => void;
   refreshState: () => void;
+  showToast: (message: string, type?: "info" | "error" | "success") => void;
+  toasts: ToastMessage[];
+  removeToast: (id: string) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -23,9 +32,19 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<AppState>(() =>
     storageService.loadState(),
   );
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
   const refreshState = () => {
     setState(storageService.loadState());
+  };
+
+  const showToast = (message: string, type: "info" | "error" | "success" = "success") => {
+    const id = `toast-${Date.now()}-${Math.random()}`;
+    setToasts((prev) => [...prev, { id, message, type }]);
+  };
+
+  const removeToast = (id: string) => {
+    setToasts((prev) => prev.filter((toast) => toast.id !== id));
   };
 
   const setWorkshop = (workshop: Workshop) => {
@@ -91,6 +110,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setSelectedWorkday,
     resetWorkshop,
     refreshState,
+    showToast,
+    toasts,
+    removeToast,
   };
 
   return (

@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useApp } from "../context/AppContext";
 import { generateId } from "../utils/idGenerator";
+import { useEscapeKey } from "../hooks/useEscapeKey";
 import type { Mechanic, LoginMethod } from "../types";
 
 interface AddMechanicModalProps {
@@ -13,7 +14,7 @@ export default function AddMechanicModal({
   isOpen,
   onClose,
 }: AddMechanicModalProps) {
-  const { addMechanic } = useApp();
+  const { addMechanic, showToast } = useApp();
   const [name, setName] = useState("");
   const [loginMethod, setLoginMethod] = useState<LoginMethod>("PIN");
   const [credential, setCredential] = useState("");
@@ -42,6 +43,7 @@ export default function AddMechanicModal({
     setName("");
     setCredential("");
     setLoginMethod("PIN");
+    showToast("Mekaniker tillagd");
     onClose();
   };
 
@@ -51,6 +53,8 @@ export default function AddMechanicModal({
     setLoginMethod("PIN");
     onClose();
   };
+
+  useEscapeKey(handleClose, isOpen);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
