@@ -2,6 +2,14 @@
 
 [← Tillbaka till översikt](00-overview.md)
 
+## Implementation Status
+- [x] Status flow implemented (Ej planerad → Planerad → Pågår → Klar → Hämtad)
+- [x] Context menu in booking details modal
+- [x] Status selection UI
+- [x] Mechanic selection UI
+- [x] Validation: mechanic required for Pågår/Klar/Hämtad
+- [x] Status-based color coding for booking cards
+
 ---
 
 ## Statusflöde

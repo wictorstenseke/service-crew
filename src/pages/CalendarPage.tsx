@@ -276,9 +276,7 @@ export default function CalendarPage() {
                           onDrop={() => handleDrop(day, hour)}
                           className="relative min-h-[60px] rounded border border-gray-200 bg-white p-1 transition hover:border-blue-400 hover:bg-blue-50"
                         >
-                          <div className="text-xs text-gray-400">
-                            {hour}:00
-                          </div>
+                          <div className="text-xs text-gray-400">{hour}:00</div>
                           {slotBookings.map((booking) => (
                             <div
                               key={booking.id}

@@ -2,6 +2,16 @@
 
 [← Tillbaka till översikt](00-overview.md)
 
+## Implementation Status
+- [x] CalendarPage component created
+- [x] Week view layout (Monday-Sunday)
+- [x] Time slots 07:00-17:00 (whole hours only)
+- [x] Week navigation (previous/next/today)
+- [x] Selected workday ("IDAG") functionality with visual highlight
+- [x] Day header click to set active workday
+- [x] Unplanned jobs column (left of Monday)
+- [x] Integration with date-fns library
+
 ---
 
 ## Kalender – veckovy

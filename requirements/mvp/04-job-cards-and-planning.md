@@ -2,6 +2,18 @@
 
 [← Tillbaka till översikt](00-overview.md)
 
+## Implementation Status
+- [x] Create job card modal component
+- [x] Customer name and phone fields
+- [x] Vehicle type selection (pills)
+- [x] Action textarea
+- [x] Duration selector (+ / -)
+- [x] Job card created as "Ej planerad"
+- [x] Drag & drop from unplanned column to calendar
+- [x] Visual feedback during drag
+- [x] Status change to "Planerad" on drop
+- [x] Job cards displayed with proper sizing based on duration
+
 ---
 
 ## Skapa jobbkort (Steg A)
