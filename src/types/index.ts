@@ -22,15 +22,7 @@ export interface Customer {
   phone: string;
 }
 
-export type VehicleType =
-  | "CYKEL"
-  | "MOPED"
-  | "MOTORCYKEL"
-  | "BIL"
-  | "LASTBIL"
-  | "BUSS"
-  | "TRAKTOR"
-  | "ANNAT";
+export type VehicleType = string; // Allows default types and custom types
 
 export type BookingStatus =
   | "EJ_PLANERAD"

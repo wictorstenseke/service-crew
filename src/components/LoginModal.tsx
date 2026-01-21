@@ -42,15 +42,12 @@ export default function LoginModal({
 }: LoginModalProps) {
   const { setCurrentMechanicId } = useApp();
   const [pin, setPin] = useState("");
-  const [password, setPassword] = useState("");
   const [showError, setShowError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
   useEscapeKey(onClose, isOpen);
 
   if (!isOpen || !mechanic) return null;
-
-  const isPinMethod = mechanic.loginMethod === "PIN";
 
   const handlePinClick = (digit: string) => {
     if (pin.length < 4) {
@@ -67,28 +64,12 @@ export default function LoginModal({
       // Success!
       setCurrentMechanicId(mechanic.id);
       setPin("");
-      setPassword("");
       onSuccess();
     } else {
       // Wrong code - show playful error
       setErrorMessage(getRandomErrorMessage());
       setShowError(true);
       setPin("");
-    }
-  };
-
-  const handlePasswordSubmit = () => {
-    if (password === mechanic.credential) {
-      // Success!
-      setCurrentMechanicId(mechanic.id);
-      setPin("");
-      setPassword("");
-      onSuccess();
-    } else {
-      // Wrong code - show playful error
-      setErrorMessage(getRandomErrorMessage());
-      setShowError(true);
-      setPassword("");
     }
   };
 
@@ -96,14 +77,12 @@ export default function LoginModal({
     // Bypass - allow login anyway
     setCurrentMechanicId(mechanic.id);
     setPin("");
-    setPassword("");
     setShowError(false);
     onSuccess();
   };
 
   const handleClose = () => {
     setPin("");
-    setPassword("");
     setShowError(false);
     onClose();
   };
@@ -139,85 +118,53 @@ export default function LoginModal({
         <h2 className="mb-2 text-2xl font-bold">Logga in</h2>
         <p className="mb-4 text-gray-600">{mechanic.name}</p>
 
-        {isPinMethod ? (
-          <>
-            <div className="mb-6">
-              <p className="mb-3 text-center text-sm text-gray-600">
-                Ange din 4-siffriga kod
-              </p>
-              <div className="mb-4 flex justify-center gap-2">
-                {[0, 1, 2, 3].map((index) => (
-                  <div
-                    key={index}
-                    className="flex h-12 w-12 items-center justify-center rounded-md border-2 border-gray-300 bg-gray-50 text-2xl font-bold"
-                  >
-                    {pin[index] ? "•" : ""}
-                  </div>
-                ))}
+        <div className="mb-6">
+          <p className="mb-3 text-center text-sm text-gray-600">
+            Ange din 4-siffriga kod
+          </p>
+          <div className="mb-4 flex justify-center gap-2">
+            {[0, 1, 2, 3].map((index) => (
+              <div
+                key={index}
+                className="flex h-12 w-12 items-center justify-center rounded-md border-2 border-gray-300 bg-gray-50 text-2xl font-bold"
+              >
+                {pin[index] ? "•" : ""}
               </div>
-            </div>
+            ))}
+          </div>
+        </div>
 
-            {/* Numpad */}
-            <div className="mb-4 grid grid-cols-3 gap-2">
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((digit) => (
-                <button
-                  key={digit}
-                  onClick={() => handlePinClick(digit.toString())}
-                  className="rounded-lg border-2 border-gray-300 bg-white py-4 text-2xl font-bold transition hover:bg-gray-50 active:bg-gray-100"
-                >
-                  {digit}
-                </button>
-              ))}
-              <button
-                onClick={handlePinBackspace}
-                className="rounded-lg border-2 border-gray-300 bg-white py-4 text-lg font-semibold transition hover:bg-gray-50 active:bg-gray-100"
-              >
-                ←
-              </button>
-              <button
-                onClick={() => handlePinClick("0")}
-                className="rounded-lg border-2 border-gray-300 bg-white py-4 text-2xl font-bold transition hover:bg-gray-50 active:bg-gray-100"
-              >
-                0
-              </button>
-              <button
-                onClick={handlePinSubmit}
-                disabled={pin.length !== 4}
-                className="rounded-lg bg-green-600 py-4 text-lg font-semibold text-white transition hover:bg-green-700 disabled:bg-gray-300"
-              >
-                OK
-              </button>
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="mb-6">
-              <label className="mb-2 block text-sm font-semibold text-gray-700">
-                Lösenord
-              </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    handlePasswordSubmit();
-                  }
-                }}
-                placeholder="Ange ditt lösenord"
-                className="w-full rounded-md border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
-                autoFocus
-              />
-            </div>
-
+        {/* Numpad */}
+        <div className="mb-4 grid grid-cols-3 gap-2">
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((digit) => (
             <button
-              onClick={handlePasswordSubmit}
-              className="mb-3 w-full rounded-lg bg-green-600 px-4 py-3 font-semibold text-white hover:bg-green-700"
+              key={digit}
+              onClick={() => handlePinClick(digit.toString())}
+              className="rounded-lg border-2 border-gray-300 bg-white py-4 text-2xl font-bold transition hover:bg-gray-50 active:bg-gray-100"
             >
-              Logga in
+              {digit}
             </button>
-          </>
-        )}
+          ))}
+          <button
+            onClick={handlePinBackspace}
+            className="rounded-lg border-2 border-gray-300 bg-white py-4 text-lg font-semibold transition hover:bg-gray-50 active:bg-gray-100"
+          >
+            ←
+          </button>
+          <button
+            onClick={() => handlePinClick("0")}
+            className="rounded-lg border-2 border-gray-300 bg-white py-4 text-2xl font-bold transition hover:bg-gray-50 active:bg-gray-100"
+          >
+            0
+          </button>
+          <button
+            onClick={handlePinSubmit}
+            disabled={pin.length !== 4}
+            className="rounded-lg bg-green-600 py-4 text-lg font-semibold text-white transition hover:bg-green-700 disabled:bg-gray-300"
+          >
+            OK
+          </button>
+        </div>
 
         <button
           onClick={handleClose}

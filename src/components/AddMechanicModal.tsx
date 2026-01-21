@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useApp } from "../context/AppContext";
 import { generateId } from "../utils/idGenerator";
 import { useEscapeKey } from "../hooks/useEscapeKey";
-import type { Mechanic, LoginMethod } from "../types";
+import type { Mechanic } from "../types";
 
 interface AddMechanicModalProps {
   isOpen: boolean;
@@ -16,13 +16,11 @@ export default function AddMechanicModal({
 }: AddMechanicModalProps) {
   const { addMechanic, showToast } = useApp();
   const [name, setName] = useState("");
-  const [loginMethod, setLoginMethod] = useState<LoginMethod>("PIN");
   const [credential, setCredential] = useState("");
 
   const handleClose = () => {
     setName("");
     setCredential("");
-    setLoginMethod("PIN");
     onClose();
   };
 
@@ -35,7 +33,7 @@ export default function AddMechanicModal({
     if (!credential.trim()) return;
 
     // Validate PIN is 4 digits
-    if (loginMethod === "PIN" && credential.length !== 4) {
+    if (credential.length !== 4) {
       alert("PIN måste vara 4 siffror");
       return;
     }
@@ -43,7 +41,7 @@ export default function AddMechanicModal({
     const newMechanic: Mechanic = {
       id: generateId(),
       name: name.trim(),
-      loginMethod,
+      loginMethod: "PIN",
       credential: credential.trim(),
       createdAt: new Date().toISOString(),
     };
@@ -51,7 +49,6 @@ export default function AddMechanicModal({
     addMechanic(newMechanic);
     setName("");
     setCredential("");
-    setLoginMethod("PIN");
     showToast("Mekaniker tillagd");
     onClose();
   };
@@ -75,67 +72,23 @@ export default function AddMechanicModal({
           />
         </div>
 
-        <div className="mb-4">
-          <label className="mb-2 block text-sm font-semibold text-gray-700">
-            Inloggningsmetod
-          </label>
-          <div className="flex gap-2">
-            <button
-              onClick={() => {
-                setLoginMethod("PIN");
-                setCredential("");
-              }}
-              className={`flex-1 rounded-lg px-4 py-2 font-semibold transition ${
-                loginMethod === "PIN"
-                  ? "bg-blue-600 text-white"
-                  : "border border-gray-300 text-gray-700 hover:bg-gray-50"
-              }`}
-            >
-              PIN (4 siffror)
-            </button>
-            <button
-              onClick={() => {
-                setLoginMethod("PASSWORD");
-                setCredential("");
-              }}
-              className={`flex-1 rounded-lg px-4 py-2 font-semibold transition ${
-                loginMethod === "PASSWORD"
-                  ? "bg-blue-600 text-white"
-                  : "border border-gray-300 text-gray-700 hover:bg-gray-50"
-              }`}
-            >
-              Lösenord
-            </button>
-          </div>
-        </div>
-
         <div className="mb-6">
           <label className="mb-2 block text-sm font-semibold text-gray-700">
-            {loginMethod === "PIN" ? "PIN-kod" : "Lösenord"}
+            PIN-kod
           </label>
-          {loginMethod === "PIN" ? (
-            <input
-              type="text"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              maxLength={4}
-              value={credential}
-              onChange={(e) => {
-                const value = e.target.value.replace(/[^0-9]/g, "");
-                setCredential(value);
-              }}
-              placeholder="Ange 4 siffror"
-              className="w-full rounded-md border border-gray-300 px-4 py-2 text-center text-2xl tracking-widest focus:border-blue-500 focus:outline-none"
-            />
-          ) : (
-            <input
-              type="password"
-              value={credential}
-              onChange={(e) => setCredential(e.target.value)}
-              placeholder="Ange lösenord"
-              className="w-full rounded-md border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
-            />
-          )}
+          <input
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            maxLength={4}
+            value={credential}
+            onChange={(e) => {
+              const value = e.target.value.replace(/[^0-9]/g, "");
+              setCredential(value);
+            }}
+            placeholder="Ange 4 siffror"
+            className="w-full rounded-md border border-gray-300 px-4 py-2 text-center text-2xl tracking-widest focus:border-blue-500 focus:outline-none"
+          />
         </div>
 
         <div className="flex gap-2">

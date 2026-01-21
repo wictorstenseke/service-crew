@@ -140,7 +140,7 @@ export default function LandingPage() {
             </div>
           ) : (
             <>
-              <div className="mb-6 grid grid-cols-2 gap-4">
+              <div className="mb-6 flex flex-wrap justify-center gap-4">
                 {mechanics.map((mechanic) => (
                   <button
                     key={mechanic.id}
@@ -148,7 +148,11 @@ export default function LandingPage() {
                       setSelectedMechanic(mechanic);
                       setShowLogin(true);
                     }}
-                    className="rounded-lg border-2 border-gray-300 bg-white p-6 text-center font-semibold transition hover:border-blue-500 hover:bg-blue-50"
+                    className={`rounded-lg border-2 border-gray-300 bg-white p-6 text-center font-semibold transition hover:border-blue-500 hover:bg-blue-50 ${
+                      mechanics.length === 1
+                        ? "w-full max-w-xs"
+                        : "w-full max-w-[calc(50%-0.5rem)]"
+                    }`}
                   >
                     {mechanic.name}
                   </button>

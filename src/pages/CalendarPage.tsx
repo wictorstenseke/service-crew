@@ -42,6 +42,7 @@ export default function CalendarPage() {
     bookings,
     updateBooking,
     showToast,
+    mechanics,
   } = useApp();
   const [currentWeekStart, setCurrentWeekStart] = useState<Date>(() =>
     startOfWeek(new Date(), { weekStartsOn: 1 }),
@@ -205,18 +206,22 @@ export default function CalendarPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      {/* Header */}
-      <header className="bg-white shadow">
-        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-gray-900">Kalender</h1>
-            <div className="flex gap-2">
+    <div className="min-h-screen bg-gray-100 relative">
+      {/* Main content */}
+      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-4">
+        {/* Week navigation */}
+        <div className="mb-4 flex items-center gap-4">
+          {/* Spacer to match unplanned column width */}
+          <div className="w-48 flex-shrink-0"></div>
+          {/* Calendar-aligned navigation */}
+          <div className="flex flex-1 items-center justify-between" style={{ paddingLeft: "0px" }}>
+            {/* Left side: Previous week + Today */}
+            <div className="flex items-center gap-4">
               <button
-                onClick={() => setShowCreateJobCard(true)}
-                className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
+                onClick={goToPreviousWeek}
+                className="rounded-lg bg-white px-4 py-2 shadow hover:bg-gray-50"
               >
-                + Skapa jobbkort
+                ← Föregående vecka
               </button>
               <button
                 onClick={goToToday}
@@ -224,44 +229,33 @@ export default function CalendarPage() {
               >
                 Idag
               </button>
-              <button
-                onClick={() => setCurrentMechanicId(null)}
-                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
-              >
-                Logga ut
-              </button>
             </div>
+            {/* Center: Date */}
+            <span className="font-medium text-gray-700">
+              {format(currentWeekStart, "d MMM", { locale: sv })} -{" "}
+              {format(weekDays[6], "d MMM yyyy", { locale: sv })}
+            </span>
+            {/* Right side: Next week */}
+            <button
+              onClick={goToNextWeek}
+              className="rounded-lg bg-white px-4 py-2 shadow hover:bg-gray-50"
+            >
+              Nästa vecka →
+            </button>
           </div>
-        </div>
-      </header>
-
-      {/* Main content */}
-      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        {/* Week navigation */}
-        <div className="mb-4 flex items-center justify-between">
-          <button
-            onClick={goToPreviousWeek}
-            className="rounded-lg bg-white px-4 py-2 shadow hover:bg-gray-50"
-          >
-            ← Föregående vecka
-          </button>
-          <span className="font-medium text-gray-700">
-            {format(currentWeekStart, "d MMM", { locale: sv })} -{" "}
-            {format(weekDays[6], "d MMM yyyy", { locale: sv })}
-          </span>
-          <button
-            onClick={goToNextWeek}
-            className="rounded-lg bg-white px-4 py-2 shadow hover:bg-gray-50"
-          >
-            Nästa vecka →
-          </button>
         </div>
 
         {/* Calendar grid */}
         <div className="flex gap-4">
           {/* Unplanned jobs column */}
-          <div className="w-48 flex-shrink-0">
-            <div className="rounded-lg bg-orange-50 p-4 shadow">
+          <div className="flex w-48 flex-shrink-0 flex-col">
+            <button
+              onClick={() => setShowCreateJobCard(true)}
+              className="mb-2 w-full rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
+            >
+              + Skapa jobbkort
+            </button>
+            <div className="flex-1 rounded-lg bg-orange-50 p-4 shadow">
               <h3 className="mb-3 text-sm font-semibold text-orange-900">
                 Ej planerade
               </h3>
@@ -299,6 +293,12 @@ export default function CalendarPage() {
                 )}
               </div>
             </div>
+            <button
+              onClick={() => setCurrentMechanicId(null)}
+              className="mt-4 w-full rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+            >
+              Logga ut
+            </button>
           </div>
 
           {/* Week view */}
@@ -313,7 +313,7 @@ export default function CalendarPage() {
                 }}
               >
                 {/* Empty cell for time axis corner */}
-                <div className="bg-white"></div>
+                <div className="border-b border-r border-gray-200 bg-white"></div>
 
                 {/* Day headers aligned with columns */}
                 {weekDays.map((day) => {
@@ -427,6 +427,9 @@ export default function CalendarPage() {
                           booking.durationHours * HOUR_HEIGHT_PX -
                           BOOKING_MARGIN_PX;
                         const isDragging = draggedBookingId === booking.id;
+                        const assignedMechanic = booking.mechanicId
+                          ? mechanics.find((m) => m.id === booking.mechanicId)
+                          : null;
 
                         return (
                           <div
@@ -438,7 +441,7 @@ export default function CalendarPage() {
                             }}
                             onDragEnd={handleDragEnd}
                             onClick={() => handleBookingClick(booking)}
-                            className={`absolute left-1 right-1 cursor-move rounded-lg p-2 text-xs shadow-md transition-all hover:shadow-lg ${statusColors[booking.status]} ${
+                            className={`absolute left-1 right-1 cursor-move rounded-lg p-2 text-xs shadow-md transition-all hover:shadow-lg flex flex-col ${statusColors[booking.status]} ${
                               isDragging ? "opacity-50" : ""
                             }`}
                             style={{
@@ -447,18 +450,21 @@ export default function CalendarPage() {
                               zIndex: isDragging ? 1 : 5,
                             }}
                           >
-                            <div className="font-semibold">
-                              {booking.vehicleType}
+                            <div className="flex-1">
+                              <div className="font-semibold">
+                                {booking.vehicleType}
+                              </div>
+                              <div className="break-words leading-tight">
+                                {booking.action}
+                              </div>
                             </div>
-                            <div className="truncate">
-                              {booking.action.substring(
-                                0,
-                                MAX_ACTION_PREVIEW_LENGTH,
-                              )}
-                            </div>
-                            <div className="mt-1 text-xs opacity-75">
-                              {startHour}:00 ({booking.durationHours}h)
-                            </div>
+                            {assignedMechanic && (
+                              <div className="mt-auto pt-1">
+                                <span className="inline-block rounded bg-white bg-opacity-70 px-2 py-0.5 text-xs font-medium">
+                                  {assignedMechanic.name}
+                                </span>
+                              </div>
+                            )}
                           </div>
                         );
                       })}

@@ -148,6 +148,36 @@ class StorageService {
   hasWorkshop(): boolean {
     return this.getWorkshop() !== null;
   }
+
+  // Custom vehicle types operations
+  getCustomVehicleTypes(): string[] {
+    try {
+      const stored = localStorage.getItem("service-crew-custom-vehicle-types");
+      if (!stored) {
+        return [];
+      }
+      return JSON.parse(stored);
+    } catch (error) {
+      console.error("Error loading custom vehicle types:", error);
+      return [];
+    }
+  }
+
+  saveCustomVehicleType(type: string): void {
+    try {
+      const customTypes = this.getCustomVehicleTypes();
+      const upperType = type.trim().toUpperCase();
+      if (!customTypes.includes(upperType)) {
+        customTypes.push(upperType);
+        localStorage.setItem(
+          "service-crew-custom-vehicle-types",
+          JSON.stringify(customTypes),
+        );
+      }
+    } catch (error) {
+      console.error("Error saving custom vehicle type:", error);
+    }
+  }
 }
 
 // Export singleton instance

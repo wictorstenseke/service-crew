@@ -1,5 +1,5 @@
 // Booking Details Modal - Shows full job information with status management
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useApp } from "../context/AppContext";
 import { useEscapeKey } from "../hooks/useEscapeKey";
 import Toast from "./Toast";
@@ -33,7 +33,6 @@ export default function BookingDetailsModal({
   onClose,
 }: BookingDetailsModalProps) {
   const { mechanics, updateBooking, showToast } = useApp();
-  const [showContextMenu, setShowContextMenu] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<BookingStatus | null>(
     null,
   );
@@ -42,8 +41,16 @@ export default function BookingDetailsModal({
   );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  // Initialize state from booking when modal opens
+  useEffect(() => {
+    if (isOpen && booking) {
+      setSelectedStatus(booking.status);
+      setSelectedMechanicId(booking.mechanicId || null);
+      setErrorMessage(null);
+    }
+  }, [isOpen, booking]);
+
   const handleClose = () => {
-    setShowContextMenu(false);
     setErrorMessage(null);
     onClose();
   };
@@ -51,16 +58,6 @@ export default function BookingDetailsModal({
   useEscapeKey(handleClose, isOpen);
 
   if (!isOpen || !booking) return null;
-
-  const assignedMechanic = booking.mechanicId
-    ? mechanics.find((m) => m.id === booking.mechanicId)
-    : null;
-
-  const handleOpenContextMenu = () => {
-    setSelectedStatus(booking.status);
-    setSelectedMechanicId(booking.mechanicId || null);
-    setShowContextMenu(true);
-  };
 
   const handleSaveChanges = () => {
     if (!selectedStatus) return;
@@ -82,7 +79,6 @@ export default function BookingDetailsModal({
     };
 
     updateBooking(updatedBooking);
-    setShowContextMenu(false);
     setErrorMessage(null);
 
     // Show success toast based on status
@@ -99,102 +95,58 @@ export default function BookingDetailsModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-      <div className="w-full max-w-2xl rounded-lg bg-white p-6 shadow-xl">
-        {!showContextMenu ? (
-          // Details view
-          <>
-            <div className="mb-6 flex items-start justify-between">
-              <h2 className="text-2xl font-bold text-gray-800">Jobbkort</h2>
-              <span
-                className={`rounded-full px-4 py-1 text-sm font-medium ${statusColors[booking.status]}`}
-              >
-                {statusLabels[booking.status]}
-              </span>
-            </div>
-
-            <div className="space-y-4">
-              {/* Vehicle type */}
-              <div>
-                <h3 className="text-sm font-medium text-gray-600">
-                  Fordonstyp
-                </h3>
-                <p className="text-lg font-semibold text-gray-900">
-                  {booking.vehicleType}
-                </p>
-              </div>
-
-              {/* Customer */}
-              <div>
-                <h3 className="text-sm font-medium text-gray-600">Kund</h3>
-                <p className="text-lg text-gray-900">{booking.customerName}</p>
-                <p className="text-sm text-gray-600">{booking.customerPhone}</p>
-              </div>
-
-              {/* Action */}
-              <div>
-                <h3 className="text-sm font-medium text-gray-600">Åtgärd</h3>
-                <p className="text-gray-900">{booking.action}</p>
-              </div>
-
-              {/* Duration */}
-              <div>
-                <h3 className="text-sm font-medium text-gray-600">Tid</h3>
-                <p className="text-lg text-gray-900">
-                  {booking.durationHours}h
-                </p>
-              </div>
-
-              {/* Scheduled time */}
-              {booking.scheduledDate && booking.scheduledStartHour && (
-                <div>
-                  <h3 className="text-sm font-medium text-gray-600">
-                    Planerad tid
-                  </h3>
-                  <p className="text-lg text-gray-900">
-                    {booking.scheduledDate} kl {booking.scheduledStartHour}:00
-                  </p>
-                </div>
-              )}
-
-              {/* Assigned mechanic */}
-              <div>
-                <h3 className="text-sm font-medium text-gray-600">Mekaniker</h3>
-                <p className="text-lg text-gray-900">
-                  {assignedMechanic ? assignedMechanic.name : "Ingen vald"}
-                </p>
+      <div className="w-full max-w-4xl rounded-lg bg-white p-6 shadow-xl">
+        {/* Header */}
+        <div className="mb-6 flex items-center justify-between gap-4">
+          <h2 className="text-2xl font-bold text-gray-800">Jobbkort</h2>
+          
+          {/* Mechanic buttons and Status dropdown - top right */}
+          <div className="flex flex-row gap-6 items-end">
+            {/* Mechanic selection buttons */}
+            <div className="text-left">
+              <label className="mb-2 block text-left text-sm font-medium text-gray-700">
+                Mekaniker
+              </label>
+              <div className="flex flex-wrap gap-2 justify-start">
+                <button
+                  onClick={() => setSelectedMechanicId(null)}
+                  className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
+                    selectedMechanicId === null
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                  }`}
+                >
+                  Ingen vald
+                </button>
+                {mechanics.map((mechanic) => (
+                  <button
+                    key={mechanic.id}
+                    onClick={() => setSelectedMechanicId(mechanic.id)}
+                    className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
+                      selectedMechanicId === mechanic.id
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                    }`}
+                  >
+                    {mechanic.name}
+                  </button>
+                ))}
               </div>
             </div>
 
-            {/* Buttons */}
-            <div className="mt-6 flex gap-4">
-              <button
-                onClick={handleOpenContextMenu}
-                className="flex-1 rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-700"
-              >
-                Öppna meny
-              </button>
-              <button
-                onClick={handleClose}
-                className="rounded-lg bg-gray-200 px-6 py-3 font-semibold text-gray-700 transition hover:bg-gray-300"
-              >
-                Stäng
-              </button>
-            </div>
-          </>
-        ) : (
-          // Context menu
-          <>
-            <h2 className="mb-6 text-2xl font-bold text-gray-800">
-              Ändra status och mekaniker
-            </h2>
-
-            <div className="space-y-6">
-              {/* Status section */}
-              <div>
-                <h3 className="mb-3 text-sm font-medium text-gray-700">
-                  Status
-                </h3>
-                <div className="space-y-2">
+            {/* Status dropdown */}
+            <div className="text-left">
+              <label className="mb-2 block text-left text-sm font-medium text-gray-700">
+                Status
+              </label>
+              <div className="group relative">
+                <select
+                  value={selectedStatus || ""}
+                  onChange={(e) =>
+                    setSelectedStatus(e.target.value as BookingStatus)
+                  }
+                  className="w-full cursor-pointer appearance-none rounded-lg border border-gray-300 bg-white pl-4 pr-10 py-2 text-sm transition hover:border-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                >
                   {(
                     [
                       "EJ_PLANERAD",
@@ -204,71 +156,106 @@ export default function BookingDetailsModal({
                       "HAMTAD",
                     ] as BookingStatus[]
                   ).map((status) => (
-                    <button
-                      key={status}
-                      onClick={() => setSelectedStatus(status)}
-                      className={`w-full rounded-lg px-4 py-2 text-left transition ${
-                        selectedStatus === status
-                          ? "bg-blue-600 text-white"
-                          : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                      }`}
-                    >
+                    <option key={status} value={status}>
                       {statusLabels[status]}
-                    </button>
+                    </option>
                   ))}
-                </div>
-              </div>
-
-              {/* Mechanic section */}
-              <div>
-                <h3 className="mb-3 text-sm font-medium text-gray-700">
-                  Mekaniker
-                </h3>
-                <div className="space-y-2">
-                  <button
-                    onClick={() => setSelectedMechanicId(null)}
-                    className={`w-full rounded-lg px-4 py-2 text-left transition ${
-                      selectedMechanicId === null
-                        ? "bg-blue-600 text-white"
-                        : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                    }`}
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                  <svg
+                    className="h-4 w-4 text-gray-400 transition-colors group-hover:text-gray-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
                   >
-                    Ingen vald
-                  </button>
-                  {mechanics.map((mechanic) => (
-                    <button
-                      key={mechanic.id}
-                      onClick={() => setSelectedMechanicId(mechanic.id)}
-                      className={`w-full rounded-lg px-4 py-2 text-left transition ${
-                        selectedMechanicId === mechanic.id
-                          ? "bg-blue-600 text-white"
-                          : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                      }`}
-                    >
-                      {mechanic.name}
-                    </button>
-                  ))}
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
                 </div>
               </div>
             </div>
+          </div>
+        </div>
 
-            {/* Buttons */}
-            <div className="mt-6 flex gap-4">
-              <button
-                onClick={handleSaveChanges}
-                className="flex-1 rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-700"
-              >
-                Spara
-              </button>
-              <button
-                onClick={() => setShowContextMenu(false)}
-                className="rounded-lg bg-gray-200 px-6 py-3 font-semibold text-gray-700 transition hover:bg-gray-300"
-              >
-                Avbryt
-              </button>
-            </div>
-          </>
+        {/* Error message */}
+        {errorMessage && (
+          <div className="mb-6 rounded-md bg-red-50 p-3 text-sm text-red-600">
+            {errorMessage}
+          </div>
         )}
+
+
+        {/* Details section */}
+        <div className="space-y-6">
+          {/* Row 1: FORDONSTYP, Åtgärd */}
+          <div className="flex flex-col gap-6 md:flex-row md:items-start">
+            <div className="text-left">
+              <h3 className="mb-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
+                FORDONSTYP
+              </h3>
+              <p className="text-left text-lg font-semibold text-gray-900">
+                {booking.vehicleType}
+              </p>
+            </div>
+            <div className="text-left">
+              <h3 className="mb-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
+                Åtgärd
+              </h3>
+              <p className="text-left text-gray-900">{booking.action}</p>
+            </div>
+          </div>
+
+          {/* Row 2: Kund, Planerad tid, Tid */}
+          <div className="flex flex-col gap-6 md:flex-row md:items-start">
+            <div className="text-left">
+              <h3 className="mb-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
+                Kund
+              </h3>
+              <p className="text-left text-lg text-gray-900">{booking.customerName}</p>
+              <p className="text-left text-sm text-gray-600">{booking.customerPhone}</p>
+            </div>
+            <div className="text-left">
+              <h3 className="mb-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
+                Planerad tid
+              </h3>
+              {booking.scheduledDate && booking.scheduledStartHour ? (
+                <p className="text-left text-lg text-gray-900">
+                  {booking.scheduledDate} kl {booking.scheduledStartHour}:00
+                </p>
+              ) : (
+                <p className="text-left text-sm text-gray-500">Ej planerad</p>
+              )}
+            </div>
+            <div className="text-left">
+              <h3 className="mb-1 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
+                Tid
+              </h3>
+              <p className="text-left text-lg text-gray-900">
+                {booking.durationHours} timmar
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom buttons */}
+        <div className="mt-6 flex gap-4">
+          <button
+            onClick={handleSaveChanges}
+            className="flex-1 rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-700"
+          >
+            SPARA
+          </button>
+          <button
+            onClick={handleClose}
+            className="rounded-lg bg-gray-200 px-6 py-3 font-semibold text-gray-700 transition hover:bg-gray-300"
+          >
+            STÄNG
+          </button>
+        </div>
       </div>
 
       {/* Toast notification */}
