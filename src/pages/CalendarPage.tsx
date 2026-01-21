@@ -17,6 +17,11 @@ import {
 import { sv } from "date-fns/locale";
 import type { BookingStatus } from "../types";
 
+// Constants
+const MINUTES_PER_HOUR = 60;
+const BOOKING_CARD_PADDING = 10;
+const MAX_ACTION_PREVIEW_LENGTH = 20;
+
 // Status colors for booking cards
 const statusColors: Record<BookingStatus, string> = {
   EJ_PLANERAD: "bg-orange-200 hover:bg-orange-300",
@@ -283,14 +288,17 @@ export default function CalendarPage() {
                               onClick={() => handleBookingClick(booking)}
                               className={`mt-1 cursor-pointer rounded p-1 text-xs ${statusColors[booking.status]}`}
                               style={{
-                                height: `${booking.durationHours * 60 - 10}px`,
+                                height: `${booking.durationHours * MINUTES_PER_HOUR - BOOKING_CARD_PADDING}px`,
                               }}
                             >
                               <div className="font-semibold">
                                 {booking.vehicleType}
                               </div>
                               <div className="truncate">
-                                {booking.action.substring(0, 20)}
+                                {booking.action.substring(
+                                  0,
+                                  MAX_ACTION_PREVIEW_LENGTH,
+                                )}
                               </div>
                             </div>
                           ))}

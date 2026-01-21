@@ -1,6 +1,7 @@
 // Booking Details Modal - Shows full job information with status management
 import { useState } from "react";
 import { useApp } from "../context/AppContext";
+import Toast from "./Toast";
 import type { Booking, BookingStatus } from "../types";
 
 interface BookingDetailsModalProps {
@@ -38,6 +39,7 @@ export default function BookingDetailsModal({
   const [selectedMechanicId, setSelectedMechanicId] = useState<string | null>(
     null,
   );
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   if (!isOpen || !booking) return null;
 
@@ -59,7 +61,7 @@ export default function BookingDetailsModal({
       selectedStatus,
     );
     if (requiresMechanic && !selectedMechanicId) {
-      alert("Välj en mekaniker först");
+      setErrorMessage("Välj en mekaniker först");
       return;
     }
 
@@ -72,11 +74,13 @@ export default function BookingDetailsModal({
 
     updateBooking(updatedBooking);
     setShowContextMenu(false);
+    setErrorMessage(null);
     onClose();
   };
 
   const handleClose = () => {
     setShowContextMenu(false);
+    setErrorMessage(null);
     onClose();
   };
 
@@ -253,6 +257,15 @@ export default function BookingDetailsModal({
           </>
         )}
       </div>
+
+      {/* Toast notification */}
+      {errorMessage && (
+        <Toast
+          message={errorMessage}
+          type="error"
+          onClose={() => setErrorMessage(null)}
+        />
+      )}
     </div>
   );
 }
