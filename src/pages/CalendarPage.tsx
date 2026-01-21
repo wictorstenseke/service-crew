@@ -201,7 +201,7 @@ export default function CalendarPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gray-100">
       {/* Header */}
       <header className="bg-white shadow">
         <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
@@ -299,7 +299,8 @@ export default function CalendarPage() {
 
           {/* Week view */}
           <div className="flex-1 overflow-x-auto">
-            <div className="inline-block min-w-full">
+            {/* White container with shadow */}
+            <div className="rounded-lg bg-white shadow-md">
               {/* Unified grid layout for day headers and calendar */}
               <div
                 className="grid"
@@ -317,31 +318,33 @@ export default function CalendarPage() {
                     <div
                       key={day.toISOString()}
                       onClick={() => handleDayClick(day)}
-                      className={`cursor-pointer rounded-t-lg border-x border-t border-gray-300 p-3 text-center transition ${
+                      className={`cursor-pointer border-b border-r border-gray-200 p-3 text-center transition ${
                         isWorkday
-                          ? "bg-blue-600 text-white shadow-lg"
+                          ? "bg-blue-50 font-bold text-blue-600"
                           : "bg-white hover:bg-gray-50"
                       }`}
                     >
-                      <div className="text-xs font-medium">
+                      <div className="text-xs font-medium uppercase text-gray-600">
                         {format(day, "EEE", { locale: sv })}
                       </div>
                       <div className="text-lg font-bold">
                         {format(day, "d", { locale: sv })}
                       </div>
                       {isWorkday && (
-                        <div className="mt-1 text-xs font-semibold">IDAG</div>
+                        <div className="mt-1 text-xs font-semibold text-blue-600">
+                          IDAG
+                        </div>
                       )}
                     </div>
                   );
                 })}
 
                 {/* Time axis column */}
-                <div className="flex flex-col border-r border-gray-300 bg-white">
+                <div className="flex flex-col border-r border-gray-200 bg-gray-50">
                   {timeSlots.map((hour) => (
                     <div
                       key={hour}
-                      className="flex items-center justify-end border-b border-gray-200 pr-2 text-xs font-medium text-gray-500"
+                      className="flex items-start justify-end border-b border-gray-200 pr-2 pt-1 text-xs text-gray-500"
                       style={{ height: `${HOUR_HEIGHT_PX}px` }}
                     >
                       {hour}:00
@@ -358,7 +361,7 @@ export default function CalendarPage() {
                   return (
                     <div
                       key={day.toISOString()}
-                      className={`relative bg-white ${isLastDay ? "" : "border-r border-gray-300"}`}
+                      className={`relative bg-white ${isLastDay ? "" : "border-r border-gray-200"}`}
                     >
                       {/* Hour grid lines */}
                       {timeSlots.map((hour) => {
@@ -377,21 +380,21 @@ export default function CalendarPage() {
                             onDragOver={(e) => handleDragOver(e, day, hour)}
                             onDragLeave={handleDragLeave}
                             onDrop={() => handleDrop(day, hour)}
-                            className={`relative border-b border-gray-200 transition-colors ${
+                            className={`relative border-b border-gray-100 transition-colors ${
                               isDragging
                                 ? isHovered
                                   ? isValid
                                     ? "bg-green-50"
                                     : "bg-red-50"
-                                  : "bg-blue-50"
-                                : "hover:bg-blue-50"
+                                  : "bg-gray-50"
+                                : "hover:bg-gray-50"
                             }`}
                             style={{ height: `${HOUR_HEIGHT_PX}px` }}
                           >
                             {/* Drag preview: show placeholder for the full duration */}
                             {isDragging && isHovered && draggedBooking && (
                               <div
-                                className={`absolute left-1 right-1 rounded border-2 ${
+                                className={`absolute left-1 right-1 rounded-lg border-2 shadow-sm ${
                                   isValid
                                     ? "border-green-500 bg-green-100"
                                     : "border-red-500 bg-red-100"
@@ -424,7 +427,7 @@ export default function CalendarPage() {
                           <div
                             key={booking.id}
                             onClick={() => handleBookingClick(booking)}
-                            className={`absolute left-1 right-1 cursor-pointer rounded p-2 text-xs shadow-sm ${statusColors[booking.status]}`}
+                            className={`absolute left-1 right-1 cursor-pointer rounded-lg p-2 text-xs shadow-md transition-shadow hover:shadow-lg ${statusColors[booking.status]}`}
                             style={{
                               top: `${topPosition + BOOKING_MARGIN_PX / 2}px`,
                               height: `${height}px`,
