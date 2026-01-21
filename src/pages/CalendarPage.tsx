@@ -21,6 +21,7 @@ import type { BookingStatus } from "../types";
 const MINUTES_PER_HOUR = 60;
 const BOOKING_CARD_PADDING = 10;
 const MAX_ACTION_PREVIEW_LENGTH = 20;
+const WORK_END_HOUR = 17;
 
 // Status colors for booking cards
 const statusColors: Record<BookingStatus, string> = {
@@ -141,7 +142,7 @@ export default function CalendarPage() {
     // Check if there are any conflicting bookings in the time range
     for (let i = 0; i < duration; i++) {
       const checkHour = hour + i;
-      if (checkHour > 17) return false; // Out of working hours
+      if (checkHour > WORK_END_HOUR) return false; // Out of working hours
 
       const existingBookings = getBookingsForSlot(day, checkHour);
       if (existingBookings.length > 0) {
