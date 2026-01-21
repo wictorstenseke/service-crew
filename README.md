@@ -29,6 +29,16 @@ Fullständig MVP-specifikation finns i [requirements/mvp/](requirements/mvp/) ka
 - UX-principer och copy
 - Architecture decisions
 
+### Viktigt för utvecklare och AI-agenter
+
+🤖 **[Läs alltid requirements innan du börjar arbeta](.github/WORKFLOW_REQUIREMENTS.md)**
+
+Innan du startar någon uppgift, läs alltid relevanta dokument från `requirements/` katalogen. Se [arbetsflödesguiden](.github/WORKFLOW_REQUIREMENTS.md) för:
+- Vilka dokument ska läsas först
+- Hur man hittar rätt information snabbt
+- Checklista för att starta en uppgift
+- Integration med GitHub Copilot och AI-agenter
+
 ## Kom igång
 
 Coming soon – instruktioner för att köra projektet lokalt.
@@ -56,6 +66,9 @@ npm run dev
 
 ```
 service-crew/
+├── .github/             # GitHub och AI-agent instruktioner
+│   ├── agents/         # Agent-specifika konfigurationer
+│   └── ...             # Copilot instruktioner och workflows
 ├── requirements/        # Specifikation och dokumentation
 │   ├── mvp/            # MVP-krav och flöden
 │   ├── copy/           # Copy bank med all text
