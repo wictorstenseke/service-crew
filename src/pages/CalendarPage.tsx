@@ -345,14 +345,15 @@ export default function CalendarPage() {
                 </div>
 
                 {/* Day columns with time slots */}
-                {weekDays.map((day) => {
+                {weekDays.map((day, dayIndex) => {
                   const dayStr = format(day, "yyyy-MM-dd");
                   const dayBookings = getBookingsForDay(day);
+                  const isLastDay = dayIndex === weekDays.length - 1;
 
                   return (
                     <div
                       key={day.toISOString()}
-                      className="relative border-r border-gray-300 bg-white"
+                      className={`relative bg-white ${isLastDay ? "" : "border-r border-gray-300"}`}
                     >
                       {/* Hour grid lines */}
                       {timeSlots.map((hour) => {
@@ -372,7 +373,7 @@ export default function CalendarPage() {
                             onDragOver={(e) => handleDragOver(e, day, hour)}
                             onDragLeave={handleDragLeave}
                             onDrop={() => handleDrop(day, hour)}
-                            className={`relative border-b border-gray-300 transition-colors ${
+                            className={`relative border-b border-gray-200 transition-colors ${
                               isDragging
                                 ? isHovered
                                   ? isValid
