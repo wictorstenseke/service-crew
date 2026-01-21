@@ -19,6 +19,15 @@ export default function AddMechanicModal({
   const [loginMethod, setLoginMethod] = useState<LoginMethod>("PIN");
   const [credential, setCredential] = useState("");
 
+  const handleClose = () => {
+    setName("");
+    setCredential("");
+    setLoginMethod("PIN");
+    onClose();
+  };
+
+  useEscapeKey(handleClose, isOpen);
+
   if (!isOpen) return null;
 
   const handleSubmit = () => {
@@ -46,15 +55,6 @@ export default function AddMechanicModal({
     showToast("Mekaniker tillagd");
     onClose();
   };
-
-  const handleClose = () => {
-    setName("");
-    setCredential("");
-    setLoginMethod("PIN");
-    onClose();
-  };
-
-  useEscapeKey(handleClose, isOpen);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">

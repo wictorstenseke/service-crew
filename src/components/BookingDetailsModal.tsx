@@ -42,6 +42,14 @@ export default function BookingDetailsModal({
   );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const handleClose = () => {
+    setShowContextMenu(false);
+    setErrorMessage(null);
+    onClose();
+  };
+
+  useEscapeKey(handleClose, isOpen);
+
   if (!isOpen || !booking) return null;
 
   const assignedMechanic = booking.mechanicId
@@ -88,14 +96,6 @@ export default function BookingDetailsModal({
     showToast(statusMessages[selectedStatus]);
     onClose();
   };
-
-  const handleClose = () => {
-    setShowContextMenu(false);
-    setErrorMessage(null);
-    onClose();
-  };
-
-  useEscapeKey(handleClose, isOpen);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">

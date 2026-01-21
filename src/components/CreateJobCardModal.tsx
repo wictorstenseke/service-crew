@@ -33,6 +33,18 @@ export default function CreateJobCardModal({
   const [action, setAction] = useState("");
   const [durationHours, setDurationHours] = useState(1);
 
+  const handleCancel = () => {
+    // Reset form
+    setCustomerName("");
+    setCustomerPhone("");
+    setSelectedVehicleType("CYKEL");
+    setAction("");
+    setDurationHours(1);
+    onClose();
+  };
+
+  useEscapeKey(handleCancel, isOpen);
+
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -67,18 +79,6 @@ export default function CreateJobCardModal({
     showToast("Jobbkort skapat");
     onClose();
   };
-
-  const handleCancel = () => {
-    // Reset form
-    setCustomerName("");
-    setCustomerPhone("");
-    setSelectedVehicleType("CYKEL");
-    setAction("");
-    setDurationHours(1);
-    onClose();
-  };
-
-  useEscapeKey(handleCancel, isOpen);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
