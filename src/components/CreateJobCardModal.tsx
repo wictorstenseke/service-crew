@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useApp } from "../context/AppContext";
 import { generateId } from "../utils/idGenerator";
+import { useEscapeKey } from "../hooks/useEscapeKey";
 import type { VehicleType, Booking } from "../types";
 
 interface CreateJobCardModalProps {
@@ -24,13 +25,25 @@ export default function CreateJobCardModal({
   isOpen,
   onClose,
 }: CreateJobCardModalProps) {
-  const { addBooking } = useApp();
+  const { addBooking, showToast } = useApp();
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [selectedVehicleType, setSelectedVehicleType] =
     useState<VehicleType>("CYKEL");
   const [action, setAction] = useState("");
   const [durationHours, setDurationHours] = useState(1);
+
+  const handleCancel = () => {
+    // Reset form
+    setCustomerName("");
+    setCustomerPhone("");
+    setSelectedVehicleType("CYKEL");
+    setAction("");
+    setDurationHours(1);
+    onClose();
+  };
+
+  useEscapeKey(handleCancel, isOpen);
 
   if (!isOpen) return null;
 
@@ -63,16 +76,7 @@ export default function CreateJobCardModal({
     setAction("");
     setDurationHours(1);
 
-    onClose();
-  };
-
-  const handleCancel = () => {
-    // Reset form
-    setCustomerName("");
-    setCustomerPhone("");
-    setSelectedVehicleType("CYKEL");
-    setAction("");
-    setDurationHours(1);
+    showToast("Jobbkort skapat");
     onClose();
   };
 

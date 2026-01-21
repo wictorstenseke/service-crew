@@ -24,9 +24,9 @@ export default function Toast({ message, type = "info", onClose }: ToastProps) {
         : "bg-blue-500";
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 animate-fade-in">
+    <div className="animate-fade-in">
       <div
-        className={`${bgColor} rounded-lg px-6 py-4 text-white shadow-lg`}
+        className={`${bgColor} rounded-lg px-6 py-4 text-white shadow-lg transition-all`}
         role="alert"
       >
         <p className="font-medium">{message}</p>

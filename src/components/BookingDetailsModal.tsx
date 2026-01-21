@@ -1,6 +1,7 @@
 // Booking Details Modal - Shows full job information with status management
 import { useState } from "react";
 import { useApp } from "../context/AppContext";
+import { useEscapeKey } from "../hooks/useEscapeKey";
 import Toast from "./Toast";
 import type { Booking, BookingStatus } from "../types";
 
@@ -31,7 +32,7 @@ export default function BookingDetailsModal({
   isOpen,
   onClose,
 }: BookingDetailsModalProps) {
-  const { mechanics, updateBooking } = useApp();
+  const { mechanics, updateBooking, showToast } = useApp();
   const [showContextMenu, setShowContextMenu] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<BookingStatus | null>(
     null,
@@ -40,6 +41,14 @@ export default function BookingDetailsModal({
     null,
   );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const handleClose = () => {
+    setShowContextMenu(false);
+    setErrorMessage(null);
+    onClose();
+  };
+
+  useEscapeKey(handleClose, isOpen);
 
   if (!isOpen || !booking) return null;
 
@@ -75,12 +84,16 @@ export default function BookingDetailsModal({
     updateBooking(updatedBooking);
     setShowContextMenu(false);
     setErrorMessage(null);
-    onClose();
-  };
-
-  const handleClose = () => {
-    setShowContextMenu(false);
-    setErrorMessage(null);
+    
+    // Show success toast based on status
+    const statusMessages: Record<BookingStatus, string> = {
+      EJ_PLANERAD: "Status uppdaterad",
+      PLANERAD: "Inplanerat",
+      PAGAR: "Jobbet är igång",
+      KLAR: "Klart!",
+      HAMTAD: "Utlämnat",
+    };
+    showToast(statusMessages[selectedStatus]);
     onClose();
   };
 

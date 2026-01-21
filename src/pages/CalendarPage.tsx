@@ -21,6 +21,7 @@ import type { BookingStatus } from "../types";
 const MINUTES_PER_HOUR = 60;
 const BOOKING_CARD_PADDING = 10;
 const MAX_ACTION_PREVIEW_LENGTH = 20;
+const WORK_END_HOUR = 17;
 
 // Status colors for booking cards
 const statusColors: Record<BookingStatus, string> = {
@@ -38,12 +39,17 @@ export default function CalendarPage() {
     setCurrentMechanicId,
     bookings,
     updateBooking,
+    showToast,
   } = useApp();
   const [currentWeekStart, setCurrentWeekStart] = useState<Date>(() =>
     startOfWeek(new Date(), { weekStartsOn: 1 }),
   );
   const [showCreateJobCard, setShowCreateJobCard] = useState(false);
   const [draggedBookingId, setDraggedBookingId] = useState<string | null>(null);
+  const [hoveredSlot, setHoveredSlot] = useState<{
+    day: string;
+    hour: number;
+  } | null>(null);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [showBookingDetails, setShowBookingDetails] = useState(false);
 
@@ -112,10 +118,41 @@ export default function CalendarPage() {
 
   const handleDragEnd = () => {
     setDraggedBookingId(null);
+    setHoveredSlot(null);
   };
 
-  const handleDragOver = (e: React.DragEvent) => {
+  const handleDragOver = (e: React.DragEvent, day: Date, hour: number) => {
     e.preventDefault(); // Allow drop
+    const dayStr = format(day, "yyyy-MM-dd");
+    setHoveredSlot({ day: dayStr, hour });
+  };
+
+  const handleDragLeave = () => {
+    setHoveredSlot(null);
+  };
+
+  const isValidDropZone = (day: Date, hour: number): boolean => {
+    if (!draggedBookingId) return false;
+    
+    const booking = bookings.find((b) => b.id === draggedBookingId);
+    if (!booking) return false;
+
+    const duration = booking.durationHours;
+
+    // Check if there are any conflicting bookings in the time range
+    for (let i = 0; i < duration; i++) {
+      const checkHour = hour + i;
+      if (checkHour > WORK_END_HOUR) return false; // Out of working hours
+
+      const existingBookings = getBookingsForSlot(day, checkHour);
+      if (existingBookings.length > 0) {
+        // Allow if it's the same booking (dragging to same position)
+        const hasConflict = existingBookings.some((b) => b.id !== draggedBookingId);
+        if (hasConflict) return false;
+      }
+    }
+
+    return true;
   };
 
   const handleDrop = (day: Date, hour: number) => {
@@ -123,6 +160,14 @@ export default function CalendarPage() {
 
     const booking = bookings.find((b) => b.id === draggedBookingId);
     if (!booking) return;
+
+    // Check if drop is valid
+    if (!isValidDropZone(day, hour)) {
+      showToast("För tight, prova en annan tid", "error");
+      setDraggedBookingId(null);
+      setHoveredSlot(null);
+      return;
+    }
 
     // Update booking with scheduled date and time
     const updatedBooking = {
@@ -135,6 +180,8 @@ export default function CalendarPage() {
 
     updateBooking(updatedBooking);
     setDraggedBookingId(null);
+    setHoveredSlot(null);
+    showToast("Planerat");
   };
 
   const handleBookingClick = (booking: Booking) => {
@@ -221,7 +268,11 @@ export default function CalendarPage() {
                       onDragStart={() => handleDragStart(booking.id)}
                       onDragEnd={handleDragEnd}
                       onClick={() => handleBookingClick(booking)}
-                      className="cursor-move rounded-lg bg-orange-200 p-2 text-xs shadow-sm hover:shadow-md"
+                      className={`cursor-move rounded-lg p-2 text-xs shadow-sm transition-all hover:shadow-md ${
+                        draggedBookingId === booking.id
+                          ? "bg-orange-300 opacity-50"
+                          : "bg-orange-200"
+                      }`}
                     >
                       <div className="font-semibold">{booking.vehicleType}</div>
                       <div className="truncate text-orange-900">
@@ -274,14 +325,38 @@ export default function CalendarPage() {
                   <div key={day.toISOString()} className="space-y-1">
                     {timeSlots.map((hour) => {
                       const slotBookings = getBookingsForSlot(day, hour);
+                      const dayStr = format(day, "yyyy-MM-dd");
+                      const isHovered =
+                        hoveredSlot?.day === dayStr && hoveredSlot?.hour === hour;
+                      const isValid = isHovered && isValidDropZone(day, hour);
+                      const isDragging = draggedBookingId !== null;
+
                       return (
                         <div
                           key={hour}
-                          onDragOver={handleDragOver}
+                          onDragOver={(e) => handleDragOver(e, day, hour)}
+                          onDragLeave={handleDragLeave}
                           onDrop={() => handleDrop(day, hour)}
-                          className="relative min-h-[60px] rounded border border-gray-200 bg-white p-1 transition hover:border-blue-400 hover:bg-blue-50"
+                          className={`relative min-h-[60px] rounded border p-1 transition-all ${
+                            isDragging
+                              ? isHovered
+                                ? isValid
+                                  ? "border-green-500 bg-green-50 shadow-lg"
+                                  : "border-red-500 bg-red-50"
+                                : "border-blue-300 bg-blue-50"
+                              : "border-gray-200 bg-white hover:border-blue-400 hover:bg-blue-50"
+                          }`}
                         >
                           <div className="text-xs text-gray-400">{hour}:00</div>
+                          {isDragging && isHovered && (
+                            <div
+                              className={`absolute bottom-1 left-1 right-1 text-xs font-medium ${
+                                isValid ? "text-green-700" : "text-red-700"
+                              }`}
+                            >
+                              {isValid ? "Släpp här" : "Upptaget"}
+                            </div>
+                          )}
                           {slotBookings.map((booking) => (
                             <div
                               key={booking.id}
