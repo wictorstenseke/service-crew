@@ -20,11 +20,13 @@ export default function CalendarPage() {
     setSelectedWorkday,
     setCurrentMechanicId,
     bookings,
+    updateBooking,
   } = useApp();
   const [currentWeekStart, setCurrentWeekStart] = useState<Date>(() =>
     startOfWeek(new Date(), { weekStartsOn: 1 }),
   );
   const [showCreateJobCard, setShowCreateJobCard] = useState(false);
+  const [draggedBookingId, setDraggedBookingId] = useState<string | null>(null);
 
   // Generate days for the current week (Monday-Sunday)
   const weekDays = useMemo(() => {
@@ -82,6 +84,38 @@ export default function CalendarPage() {
     } catch {
       return false;
     }
+  };
+
+  // Drag & drop handlers
+  const handleDragStart = (bookingId: string) => {
+    setDraggedBookingId(bookingId);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedBookingId(null);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault(); // Allow drop
+  };
+
+  const handleDrop = (day: Date, hour: number) => {
+    if (!draggedBookingId) return;
+
+    const booking = bookings.find((b) => b.id === draggedBookingId);
+    if (!booking) return;
+
+    // Update booking with scheduled date and time
+    const updatedBooking = {
+      ...booking,
+      scheduledDate: format(day, "yyyy-MM-dd"),
+      scheduledStartHour: hour,
+      status: "PLANERAD" as const,
+      updatedAt: new Date().toISOString(),
+    };
+
+    updateBooking(updatedBooking);
+    setDraggedBookingId(null);
   };
 
   return (
@@ -154,6 +188,9 @@ export default function CalendarPage() {
                   unplannedBookings.map((booking) => (
                     <div
                       key={booking.id}
+                      draggable
+                      onDragStart={() => handleDragStart(booking.id)}
+                      onDragEnd={handleDragEnd}
                       className="cursor-move rounded-lg bg-orange-200 p-2 text-xs shadow-sm hover:shadow-md"
                     >
                       <div className="font-semibold">{booking.vehicleType}</div>
@@ -210,7 +247,9 @@ export default function CalendarPage() {
                       return (
                         <div
                           key={hour}
-                          className="relative min-h-[60px] rounded border border-gray-200 bg-white p-1"
+                          onDragOver={handleDragOver}
+                          onDrop={() => handleDrop(day, hour)}
+                          className="relative min-h-[60px] rounded border border-gray-200 bg-white p-1 transition hover:border-blue-400 hover:bg-blue-50"
                         >
                           <div className="text-xs text-gray-400">
                             {hour}:00
