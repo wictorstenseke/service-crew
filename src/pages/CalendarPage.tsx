@@ -22,7 +22,7 @@ import { Plus, ChevronLeft, ChevronRight, Calendar, Moon, Sun } from "lucide-rea
 const MINUTES_PER_HOUR = 60;
 const WORK_START_HOUR = 7;
 const WORK_END_HOUR = 17;
-const HOUR_HEIGHT_PX = 60;
+const HOUR_HEIGHT_PX = 72;
 const BOOKING_MARGIN_PX = 4;
 
 // Status colors for booking cards - theme-aware
@@ -237,7 +237,7 @@ export default function CalendarPage() {
         : "bg-gradient-to-br from-gray-100 via-blue-50 to-indigo-50"
     }`}>
       {/* Main content */}
-      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-4">
+      <main className="mx-auto max-w-[95%] xl:max-w-[1600px] px-4 py-6 sm:px-6 lg:px-4">
         {/* Week navigation */}
         <div className="mb-4 flex items-center gap-4">
           {/* Spacer to match unplanned column width */}
