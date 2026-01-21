@@ -20,7 +20,10 @@ import type { BookingStatus } from "../types";
 // Constants
 const MINUTES_PER_HOUR = 60;
 const MAX_ACTION_PREVIEW_LENGTH = 20;
+const WORK_START_HOUR = 7;
 const WORK_END_HOUR = 17;
+const HOUR_HEIGHT_PX = 60;
+const BOOKING_MARGIN_PX = 4;
 
 // Status colors for booking cards
 const statusColors: Record<BookingStatus, string> = {
@@ -333,7 +336,7 @@ export default function CalendarPage() {
                     <div
                       key={hour}
                       className="flex items-center justify-end pr-2 text-xs font-medium text-gray-500"
-                      style={{ height: "60px" }}
+                      style={{ height: `${HOUR_HEIGHT_PX}px` }}
                     >
                       {hour}:00
                     </div>
@@ -379,7 +382,7 @@ export default function CalendarPage() {
                                     : "bg-blue-50"
                                   : "hover:bg-blue-50"
                               }`}
-                              style={{ height: "60px" }}
+                              style={{ height: `${HOUR_HEIGHT_PX}px` }}
                             >
                               {/* Drag preview: show placeholder for the full duration */}
                               {isDragging && isHovered && draggedBooking && (
@@ -390,8 +393,8 @@ export default function CalendarPage() {
                                       : "border-red-500 bg-red-100"
                                   } pointer-events-none opacity-75`}
                                   style={{
-                                    top: "2px",
-                                    height: `${draggedBooking.durationHours * 60 - 4}px`,
+                                    top: `${BOOKING_MARGIN_PX / 2}px`,
+                                    height: `${draggedBooking.durationHours * HOUR_HEIGHT_PX - BOOKING_MARGIN_PX}px`,
                                     zIndex: 10,
                                   }}
                                 >
@@ -407,8 +410,11 @@ export default function CalendarPage() {
                         {/* Bookings rendered as absolute positioned blocks */}
                         {dayBookings.map((booking) => {
                           const startHour = booking.scheduledStartHour!;
-                          const topPosition = (startHour - 7) * 60; // 60px per hour
-                          const height = booking.durationHours * 60 - 4; // 4px margin
+                          const topPosition =
+                            (startHour - WORK_START_HOUR) * HOUR_HEIGHT_PX;
+                          const height =
+                            booking.durationHours * HOUR_HEIGHT_PX -
+                            BOOKING_MARGIN_PX;
 
                           return (
                             <div
@@ -416,7 +422,7 @@ export default function CalendarPage() {
                               onClick={() => handleBookingClick(booking)}
                               className={`absolute left-1 right-1 cursor-pointer rounded p-2 text-xs shadow-sm ${statusColors[booking.status]}`}
                               style={{
-                                top: `${topPosition + 2}px`,
+                                top: `${topPosition + BOOKING_MARGIN_PX / 2}px`,
                                 height: `${height}px`,
                                 zIndex: 5,
                               }}
