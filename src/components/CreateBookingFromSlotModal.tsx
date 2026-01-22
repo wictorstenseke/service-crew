@@ -229,13 +229,17 @@ export default function CreateBookingFromSlotModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4"
+      onClick={handleCancel}
+    >
       <div
         className={`w-full max-w-2xl rounded-lg p-6 shadow-xl ${
           theme === "dark"
             ? "border border-blue-700/30 bg-slate-800/95 backdrop-blur-sm"
             : "bg-white"
         }`}
+        onClick={(e) => e.stopPropagation()}
       >
         <h2
           className={`mb-6 text-2xl font-bold ${
@@ -476,18 +480,6 @@ export default function CreateBookingFromSlotModal({
           {/* Buttons */}
           <div className="flex gap-4">
             <button
-              type="submit"
-              disabled={!!validationError}
-              className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-6 py-3 font-semibold text-white transition ${
-                validationError
-                  ? "cursor-not-allowed bg-gray-400"
-                  : "bg-blue-600 hover:bg-blue-700"
-              }`}
-            >
-              <CalendarPlus className="h-5 w-5" />
-              Skapa bokning
-            </button>
-            <button
               type="button"
               onClick={handleCancel}
               className={`flex items-center gap-2 rounded-lg px-6 py-3 font-semibold transition ${
@@ -498,6 +490,18 @@ export default function CreateBookingFromSlotModal({
             >
               <X className="h-5 w-5" />
               Avbryt
+            </button>
+            <button
+              type="submit"
+              disabled={!!validationError}
+              className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-6 py-3 font-semibold text-white transition ${
+                validationError
+                  ? "cursor-not-allowed bg-gray-400"
+                  : "bg-blue-600 hover:bg-blue-700"
+              }`}
+            >
+              <CalendarPlus className="h-5 w-5" />
+              Skapa bokning
             </button>
           </div>
         </form>

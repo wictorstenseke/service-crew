@@ -84,13 +84,17 @@ export default function BookingDetailsModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4"
+      onClick={handleClose}
+    >
       <div
-        className={`w-full max-w-4xl rounded-lg p-6 shadow-xl ${
+        className={`w-full max-w-[640px] rounded-lg p-6 shadow-xl ${
           theme === "dark"
             ? "border border-blue-700/30 bg-slate-800/95 backdrop-blur-sm"
             : "bg-white"
         }`}
+        onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="mb-6 flex items-center justify-between gap-4">
@@ -323,13 +327,6 @@ export default function BookingDetailsModal({
         {/* Bottom buttons */}
         <div className="mt-6 flex gap-4">
           <button
-            onClick={handleSaveChanges}
-            className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-700"
-          >
-            <Save className="h-5 w-5" />
-            SPARA
-          </button>
-          <button
             onClick={handleClose}
             className={`flex items-center gap-2 rounded-lg px-6 py-3 font-semibold transition ${
               theme === "dark"
@@ -339,6 +336,13 @@ export default function BookingDetailsModal({
           >
             <X className="h-5 w-5" />
             STÄNG
+          </button>
+          <button
+            onClick={handleSaveChanges}
+            className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-700"
+          >
+            <Save className="h-5 w-5" />
+            SPARA
           </button>
         </div>
       </div>

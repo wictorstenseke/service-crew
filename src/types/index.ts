@@ -13,6 +13,7 @@ export interface Mechanic {
 export interface Workshop {
   id: string;
   name: string;
+  icon?: string; // Path to the workshop icon (e.g., "001-car-engine.png")
   createdAt: string;
 }
 

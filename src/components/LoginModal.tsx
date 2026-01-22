@@ -144,13 +144,17 @@ export default function LoginModal({
 
   if (showError) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-sm">
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-sm"
+        onClick={() => setShowError(false)}
+      >
         <div
           className={`w-full max-w-md rounded-lg border p-6 shadow-2xl backdrop-blur-sm ${
             theme === "dark"
               ? "border-blue-700/30 bg-slate-800/95"
               : "border-gray-200 bg-white"
           }`}
+          onClick={(e) => e.stopPropagation()}
         >
           <div className="mb-4 flex justify-center">
             <img
@@ -169,18 +173,18 @@ export default function LoginModal({
           <div className="flex gap-2">
             <button
               onClick={() => setShowError(false)}
-              className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700"
+              className={`flex flex-1 items-center justify-center gap-2 rounded-lg border px-4 py-2 font-semibold ${
+                theme === "dark"
+                  ? "border-blue-700/50 text-blue-200 hover:bg-blue-900/50"
+                  : "border-gray-300 text-gray-700 hover:bg-gray-50"
+              }`}
             >
               <Check className="h-5 w-5" />
               Försök igen
             </button>
             <button
               onClick={handleLoginAnyway}
-              className={`flex flex-1 items-center justify-center gap-2 rounded-lg border px-4 py-2 font-semibold ${
-                theme === "dark"
-                  ? "border-blue-700/50 text-blue-200 hover:bg-blue-900/50"
-                  : "border-gray-300 text-gray-700 hover:bg-gray-50"
-              }`}
+              className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700"
             >
               Logga in ändå
             </button>
@@ -191,13 +195,17 @@ export default function LoginModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-sm">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-sm"
+      onClick={handleClose}
+    >
       <div
         className={`w-full max-w-md rounded-lg border p-6 shadow-2xl backdrop-blur-sm ${
           theme === "dark"
             ? "border-blue-700/30 bg-slate-800/95"
             : "border-gray-200 bg-white"
         }`}
+        onClick={(e) => e.stopPropagation()}
       >
         <h2
           className={`mb-2 text-2xl font-bold ${

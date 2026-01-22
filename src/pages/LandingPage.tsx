@@ -23,15 +23,25 @@ export default function LandingPage() {
   const [showCreateWorkshop, setShowCreateWorkshop] = useState(false);
   const [showAddMechanic, setShowAddMechanic] = useState(false);
   const [workshopName, setWorkshopName] = useState("");
+  const [selectedIcon, setSelectedIcon] = useState<string>("004-mechanic.png");
   const [selectedMechanic, setSelectedMechanic] = useState<Mechanic | null>(
     null,
   );
   const [showLogin, setShowLogin] = useState(false);
 
+  const availableIcons = [
+    "001-car-engine.png",
+    "003-piston.png",
+    "004-mechanic.png",
+    "005-mechanic-1.png",
+    "006-engine-oil.png",
+  ];
+
   useEscapeKey(() => {
     if (showCreateWorkshop) {
       setShowCreateWorkshop(false);
       setWorkshopName("");
+      setSelectedIcon("004-mechanic.png");
     }
   }, showCreateWorkshop);
 
@@ -41,12 +51,14 @@ export default function LandingPage() {
     const newWorkshop: Workshop = {
       id: generateId(),
       name: workshopName.trim(),
+      icon: selectedIcon,
       createdAt: new Date().toISOString(),
     };
 
     resetWorkshop();
     setWorkshop(newWorkshop);
     setWorkshopName("");
+    setSelectedIcon("004-mechanic.png");
     setShowCreateWorkshop(false);
     showToast("Ny verkstad skapad");
   };
@@ -137,52 +149,89 @@ export default function LandingPage() {
         </div>
 
         {showCreateWorkshop && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-sm">
+          <div
+            className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-sm"
+            onClick={() => {
+              setShowCreateWorkshop(false);
+              setWorkshopName("");
+              setSelectedIcon("004-mechanic.png");
+            }}
+          >
             <div
-              className={`w-full max-w-md rounded-lg border p-6 shadow-2xl backdrop-blur-sm ${
+              className={`w-full max-w-[640px] rounded-lg border p-6 shadow-2xl backdrop-blur-sm ${
                 theme === "dark"
                   ? "border-blue-700/30 bg-slate-800/95"
                   : "border-gray-200 bg-white"
               }`}
+              onClick={(e) => e.stopPropagation()}
             >
               <h2
-                className={`mb-4 text-2xl font-bold ${
+                className={`mb-10 text-2xl font-bold ${
                   theme === "dark" ? "text-white" : "text-gray-800"
                 }`}
               >
-                Skapa ny verkstad
-              </h2>
-              <p
-                className={`mb-4 ${
-                  theme === "dark" ? "text-blue-100" : "text-gray-600"
-                }`}
-              >
                 Skapa verkstad och öppna portarna.
-              </p>
-              <input
-                type="text"
-                value={workshopName}
-                onChange={(e) => setWorkshopName(e.target.value)}
-                placeholder="Verkstadsnamn"
-                className={`mb-4 w-full rounded-md border px-4 py-2 focus:outline-none focus:ring-2 ${
-                  theme === "dark"
-                    ? "border-blue-700/50 bg-slate-700/50 text-white placeholder-blue-300 focus:border-blue-500 focus:ring-blue-500/50"
-                    : "border-gray-300 bg-white text-gray-800 placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500/50"
-                }`}
-                autoFocus
-              />
-              <div className="flex gap-2">
-                <button
-                  onClick={handleCreateWorkshop}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700"
+              </h2>
+              <div className="mb-10">
+                <label
+                  className={`mb-2 block text-sm font-semibold ${
+                    theme === "dark" ? "text-blue-100" : "text-gray-700"
+                  }`}
                 >
-                  <Building2 className="h-5 w-5" />
-                  Skapa verkstad
-                </button>
+                  Välj ikon för verkstaden
+                </label>
+                <div className="grid grid-cols-3 gap-3">
+                  {availableIcons.map((icon) => (
+                    <button
+                      key={icon}
+                      type="button"
+                      onClick={() => setSelectedIcon(icon)}
+                      className={`flex items-center justify-center rounded-lg border-2 p-3 transition ${
+                        selectedIcon === icon
+                          ? theme === "dark"
+                            ? "border-blue-500 bg-blue-900/50"
+                            : "border-blue-500 bg-blue-100"
+                          : theme === "dark"
+                            ? "border-blue-700/30 bg-slate-700/30 hover:border-blue-600 hover:bg-slate-700/50"
+                            : "border-gray-300 bg-white hover:border-blue-400 hover:bg-gray-50"
+                      }`}
+                    >
+                      <img
+                        src={`${BASE_URL}${icon}`}
+                        alt={icon}
+                        className="h-16 w-16 object-contain"
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="mb-10">
+                <label
+                  className={`mb-2 block text-sm font-semibold ${
+                    theme === "dark" ? "text-blue-100" : "text-gray-700"
+                  }`}
+                >
+                  Skriv ett namn
+                </label>
+                <input
+                  type="text"
+                  value={workshopName}
+                  onChange={(e) => setWorkshopName(e.target.value)}
+                  placeholder="Verkstadsnamn"
+                  className={`w-full rounded-md border px-4 py-2 text-center text-xl focus:outline-none focus:ring-2 ${
+                    theme === "dark"
+                      ? "border-blue-700/50 bg-slate-700/50 text-white placeholder-blue-300 focus:border-blue-500 focus:ring-blue-500/50"
+                      : "border-gray-300 bg-white text-gray-800 placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500/50"
+                  }`}
+                  autoFocus
+                />
+              </div>
+              <div className="flex gap-2">
                 <button
                   onClick={() => {
                     setShowCreateWorkshop(false);
                     setWorkshopName("");
+                    setSelectedIcon("004-mechanic.png");
                   }}
                   className={`flex flex-1 items-center justify-center gap-2 rounded-lg border px-4 py-2 font-semibold ${
                     theme === "dark"
@@ -192,6 +241,13 @@ export default function LandingPage() {
                 >
                   <X className="h-5 w-5" />
                   Avbryt
+                </button>
+                <button
+                  onClick={handleCreateWorkshop}
+                  className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700"
+                >
+                  <Building2 className="h-5 w-5" />
+                  Skapa verkstad
                 </button>
               </div>
             </div>
@@ -258,8 +314,8 @@ export default function LandingPage() {
         <div className="flex flex-col items-center">
           <div className="mb-6 flex justify-center">
             <img
-              src={`${BASE_URL}004-mechanic.png`}
-              alt="Mekaniker"
+              src={`${BASE_URL}${workshop.icon || "004-mechanic.png"}`}
+              alt="Verkstad"
               className="h-[300px] w-[300px] object-contain transition-transform hover:scale-105"
             />
           </div>
@@ -271,19 +327,12 @@ export default function LandingPage() {
             }`}
           >
             <h1
-              className={`mb-2 text-center text-4xl font-bold ${
+              className={`mb-6 text-center text-4xl font-bold ${
                 theme === "dark" ? "text-white" : "text-gray-800"
               }`}
             >
             {workshop.name}
           </h1>
-          <p
-            className={`mb-8 text-center ${
-              theme === "dark" ? "text-blue-100" : "text-gray-600"
-            }`}
-          >
-            Välj mekaniker
-          </p>
 
           {mechanics.length === 0 ? (
             <div className="flex justify-center">
@@ -297,32 +346,41 @@ export default function LandingPage() {
             </div>
           ) : (
             <>
+              <p
+                className={`mb-8 text-center ${
+                  theme === "dark" ? "text-blue-100" : "text-gray-600"
+                }`}
+              >
+                Välj mekaniker
+              </p>
               <div className="mb-6 flex flex-wrap justify-center gap-4">
-                {mechanics.map((mechanic) => (
-                  <button
-                    key={mechanic.id}
-                    onClick={() => {
-                      setSelectedMechanic(mechanic);
-                      setShowLogin(true);
-                    }}
-                    className={`flex items-center justify-center gap-4 rounded-lg border-2 p-6 text-center font-semibold transition ${
-                      theme === "dark"
-                        ? "border-blue-700/50 bg-slate-700/50 text-white hover:border-blue-500 hover:bg-blue-800/50"
-                        : "border-gray-300 bg-white text-gray-800 hover:border-blue-500 hover:bg-blue-50"
-                    } ${
-                      mechanics.length === 1
-                        ? "w-full max-w-xs"
-                        : "w-full max-w-[calc(50%-0.5rem)]"
-                    }`}
-                  >
-                    <img
-                      src={`${BASE_URL}001-car-engine.png`}
-                      alt="Motor"
-                      className="h-12 w-12 flex-shrink-0 object-contain"
-                    />
-                    <span className="text-xl">{mechanic.name}</span>
-                  </button>
-                ))}
+                {mechanics.map((mechanic, index) => {
+                  // Cycle through available icons for each mechanic
+                  const iconIndex = index % availableIcons.length;
+                  const mechanicIcon = availableIcons[iconIndex];
+                  
+                  return (
+                    <button
+                      key={mechanic.id}
+                      onClick={() => {
+                        setSelectedMechanic(mechanic);
+                        setShowLogin(true);
+                      }}
+                      className={`flex items-center justify-center gap-4 rounded-lg border-2 pl-10 pr-12 py-6 text-center font-semibold transition ${
+                        theme === "dark"
+                          ? "border-blue-700/50 bg-slate-700/50 text-white hover:border-blue-500 hover:bg-blue-800/50"
+                          : "border-gray-300 bg-white text-gray-800 hover:border-blue-500 hover:bg-blue-50"
+                      }`}
+                    >
+                      <img
+                        src={`${BASE_URL}${mechanicIcon}`}
+                        alt={mechanicIcon.replace(".png", "")}
+                        className="h-12 w-12 flex-shrink-0 object-contain"
+                      />
+                      <span className="text-xl whitespace-nowrap">{mechanic.name}</span>
+                    </button>
+                  );
+                })}
               </div>
 
               <div className="flex justify-center">

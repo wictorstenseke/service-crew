@@ -55,13 +55,17 @@ export default function AddMechanicModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+      onClick={handleClose}
+    >
       <div
         className={`w-full max-w-md rounded-lg p-6 shadow-xl ${
           theme === "dark"
             ? "border border-blue-700/30 bg-slate-800/95 backdrop-blur-sm"
             : "bg-white"
         }`}
+        onClick={(e) => e.stopPropagation()}
       >
         <h2
           className={`mb-4 text-2xl font-bold ${
@@ -122,13 +126,6 @@ export default function AddMechanicModal({
 
         <div className="flex gap-2">
           <button
-            onClick={handleSubmit}
-            className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-2 font-semibold text-white hover:bg-green-700"
-          >
-            <Save className="h-5 w-5" />
-            Spara
-          </button>
-          <button
             onClick={handleClose}
             className={`flex flex-1 items-center justify-center gap-2 rounded-lg border px-4 py-2 font-semibold ${
               theme === "dark"
@@ -138,6 +135,13 @@ export default function AddMechanicModal({
           >
             <X className="h-5 w-5" />
             Avbryt
+          </button>
+          <button
+            onClick={handleSubmit}
+            className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-2 font-semibold text-white hover:bg-green-700"
+          >
+            <Save className="h-5 w-5" />
+            Spara
           </button>
         </div>
       </div>
