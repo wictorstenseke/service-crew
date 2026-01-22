@@ -1,16 +1,25 @@
-// Create Job Card Modal
+// Create Booking From Slot Modal
 import { useState, useEffect } from "react";
 import { useApp } from "../context/AppContext";
 import { generateId } from "../utils/idGenerator";
 import { useEscapeKey } from "../hooks/useEscapeKey";
 import { storageService } from "../services/StorageService";
 import type { VehicleType, Booking, Customer } from "../types";
-import { Plus, Minus, FilePlus, X } from "lucide-react";
+import { Plus, Minus, CalendarPlus, X } from "lucide-react";
 import CustomerCombobox from "./CustomerCombobox";
+import { format } from "date-fns";
+import { sv } from "date-fns/locale";
 
-interface CreateJobCardModalProps {
+interface CreateBookingFromSlotModalProps {
   isOpen: boolean;
   onClose: () => void;
+  day: Date;
+  hour: number;
+  onValidate: (durationHours: number) => {
+    valid: boolean;
+    error?: string;
+    suggestedDuration?: number;
+  };
 }
 
 const defaultVehicleTypes: VehicleType[] = [
@@ -23,10 +32,13 @@ const defaultVehicleTypes: VehicleType[] = [
   "TRAKTOR",
 ];
 
-export default function CreateJobCardModal({
+export default function CreateBookingFromSlotModal({
   isOpen,
   onClose,
-}: CreateJobCardModalProps) {
+  day,
+  hour,
+  onValidate,
+}: CreateBookingFromSlotModalProps) {
   const { addBooking, addCustomer, customers, showToast, theme } = useApp();
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
@@ -40,6 +52,10 @@ export default function CreateJobCardModal({
   const [customVehicleTypes, setCustomVehicleTypes] = useState<string[]>([]);
   const [showAddTypeInput, setShowAddTypeInput] = useState(false);
   const [newTypeInput, setNewTypeInput] = useState("");
+  const [validationError, setValidationError] = useState<string | null>(null);
+  const [suggestedDuration, setSuggestedDuration] = useState<number | null>(
+    null,
+  );
 
   // Load custom vehicle types from localStorage
   useEffect(() => {
@@ -48,6 +64,20 @@ export default function CreateJobCardModal({
       setCustomVehicleTypes(customTypes);
     }
   }, [isOpen]);
+
+  // Validate time slot when duration changes
+  useEffect(() => {
+    if (isOpen) {
+      const validation = onValidate(durationHours);
+      if (!validation.valid) {
+        setValidationError(validation.error || "Ogiltig tidslucka");
+        setSuggestedDuration(validation.suggestedDuration || null);
+      } else {
+        setValidationError(null);
+        setSuggestedDuration(null);
+      }
+    }
+  }, [durationHours, isOpen, onValidate]);
 
   // Combine default and custom types
   const allVehicleTypes = [...defaultVehicleTypes, ...customVehicleTypes];
@@ -73,6 +103,8 @@ export default function CreateJobCardModal({
     setDurationHours(1);
     setShowAddTypeInput(false);
     setNewTypeInput("");
+    setValidationError(null);
+    setSuggestedDuration(null);
     onClose();
   };
 
@@ -110,6 +142,20 @@ export default function CreateJobCardModal({
     e.preventDefault();
 
     if (!customerName.trim() || !customerPhone.trim() || !action.trim()) {
+      return;
+    }
+
+    // Validate booking slot
+    const validation = onValidate(durationHours);
+    if (!validation.valid) {
+      setValidationError(validation.error || "Ogiltig tidslucka");
+      setSuggestedDuration(validation.suggestedDuration || null);
+      showToast(validation.error || "Ogiltig tidslucka", "error");
+      return;
+    }
+
+    // Prevent submission if validation error exists
+    if (validationError) {
       return;
     }
 
@@ -159,7 +205,9 @@ export default function CreateJobCardModal({
       vehicleType: selectedVehicleType,
       action: action.trim(),
       durationHours: Math.max(1, durationHours),
-      status: "EJ_PLANERAD",
+      status: "PLANERAD",
+      scheduledDate: format(day, "yyyy-MM-dd"),
+      scheduledStartHour: hour,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -173,8 +221,10 @@ export default function CreateJobCardModal({
     setSelectedVehicleType("CYKEL");
     setAction("");
     setDurationHours(1);
+    setValidationError(null);
+    setSuggestedDuration(null);
 
-    showToast("Jobbkort skapat");
+    showToast("Bokning skapad");
     onClose();
   };
 
@@ -192,8 +242,23 @@ export default function CreateJobCardModal({
             theme === "dark" ? "text-white" : "text-gray-800"
           }`}
         >
-          Skapa jobbkort
+          Skapa bokning
         </h2>
+
+        {/* Pre-filled date/time info */}
+        <div
+          className={`mb-4 rounded-lg p-4 ${
+            theme === "dark" ? "bg-blue-900/30" : "bg-blue-50"
+          }`}
+        >
+          <div
+            className={`text-sm font-medium ${
+              theme === "dark" ? "text-blue-200" : "text-blue-700"
+            }`}
+          >
+            {format(day, "EEEE d MMMM", { locale: sv })} • {hour}:00
+          </div>
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Customer name and phone - same row */}
@@ -380,14 +445,47 @@ export default function CreateJobCardModal({
             </div>
           </div>
 
+          {/* Validation Error Message */}
+          {validationError && (
+            <div
+              className={`rounded-lg border px-4 py-3 ${
+                theme === "dark"
+                  ? "border-red-500/50 bg-red-900/20 text-red-200"
+                  : "border-red-300 bg-red-50 text-red-700"
+              }`}
+            >
+              <div className="flex items-center justify-between gap-4">
+                <p className="text-sm font-medium">{validationError}</p>
+                {suggestedDuration && suggestedDuration < durationHours && (
+                  <button
+                    type="button"
+                    onClick={() => setDurationHours(suggestedDuration)}
+                    className={`whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition ${
+                      theme === "dark"
+                        ? "bg-blue-600 text-white hover:bg-blue-700"
+                        : "bg-blue-600 text-white hover:bg-blue-700"
+                    }`}
+                  >
+                    Testa {suggestedDuration} timmar
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Buttons */}
           <div className="flex gap-4">
             <button
               type="submit"
-              className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-700"
+              disabled={!!validationError}
+              className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-6 py-3 font-semibold text-white transition ${
+                validationError
+                  ? "cursor-not-allowed bg-gray-400"
+                  : "bg-blue-600 hover:bg-blue-700"
+              }`}
             >
-              <FilePlus className="h-5 w-5" />
-              Skapa jobbkort
+              <CalendarPlus className="h-5 w-5" />
+              Skapa bokning
             </button>
             <button
               type="button"

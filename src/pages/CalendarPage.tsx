@@ -2,6 +2,7 @@
 import { useState, useMemo } from "react";
 import { useApp } from "../context/AppContext";
 import CreateJobCardModal from "../components/CreateJobCardModal";
+import CreateBookingFromSlotModal from "../components/CreateBookingFromSlotModal";
 import BookingDetailsModal from "../components/BookingDetailsModal";
 import type { Booking } from "../types";
 import {
@@ -16,7 +17,14 @@ import {
 } from "date-fns";
 import { sv } from "date-fns/locale";
 import type { BookingStatus } from "../types";
-import { Plus, ChevronLeft, ChevronRight, Calendar, Moon, Sun } from "lucide-react";
+import {
+  Plus,
+  ChevronLeft,
+  ChevronRight,
+  Calendar,
+  Moon,
+  Sun,
+} from "lucide-react";
 
 // Constants
 const MINUTES_PER_HOUR = 60;
@@ -26,22 +34,32 @@ const HOUR_HEIGHT_PX = 72;
 const BOOKING_MARGIN_PX = 4;
 
 // Status colors for booking cards - theme-aware
-const getStatusColors = (theme: "dark" | "light"): Record<BookingStatus, string> => {
+const getStatusColors = (
+  theme: "dark" | "light",
+): Record<BookingStatus, string> => {
   if (theme === "dark") {
     return {
-      EJ_PLANERAD: "bg-orange-600/40 hover:bg-orange-600/50 text-orange-100 border border-orange-600/30",
-      PLANERAD: "bg-blue-600/40 hover:bg-blue-600/50 text-blue-100 border border-blue-600/30",
-      PAGAR: "bg-yellow-600/40 hover:bg-yellow-600/50 text-yellow-100 border border-yellow-600/30",
+      EJ_PLANERAD:
+        "bg-orange-600/40 hover:bg-orange-600/50 text-orange-100 border border-orange-600/30",
+      PLANERAD:
+        "bg-blue-600/40 hover:bg-blue-600/50 text-blue-100 border border-blue-600/30",
+      PAGAR:
+        "bg-yellow-600/40 hover:bg-yellow-600/50 text-yellow-100 border border-yellow-600/30",
       KLAR: "bg-green-600/40 hover:bg-green-600/50 text-green-100 border border-green-600/30",
-      HAMTAD: "bg-gray-600/40 hover:bg-gray-600/50 text-gray-100 border border-gray-600/30",
+      HAMTAD:
+        "bg-gray-600/40 hover:bg-gray-600/50 text-gray-100 border border-gray-600/30",
     };
   } else {
     return {
-      EJ_PLANERAD: "bg-orange-100 hover:bg-orange-200 text-orange-900 border border-orange-300",
-      PLANERAD: "bg-blue-100 hover:bg-blue-200 text-blue-900 border border-blue-300",
-      PAGAR: "bg-yellow-100 hover:bg-yellow-200 text-yellow-900 border border-yellow-300",
+      EJ_PLANERAD:
+        "bg-orange-100 hover:bg-orange-200 text-orange-900 border border-orange-300",
+      PLANERAD:
+        "bg-blue-100 hover:bg-blue-200 text-blue-900 border border-blue-300",
+      PAGAR:
+        "bg-yellow-100 hover:bg-yellow-200 text-yellow-900 border border-yellow-300",
       KLAR: "bg-green-100 hover:bg-green-200 text-green-900 border border-green-300",
-      HAMTAD: "bg-gray-100 hover:bg-gray-200 text-gray-900 border border-gray-300",
+      HAMTAD:
+        "bg-gray-100 hover:bg-gray-200 text-gray-900 border border-gray-300",
     };
   }
 };
@@ -69,6 +87,12 @@ export default function CalendarPage() {
   } | null>(null);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [showBookingDetails, setShowBookingDetails] = useState(false);
+  const [selectedSlot, setSelectedSlot] = useState<{
+    day: Date;
+    hour: number;
+  } | null>(null);
+  const [showCreateBookingFromSlot, setShowCreateBookingFromSlot] =
+    useState(false);
 
   // Generate days for the current week (Monday-Sunday)
   const weekDays = useMemo(() => {
@@ -230,28 +254,96 @@ export default function CalendarPage() {
     setSelectedBooking(null);
   };
 
+  // Validation function for booking slot
+  const isValidBookingSlot = (
+    day: Date,
+    hour: number,
+    durationHours: number,
+  ): { valid: boolean; error?: string; suggestedDuration?: number } => {
+    // Check if extends beyond work hours
+    const maxAvailableHours = WORK_END_HOUR + 1 - hour;
+    if (hour + durationHours > WORK_END_HOUR + 1) {
+      return {
+        valid: false,
+        error: "Bokningen sträcker sig utanför arbetstid",
+        suggestedDuration: Math.max(1, maxAvailableHours),
+      };
+    }
+
+    // Check for conflicts
+    const dayBookings = getBookingsForDay(day);
+    const newEnd = hour + durationHours;
+
+    // Find the earliest conflict
+    let earliestConflict: number | null = null;
+    for (const existingBooking of dayBookings) {
+      const existingStart = existingBooking.scheduledStartHour!;
+      const existingEnd = existingStart + existingBooking.durationHours;
+
+      if (hour < existingEnd && newEnd > existingStart) {
+        // Calculate how many hours fit before this conflict
+        const availableBeforeConflict = existingStart - hour;
+        if (
+          earliestConflict === null ||
+          availableBeforeConflict < earliestConflict
+        ) {
+          earliestConflict = availableBeforeConflict;
+        }
+      }
+    }
+
+    if (earliestConflict !== null) {
+      return {
+        valid: false,
+        error: "Tidsluckan är redan upptagen",
+        suggestedDuration: Math.max(1, earliestConflict),
+      };
+    }
+
+    return { valid: true };
+  };
+
+  // Handle slot click to create booking
+  const handleSlotClick = (day: Date, hour: number) => {
+    // Don't open modal if dragging
+    if (draggedBookingId) return;
+
+    setSelectedSlot({ day, hour });
+    setShowCreateBookingFromSlot(true);
+  };
+
+  const handleCloseCreateBookingFromSlot = () => {
+    setShowCreateBookingFromSlot(false);
+    setSelectedSlot(null);
+  };
+
   return (
-    <div className={`min-h-screen relative ${
-      theme === "dark" 
-        ? "bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-950" 
-        : "bg-gradient-to-br from-gray-100 via-blue-50 to-indigo-50"
-    }`}>
+    <div
+      className={`relative min-h-screen ${
+        theme === "dark"
+          ? "bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-950"
+          : "bg-gradient-to-br from-gray-100 via-blue-50 to-indigo-50"
+      }`}
+    >
       {/* Main content */}
-      <main className="mx-auto max-w-[95%] xl:max-w-[1600px] px-4 py-6 sm:px-6 lg:px-4">
+      <main className="mx-auto max-w-[95%] px-4 py-6 sm:px-6 lg:px-4 xl:max-w-[1600px]">
         {/* Week navigation */}
         <div className="mb-4 flex items-center gap-4">
           {/* Spacer to match unplanned column width */}
           <div className="w-48 flex-shrink-0"></div>
           {/* Calendar-aligned navigation */}
-          <div className="flex flex-1 items-center justify-between" style={{ paddingLeft: "0px" }}>
+          <div
+            className="flex flex-1 items-center justify-between"
+            style={{ paddingLeft: "0px" }}
+          >
             {/* Left side: Previous week + Today */}
             <div className="flex items-center gap-4">
               <button
                 onClick={goToPreviousWeek}
                 className={`flex items-center gap-2 rounded-lg border px-4 py-2 shadow-lg transition ${
                   theme === "dark"
-                    ? "bg-slate-800/90 border-blue-700/30 text-white hover:bg-slate-700/90"
-                    : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                    ? "border-blue-700/30 bg-slate-800/90 text-white hover:bg-slate-700/90"
+                    : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
                 }`}
               >
                 <ChevronLeft className="h-4 w-4" />
@@ -259,16 +351,18 @@ export default function CalendarPage() {
               </button>
               <button
                 onClick={goToToday}
-                className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-500 transition"
+                className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-500"
               >
                 <Calendar className="h-4 w-4" />
                 Idag
               </button>
             </div>
             {/* Center: Date */}
-            <span className={`font-medium ${
-              theme === "dark" ? "text-blue-100" : "text-gray-700"
-            }`}>
+            <span
+              className={`font-medium ${
+                theme === "dark" ? "text-blue-100" : "text-gray-700"
+              }`}
+            >
               {format(currentWeekStart, "d MMM", { locale: sv })} -{" "}
               {format(weekDays[6], "d MMM yyyy", { locale: sv })}
             </span>
@@ -277,8 +371,8 @@ export default function CalendarPage() {
               onClick={goToNextWeek}
               className={`flex items-center gap-2 rounded-lg border px-4 py-2 shadow-lg transition ${
                 theme === "dark"
-                  ? "bg-slate-800/90 border-blue-700/30 text-white hover:bg-slate-700/90"
-                  : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                  ? "border-blue-700/30 bg-slate-800/90 text-white hover:bg-slate-700/90"
+                  : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
               }`}
             >
               Nästa vecka
@@ -298,23 +392,31 @@ export default function CalendarPage() {
               <Plus className="h-4 w-4" />
               Skapa jobbkort
             </button>
-            <div className={`rounded-lg p-4 shadow-lg ${
-              unplannedBookings.length === 0 ? "" : "flex-1"
-            } ${
-              theme === "dark"
-                ? "bg-slate-800/90 border border-blue-700/30"
-                : "bg-white border border-gray-200"
-            }`}>
-              <h3 className={`mb-4 text-sm font-semibold ${
-                theme === "dark" ? "text-orange-300" : "text-orange-700"
-              }`}>
+            <div
+              className={`rounded-lg p-4 shadow-lg ${
+                unplannedBookings.length === 0 ? "" : "flex-1"
+              } ${
+                theme === "dark"
+                  ? "border border-blue-700/30 bg-slate-800/90"
+                  : "border border-gray-200 bg-white"
+              }`}
+            >
+              <h3
+                className={`mb-4 text-sm font-semibold ${
+                  theme === "dark" ? "text-orange-300" : "text-orange-700"
+                }`}
+              >
                 Ej planerade
               </h3>
-              <div className={`space-y-2 ${unplannedBookings.length === 0 ? "min-h-0" : ""}`}>
+              <div
+                className={`space-y-2 ${unplannedBookings.length === 0 ? "min-h-0" : ""}`}
+              >
                 {unplannedBookings.length === 0 ? (
-                  <p className={`text-xs ${
-                    theme === "dark" ? "text-blue-200" : "text-gray-500"
-                  }`}>
+                  <p
+                    className={`text-xs ${
+                      theme === "dark" ? "text-blue-200" : "text-gray-500"
+                    }`}
+                  >
                     Inga jobb här just nu.
                   </p>
                 ) : (
@@ -325,30 +427,44 @@ export default function CalendarPage() {
                       onDragStart={() => handleDragStart(booking.id)}
                       onDragEnd={handleDragEnd}
                       onClick={() => handleBookingClick(booking)}
-                      className={`relative cursor-move rounded-lg p-2 text-xs shadow-sm transition-all hover:shadow-md border ${
+                      className={`relative cursor-move rounded-lg border p-2 text-xs shadow-sm transition-all hover:shadow-md ${
                         theme === "dark"
                           ? draggedBookingId === booking.id
-                            ? "bg-orange-700/50 opacity-50 border-orange-600/30"
-                            : "bg-orange-600/20 text-orange-100 border-orange-600/30"
+                            ? "border-orange-600/30 bg-orange-700/50 opacity-50"
+                            : "border-orange-600/30 bg-orange-600/20 text-orange-100"
                           : draggedBookingId === booking.id
-                            ? "bg-orange-200 opacity-50 border-orange-400"
-                            : "bg-orange-100 text-orange-900 border-orange-300"
+                            ? "border-orange-400 bg-orange-200 opacity-50"
+                            : "border-orange-300 bg-orange-100 text-orange-900"
                       }`}
                       style={{
                         height: `${booking.durationHours * MINUTES_PER_HOUR}px`,
                       }}
                     >
-                      <div className={`absolute top-2 right-2 font-medium ${
-                        theme === "dark" ? "text-orange-300" : "text-orange-700"
-                      }`}>
+                      <div
+                        className={`absolute right-2 top-2 font-medium ${
+                          theme === "dark"
+                            ? "text-orange-300"
+                            : "text-orange-700"
+                        }`}
+                      >
                         {booking.durationHours}h
                       </div>
-                      <div className={`font-semibold pr-12 ${
-                        theme === "dark" ? "text-orange-100" : "text-orange-900"
-                      }`}>{booking.vehicleType}</div>
-                      <div className={`truncate ${
-                        theme === "dark" ? "text-orange-100" : "text-orange-800"
-                      }`}>
+                      <div
+                        className={`pr-12 font-semibold ${
+                          theme === "dark"
+                            ? "text-orange-100"
+                            : "text-orange-900"
+                        }`}
+                      >
+                        {booking.vehicleType}
+                      </div>
+                      <div
+                        className={`truncate ${
+                          theme === "dark"
+                            ? "text-orange-100"
+                            : "text-orange-800"
+                        }`}
+                      >
                         {booking.action}
                       </div>
                     </div>
@@ -361,9 +477,13 @@ export default function CalendarPage() {
               className={`flex w-full items-center justify-center gap-2 rounded-lg border-2 px-4 py-2 text-sm font-medium transition ${
                 theme === "dark"
                   ? "border-blue-700/50 bg-slate-800/90 text-blue-200 hover:bg-blue-900/30"
-                  : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50 shadow-sm"
+                  : "border-gray-300 bg-white text-gray-700 shadow-sm hover:bg-gray-50"
               }`}
-              title={theme === "dark" ? "Växla till ljust läge" : "Växla till mörkt läge"}
+              title={
+                theme === "dark"
+                  ? "Växla till ljust läge"
+                  : "Växla till mörkt läge"
+              }
             >
               {theme === "dark" ? (
                 <>
@@ -382,7 +502,7 @@ export default function CalendarPage() {
               className={`flex w-full items-center justify-center rounded-lg border-2 px-4 py-2 text-sm font-medium transition ${
                 theme === "dark"
                   ? "border-blue-700/50 text-blue-200 hover:bg-blue-900/30"
-                  : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50 shadow-sm"
+                  : "border-gray-300 bg-white text-gray-700 shadow-sm hover:bg-gray-50"
               }`}
             >
               Logga ut
@@ -392,32 +512,37 @@ export default function CalendarPage() {
           {/* Week view */}
           <div className="flex-1 overflow-x-auto">
             {/* Theme-aware container with shadow */}
-            <div className={`rounded-lg backdrop-blur-sm shadow-2xl overflow-hidden ${
-              theme === "dark"
-                ? "bg-slate-800/90 border border-blue-700/30"
-                : "bg-white border border-gray-200"
-            }`}>
+            <div
+              className={`overflow-hidden rounded-lg shadow-2xl backdrop-blur-sm ${
+                theme === "dark"
+                  ? "border border-blue-700/30 bg-slate-800/90"
+                  : "border border-gray-200 bg-white"
+              }`}
+            >
               {/* Unified grid layout for day headers and calendar */}
               <div
                 className="grid transition-all duration-500 ease-in-out"
                 style={{
-                  gridTemplateColumns: idagDayIndex >= 0
-                    ? `60px ${weekDays
-                        .map((_, index) =>
-                          index === idagDayIndex
-                            ? "minmax(250px, 2fr)"
-                            : "minmax(120px, 1fr)"
-                        )
-                        .join(" ")}`
-                    : "60px repeat(7, minmax(120px, 1fr))",
+                  gridTemplateColumns:
+                    idagDayIndex >= 0
+                      ? `60px ${weekDays
+                          .map((_, index) =>
+                            index === idagDayIndex
+                              ? "minmax(250px, 2fr)"
+                              : "minmax(120px, 1fr)",
+                          )
+                          .join(" ")}`
+                      : "60px repeat(7, minmax(120px, 1fr))",
                 }}
               >
                 {/* Empty cell for time axis corner */}
-                <div className={`border-b border-r ${
-                  theme === "dark"
-                    ? "border-blue-700/30 bg-slate-700/50"
-                    : "border-gray-200 bg-gray-50"
-                }`}></div>
+                <div
+                  className={`border-b border-r ${
+                    theme === "dark"
+                      ? "border-blue-700/30 bg-slate-700/50"
+                      : "border-gray-200 bg-gray-50"
+                  }`}
+                ></div>
 
                 {/* Day headers aligned with columns */}
                 {weekDays.map((day) => {
@@ -426,26 +551,42 @@ export default function CalendarPage() {
                     <div
                       key={day.toISOString()}
                       onClick={() => handleDayClick(day)}
-                      className={`cursor-pointer border-b border-r text-center transition-all duration-500 ease-in-out p-3 ${
+                      className={`relative cursor-pointer border-b border-r p-3 text-center transition-all duration-500 ease-in-out ${
                         theme === "dark"
                           ? isWorkday
-                            ? "border-blue-700/30 bg-blue-800/50 font-bold text-blue-200 border-t-[3px] border-t-blue-500"
-                            : "border-blue-700/30 bg-slate-700/50 hover:bg-slate-600/50 text-white"
+                            ? "border-blue-700/30 bg-blue-800/50 font-bold text-blue-200"
+                            : "border-blue-700/30 bg-slate-700/50 text-white hover:bg-slate-600/50"
                           : isWorkday
-                            ? "border-gray-200 bg-blue-100 font-bold text-blue-700 border-t-[3px] border-t-blue-600"
-                            : "border-gray-200 bg-white hover:bg-gray-50 text-gray-800"
+                            ? "border-gray-200 bg-blue-100 font-bold text-blue-700"
+                            : "border-gray-200 bg-white text-gray-800 hover:bg-gray-50"
                       }`}
                     >
-                      <div className={`text-xs font-medium uppercase ${
-                        theme === "dark"
-                          ? isWorkday ? "text-blue-200" : "text-blue-300"
-                          : isWorkday ? "text-blue-700" : "text-gray-600"
-                      }`}>
+                      {/* IDAG highlight line - absolutely positioned at top */}
+                      {isWorkday && (
+                        <div
+                          className={`absolute left-0 right-0 top-0 h-[3px] ${
+                            theme === "dark" ? "bg-blue-500" : "bg-blue-600"
+                          }`}
+                        />
+                      )}
+                      <div
+                        className={`text-xs font-medium uppercase ${
+                          theme === "dark"
+                            ? isWorkday
+                              ? "text-blue-200"
+                              : "text-blue-300"
+                            : isWorkday
+                              ? "text-blue-700"
+                              : "text-gray-600"
+                        }`}
+                      >
                         {format(day, "EEE", { locale: sv })}
                       </div>
-                      <div className={`text-lg font-bold ${
-                        theme === "dark" ? "text-white" : "text-gray-800"
-                      }`}>
+                      <div
+                        className={`text-lg font-bold ${
+                          theme === "dark" ? "text-white" : "text-gray-800"
+                        }`}
+                      >
                         {format(day, "d", { locale: sv })}
                       </div>
                     </div>
@@ -453,11 +594,13 @@ export default function CalendarPage() {
                 })}
 
                 {/* Time axis column */}
-                <div className={`flex flex-col border-r ${
-                  theme === "dark"
-                    ? "border-blue-700/30 bg-slate-700/50"
-                    : "border-gray-200 bg-gray-50"
-                }`}>
+                <div
+                  className={`flex flex-col border-r ${
+                    theme === "dark"
+                      ? "border-blue-700/30 bg-slate-700/50"
+                      : "border-gray-200 bg-gray-50"
+                  }`}
+                >
                   {timeSlots.map((hour) => (
                     <div
                       key={hour}
@@ -483,9 +626,7 @@ export default function CalendarPage() {
                     <div
                       key={day.toISOString()}
                       className={`relative ${
-                        theme === "dark"
-                          ? "bg-slate-700/30"
-                          : "bg-white"
+                        theme === "dark" ? "bg-slate-700/30" : "bg-white"
                       } ${isLastDay ? "" : theme === "dark" ? "border-r border-blue-700/20" : "border-r border-gray-200"}`}
                     >
                       {/* Hour grid lines */}
@@ -505,7 +646,8 @@ export default function CalendarPage() {
                             onDragOver={(e) => handleDragOver(e, day, hour)}
                             onDragLeave={handleDragLeave}
                             onDrop={() => handleDrop(day, hour)}
-                            className={`relative border-b border-blue-700/10 transition-colors ${
+                            onClick={() => handleSlotClick(day, hour)}
+                            className={`relative cursor-pointer border-b border-blue-700/10 transition-colors ${
                               isDragging
                                 ? isHovered
                                   ? isValid
@@ -519,7 +661,7 @@ export default function CalendarPage() {
                             {/* Drag preview: show placeholder for the full duration */}
                             {isDragging && isHovered && draggedBooking && (
                               <div
-                                className={`absolute left-1 right-1 rounded-lg border-2 shadow-sm pointer-events-none opacity-75 ${
+                                className={`pointer-events-none absolute left-1 right-1 rounded-lg border-2 opacity-75 shadow-sm ${
                                   theme === "dark"
                                     ? isValid
                                       ? "border-green-500 bg-green-900/40 text-green-100"
@@ -534,11 +676,17 @@ export default function CalendarPage() {
                                   zIndex: 10,
                                 }}
                               >
-                                <div className={`p-1 text-center text-xs font-medium ${
-                                  theme === "dark"
-                                    ? isValid ? "text-green-100" : "text-red-100"
-                                    : isValid ? "text-green-900" : "text-red-900"
-                                }`}>
+                                <div
+                                  className={`p-1 text-center text-xs font-medium ${
+                                    theme === "dark"
+                                      ? isValid
+                                        ? "text-green-100"
+                                        : "text-red-100"
+                                      : isValid
+                                        ? "text-green-900"
+                                        : "text-red-900"
+                                  }`}
+                                >
                                   {isValid ? "Släpp här" : "Upptaget"}
                                 </div>
                               </div>
@@ -570,7 +718,7 @@ export default function CalendarPage() {
                             }}
                             onDragEnd={handleDragEnd}
                             onClick={() => handleBookingClick(booking)}
-                            className={`absolute left-1 right-1 cursor-move rounded-lg p-2 text-xs shadow-md transition-all hover:shadow-lg flex flex-col ${getStatusColors(theme)[booking.status]} ${
+                            className={`absolute left-1 right-1 flex cursor-move flex-col rounded-lg p-2 text-xs shadow-md transition-all hover:shadow-lg ${getStatusColors(theme)[booking.status]} ${
                               isDragging ? "opacity-50" : ""
                             }`}
                             style={{
@@ -580,24 +728,30 @@ export default function CalendarPage() {
                             }}
                           >
                             <div className="flex-1">
-                              <div className={`font-semibold ${
-                                theme === "dark" ? "" : "text-gray-900"
-                              }`}>
+                              <div
+                                className={`font-semibold ${
+                                  theme === "dark" ? "" : "text-gray-900"
+                                }`}
+                              >
                                 {booking.vehicleType}
                               </div>
-                              <div className={`break-words leading-tight ${
-                                theme === "dark" ? "" : "text-gray-800"
-                              }`}>
+                              <div
+                                className={`break-words leading-tight ${
+                                  theme === "dark" ? "" : "text-gray-800"
+                                }`}
+                              >
                                 {booking.action}
                               </div>
                             </div>
                             {assignedMechanic && (
                               <div className="mt-auto pt-1">
-                                <span className={`inline-block rounded px-2 py-0.5 text-xs font-medium ${
-                                  theme === "dark"
-                                    ? "bg-black/30 text-white"
-                                    : "bg-white/90 text-gray-800"
-                                }`}>
+                                <span
+                                  className={`inline-block rounded px-2 py-0.5 text-xs font-medium ${
+                                    theme === "dark"
+                                      ? "bg-black/30 text-white"
+                                      : "bg-white/90 text-gray-800"
+                                  }`}
+                                >
                                   {assignedMechanic.name}
                                 </span>
                               </div>
@@ -619,6 +773,23 @@ export default function CalendarPage() {
         isOpen={showCreateJobCard}
         onClose={() => setShowCreateJobCard(false)}
       />
+
+      {/* Create Booking From Slot Modal */}
+      {selectedSlot && (
+        <CreateBookingFromSlotModal
+          isOpen={showCreateBookingFromSlot}
+          onClose={handleCloseCreateBookingFromSlot}
+          day={selectedSlot.day}
+          hour={selectedSlot.hour}
+          onValidate={(durationHours) =>
+            isValidBookingSlot(
+              selectedSlot.day,
+              selectedSlot.hour,
+              durationHours,
+            )
+          }
+        />
+      )}
 
       {/* Booking Details Modal */}
       <BookingDetailsModal
