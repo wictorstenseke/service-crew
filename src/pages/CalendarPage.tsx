@@ -4,6 +4,7 @@ import { useApp } from "../context/AppContext";
 import CreateJobCardModal from "../components/CreateJobCardModal";
 import CreateBookingFromSlotModal from "../components/CreateBookingFromSlotModal";
 import BookingDetailsModal from "../components/BookingDetailsModal";
+import { useResponsiveHourHeight } from "../hooks/useResponsiveHourHeight";
 import type { Booking } from "../types";
 import {
   format,
@@ -27,10 +28,8 @@ import {
 } from "lucide-react";
 
 // Constants
-const MINUTES_PER_HOUR = 60;
 const WORK_START_HOUR = 7;
 const WORK_END_HOUR = 17;
-const HOUR_HEIGHT_PX = 72;
 const BOOKING_MARGIN_PX = 4;
 
 // Status colors for booking cards - theme-aware
@@ -76,6 +75,9 @@ export default function CalendarPage() {
     theme,
     toggleTheme,
   } = useApp();
+  
+  // Responsive hour height based on viewport
+  const hourHeightPx = useResponsiveHourHeight();
   const [currentWeekStart, setCurrentWeekStart] = useState<Date>(() =>
     startOfWeek(new Date(), { weekStartsOn: 1 }),
   );
@@ -195,7 +197,7 @@ export default function CalendarPage() {
     const relativeY = elementTopY - timeSlotsRect.top;
     
     // Calculate which hour slot the block's top edge is in
-    const calculatedHour = WORK_START_HOUR + Math.floor(relativeY / HOUR_HEIGHT_PX);
+    const calculatedHour = WORK_START_HOUR + Math.floor(relativeY / hourHeightPx);
     
     // Clamp to valid range (WORK_START_HOUR to WORK_END_HOUR for start times)
     const hour = Math.max(
@@ -355,11 +357,11 @@ export default function CalendarPage() {
       }`}
     >
       {/* Main content */}
-      <main className="mx-auto max-w-[95%] px-4 py-6 sm:px-6 lg:px-4 xl:max-w-[1600px]">
+      <main className="mx-auto max-w-[95%] px-2 py-6 md:px-4 lg:px-4 xl:max-w-[1600px]">
         {/* Week navigation */}
         <div className="mb-4 flex items-center gap-4">
           {/* Spacer to match unplanned column width */}
-          <div className="w-48 flex-shrink-0"></div>
+          <div className="w-36 lg:w-44 xl:w-48 flex-shrink-0"></div>
           {/* Calendar-aligned navigation */}
           <div
             className="flex flex-1 items-center justify-between"
@@ -413,7 +415,7 @@ export default function CalendarPage() {
         {/* Calendar grid */}
         <div className="flex gap-4">
           {/* Unplanned jobs column */}
-          <div className="flex w-48 flex-shrink-0 flex-col gap-4">
+          <div className="flex w-36 lg:w-44 xl:w-48 flex-shrink-0 flex-col gap-4">
             <button
               onClick={() => setShowCreateJobCard(true)}
               className="flex w-full items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
@@ -466,7 +468,7 @@ export default function CalendarPage() {
                             : "border-orange-300 bg-orange-100 text-orange-900"
                       }`}
                       style={{
-                        height: `${booking.durationHours * MINUTES_PER_HOUR}px`,
+                        height: `${booking.durationHours * hourHeightPx}px`,
                       }}
                     >
                       <div
@@ -557,11 +559,11 @@ export default function CalendarPage() {
                       ? `60px ${weekDays
                           .map((_, index) =>
                             index === idagDayIndex
-                              ? "minmax(250px, 2fr)"
-                              : "minmax(120px, 1fr)",
+                              ? "minmax(min(160px, 18vw), 1.5fr)"
+                              : "minmax(min(90px, 10vw), 1fr)",
                           )
                           .join(" ")}`
-                      : "60px repeat(7, minmax(120px, 1fr))",
+                      : "60px repeat(7, minmax(min(90px, 10vw), 1fr))",
                 }}
               >
                 {/* Empty cell for time axis corner */}
@@ -639,7 +641,7 @@ export default function CalendarPage() {
                           ? "border-blue-700/20 text-blue-300"
                           : "border-gray-200 text-gray-500"
                       }`}
-                      style={{ height: `${HOUR_HEIGHT_PX}px` }}
+                      style={{ height: `${hourHeightPx}px` }}
                     >
                       {hour}:00
                     </div>
@@ -690,7 +692,7 @@ export default function CalendarPage() {
                                   : "bg-slate-700/20"
                                 : "hover:bg-slate-600/20"
                             }`}
-                            style={{ height: `${HOUR_HEIGHT_PX}px` }}
+                            style={{ height: `${hourHeightPx}px` }}
                           >
                             {/* Drag preview: show placeholder for the full duration */}
                             {isDragging && isHovered && draggedBooking && (
@@ -706,7 +708,7 @@ export default function CalendarPage() {
                                 }`}
                                 style={{
                                   top: `${BOOKING_MARGIN_PX / 2}px`,
-                                  height: `${draggedBooking.durationHours * HOUR_HEIGHT_PX - BOOKING_MARGIN_PX}px`,
+                                  height: `${draggedBooking.durationHours * hourHeightPx - BOOKING_MARGIN_PX}px`,
                                   zIndex: 10,
                                 }}
                               >
@@ -733,9 +735,9 @@ export default function CalendarPage() {
                       {dayBookings.map((booking) => {
                         const startHour = booking.scheduledStartHour!;
                         const topPosition =
-                          (startHour - WORK_START_HOUR) * HOUR_HEIGHT_PX;
+                          (startHour - WORK_START_HOUR) * hourHeightPx;
                         const height =
-                          booking.durationHours * HOUR_HEIGHT_PX -
+                          booking.durationHours * hourHeightPx -
                           BOOKING_MARGIN_PX;
                         const isDragging = draggedBookingId === booking.id;
                         const assignedMechanic = booking.mechanicId
