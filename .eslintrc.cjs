@@ -20,4 +20,13 @@ module.exports = {
       { allowConstantExport: true },
     ],
   },
+  overrides: [
+    {
+      files: ['scripts/**/*.js'],
+      env: {
+        node: true,
+        browser: false,
+      },
+    },
+  ],
 }
