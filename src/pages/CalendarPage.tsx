@@ -1,5 +1,5 @@
 // Calendar page - Week view with job planning
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { useApp } from "../context/AppContext";
 import CreateJobCardModal from "../components/CreateJobCardModal";
 import CreateBookingFromSlotModal from "../components/CreateBookingFromSlotModal";
@@ -94,6 +94,11 @@ export default function CalendarPage() {
   const [showCreateBookingFromSlot, setShowCreateBookingFromSlot] =
     useState(false);
 
+  // Refs for drag and drop position calculation
+  const calendarContainerRef = useRef<HTMLDivElement>(null);
+  const dragOffsetRef = useRef<number>(0);
+  const timeSlotsStartRef = useRef<HTMLDivElement>(null);
+
   // Generate days for the current week (Monday-Sunday)
   const weekDays = useMemo(() => {
     const weekEnd = endOfWeek(currentWeekStart, { weekStartsOn: 1 });
@@ -163,8 +168,13 @@ export default function CalendarPage() {
   };
 
   // Drag & drop handlers
-  const handleDragStart = (bookingId: string) => {
+  const handleDragStart = (e: React.DragEvent, bookingId: string) => {
     setDraggedBookingId(bookingId);
+    
+    // Capture the offset from the cursor to the dragged element's top edge
+    const target = e.currentTarget as HTMLElement;
+    const rect = target.getBoundingClientRect();
+    dragOffsetRef.current = e.clientY - rect.top;
   };
 
   const handleDragEnd = () => {
@@ -172,8 +182,28 @@ export default function CalendarPage() {
     setHoveredSlot(null);
   };
 
-  const handleDragOver = (e: React.DragEvent, day: Date, hour: number) => {
+  const handleDragOver = (e: React.DragEvent, day: Date) => {
     e.preventDefault(); // Allow drop
+    
+    if (!timeSlotsStartRef.current || !draggedBookingId) return;
+    
+    // Calculate the dragged element's top edge position
+    const clientY = e.clientY;
+    const elementTopY = clientY - dragOffsetRef.current;
+    
+    // Get time slots container's position (this excludes the header)
+    const timeSlotsRect = timeSlotsStartRef.current.getBoundingClientRect();
+    const relativeY = elementTopY - timeSlotsRect.top;
+    
+    // Calculate which hour slot the block's top edge is in
+    const calculatedHour = WORK_START_HOUR + Math.floor(relativeY / HOUR_HEIGHT_PX);
+    
+    // Clamp to valid range
+    const hour = Math.max(
+      WORK_START_HOUR,
+      Math.min(calculatedHour, WORK_END_HOUR)
+    );
+    
     const dayStr = format(day, "yyyy-MM-dd");
     setHoveredSlot({ day: dayStr, hour });
   };
@@ -424,7 +454,7 @@ export default function CalendarPage() {
                     <div
                       key={booking.id}
                       draggable
-                      onDragStart={() => handleDragStart(booking.id)}
+                      onDragStart={(e) => handleDragStart(e, booking.id)}
                       onDragEnd={handleDragEnd}
                       onClick={() => handleBookingClick(booking)}
                       className={`relative cursor-move rounded-lg border p-2 text-xs shadow-sm transition-all hover:shadow-md ${
@@ -521,6 +551,7 @@ export default function CalendarPage() {
             >
               {/* Unified grid layout for day headers and calendar */}
               <div
+                ref={calendarContainerRef}
                 className="grid transition-all duration-500 ease-in-out"
                 style={{
                   gridTemplateColumns:
@@ -595,6 +626,7 @@ export default function CalendarPage() {
 
                 {/* Time axis column */}
                 <div
+                  ref={timeSlotsStartRef}
                   className={`flex flex-col border-r ${
                     theme === "dark"
                       ? "border-blue-700/30 bg-slate-700/50"
@@ -625,6 +657,13 @@ export default function CalendarPage() {
                   return (
                     <div
                       key={day.toISOString()}
+                      onDragOver={(e) => handleDragOver(e, day)}
+                      onDragLeave={handleDragLeave}
+                      onDrop={() => {
+                        if (hoveredSlot && hoveredSlot.day === dayStr) {
+                          handleDrop(day, hoveredSlot.hour);
+                        }
+                      }}
                       className={`relative ${
                         theme === "dark" ? "bg-slate-700/30" : "bg-white"
                       } ${isLastDay ? "" : theme === "dark" ? "border-r border-blue-700/20" : "border-r border-gray-200"}`}
@@ -643,9 +682,6 @@ export default function CalendarPage() {
                         return (
                           <div
                             key={hour}
-                            onDragOver={(e) => handleDragOver(e, day, hour)}
-                            onDragLeave={handleDragLeave}
-                            onDrop={() => handleDrop(day, hour)}
                             onClick={() => handleSlotClick(day, hour)}
                             className={`relative cursor-pointer border-b border-blue-700/10 transition-colors ${
                               isDragging
@@ -714,7 +750,7 @@ export default function CalendarPage() {
                             draggable
                             onDragStart={(e) => {
                               e.stopPropagation();
-                              handleDragStart(booking.id);
+                              handleDragStart(e, booking.id);
                             }}
                             onDragEnd={handleDragEnd}
                             onClick={() => handleBookingClick(booking)}
