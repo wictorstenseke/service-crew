@@ -259,12 +259,14 @@ export default function CalendarPage() {
     day: Date,
     hour: number,
     durationHours: number,
-  ): { valid: boolean; error?: string } => {
+  ): { valid: boolean; error?: string; suggestedDuration?: number } => {
     // Check if extends beyond work hours
+    const maxAvailableHours = WORK_END_HOUR + 1 - hour;
     if (hour + durationHours > WORK_END_HOUR + 1) {
       return {
         valid: false,
         error: "Bokningen sträcker sig utanför arbetstid",
+        suggestedDuration: Math.max(1, maxAvailableHours),
       };
     }
 
@@ -272,13 +274,30 @@ export default function CalendarPage() {
     const dayBookings = getBookingsForDay(day);
     const newEnd = hour + durationHours;
 
+    // Find the earliest conflict
+    let earliestConflict: number | null = null;
     for (const existingBooking of dayBookings) {
       const existingStart = existingBooking.scheduledStartHour!;
       const existingEnd = existingStart + existingBooking.durationHours;
 
       if (hour < existingEnd && newEnd > existingStart) {
-        return { valid: false, error: "Tidsluckan är redan upptagen" };
+        // Calculate how many hours fit before this conflict
+        const availableBeforeConflict = existingStart - hour;
+        if (
+          earliestConflict === null ||
+          availableBeforeConflict < earliestConflict
+        ) {
+          earliestConflict = availableBeforeConflict;
+        }
       }
+    }
+
+    if (earliestConflict !== null) {
+      return {
+        valid: false,
+        error: "Tidsluckan är redan upptagen",
+        suggestedDuration: Math.max(1, earliestConflict),
+      };
     }
 
     return { valid: true };
@@ -532,16 +551,24 @@ export default function CalendarPage() {
                     <div
                       key={day.toISOString()}
                       onClick={() => handleDayClick(day)}
-                      className={`cursor-pointer border-b border-r p-3 text-center transition-all duration-500 ease-in-out ${
+                      className={`relative cursor-pointer border-b border-r p-3 text-center transition-all duration-500 ease-in-out ${
                         theme === "dark"
                           ? isWorkday
-                            ? "border-t-[3px] border-blue-700/30 border-t-blue-500 bg-blue-800/50 font-bold text-blue-200"
+                            ? "border-blue-700/30 bg-blue-800/50 font-bold text-blue-200"
                             : "border-blue-700/30 bg-slate-700/50 text-white hover:bg-slate-600/50"
                           : isWorkday
-                            ? "border-t-[3px] border-gray-200 border-t-blue-600 bg-blue-100 font-bold text-blue-700"
+                            ? "border-gray-200 bg-blue-100 font-bold text-blue-700"
                             : "border-gray-200 bg-white text-gray-800 hover:bg-gray-50"
                       }`}
                     >
+                      {/* IDAG highlight line - absolutely positioned at top */}
+                      {isWorkday && (
+                        <div
+                          className={`absolute left-0 right-0 top-0 h-[3px] ${
+                            theme === "dark" ? "bg-blue-500" : "bg-blue-600"
+                          }`}
+                        />
+                      )}
                       <div
                         className={`text-xs font-medium uppercase ${
                           theme === "dark"

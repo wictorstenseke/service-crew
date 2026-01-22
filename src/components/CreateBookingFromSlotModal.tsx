@@ -15,7 +15,11 @@ interface CreateBookingFromSlotModalProps {
   onClose: () => void;
   day: Date;
   hour: number;
-  onValidate: (durationHours: number) => { valid: boolean; error?: string };
+  onValidate: (durationHours: number) => {
+    valid: boolean;
+    error?: string;
+    suggestedDuration?: number;
+  };
 }
 
 const defaultVehicleTypes: VehicleType[] = [
@@ -48,6 +52,10 @@ export default function CreateBookingFromSlotModal({
   const [customVehicleTypes, setCustomVehicleTypes] = useState<string[]>([]);
   const [showAddTypeInput, setShowAddTypeInput] = useState(false);
   const [newTypeInput, setNewTypeInput] = useState("");
+  const [validationError, setValidationError] = useState<string | null>(null);
+  const [suggestedDuration, setSuggestedDuration] = useState<number | null>(
+    null,
+  );
 
   // Load custom vehicle types from localStorage
   useEffect(() => {
@@ -56,6 +64,20 @@ export default function CreateBookingFromSlotModal({
       setCustomVehicleTypes(customTypes);
     }
   }, [isOpen]);
+
+  // Validate time slot when duration changes
+  useEffect(() => {
+    if (isOpen) {
+      const validation = onValidate(durationHours);
+      if (!validation.valid) {
+        setValidationError(validation.error || "Ogiltig tidslucka");
+        setSuggestedDuration(validation.suggestedDuration || null);
+      } else {
+        setValidationError(null);
+        setSuggestedDuration(null);
+      }
+    }
+  }, [durationHours, isOpen, onValidate]);
 
   // Combine default and custom types
   const allVehicleTypes = [...defaultVehicleTypes, ...customVehicleTypes];
@@ -81,6 +103,8 @@ export default function CreateBookingFromSlotModal({
     setDurationHours(1);
     setShowAddTypeInput(false);
     setNewTypeInput("");
+    setValidationError(null);
+    setSuggestedDuration(null);
     onClose();
   };
 
@@ -124,7 +148,14 @@ export default function CreateBookingFromSlotModal({
     // Validate booking slot
     const validation = onValidate(durationHours);
     if (!validation.valid) {
+      setValidationError(validation.error || "Ogiltig tidslucka");
+      setSuggestedDuration(validation.suggestedDuration || null);
       showToast(validation.error || "Ogiltig tidslucka", "error");
+      return;
+    }
+
+    // Prevent submission if validation error exists
+    if (validationError) {
       return;
     }
 
@@ -190,6 +221,8 @@ export default function CreateBookingFromSlotModal({
     setSelectedVehicleType("CYKEL");
     setAction("");
     setDurationHours(1);
+    setValidationError(null);
+    setSuggestedDuration(null);
 
     showToast("Bokning skapad");
     onClose();
@@ -412,11 +445,44 @@ export default function CreateBookingFromSlotModal({
             </div>
           </div>
 
+          {/* Validation Error Message */}
+          {validationError && (
+            <div
+              className={`rounded-lg border px-4 py-3 ${
+                theme === "dark"
+                  ? "border-red-500/50 bg-red-900/20 text-red-200"
+                  : "border-red-300 bg-red-50 text-red-700"
+              }`}
+            >
+              <div className="flex items-center justify-between gap-4">
+                <p className="text-sm font-medium">{validationError}</p>
+                {suggestedDuration && suggestedDuration < durationHours && (
+                  <button
+                    type="button"
+                    onClick={() => setDurationHours(suggestedDuration)}
+                    className={`whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition ${
+                      theme === "dark"
+                        ? "bg-blue-600 text-white hover:bg-blue-700"
+                        : "bg-blue-600 text-white hover:bg-blue-700"
+                    }`}
+                  >
+                    Testa {suggestedDuration} timmar
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Buttons */}
           <div className="flex gap-4">
             <button
               type="submit"
-              className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-700"
+              disabled={!!validationError}
+              className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-6 py-3 font-semibold text-white transition ${
+                validationError
+                  ? "cursor-not-allowed bg-gray-400"
+                  : "bg-blue-600 hover:bg-blue-700"
+              }`}
             >
               <CalendarPlus className="h-5 w-5" />
               Skapa bokning
