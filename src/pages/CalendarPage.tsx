@@ -95,7 +95,6 @@ export default function CalendarPage() {
     useState(false);
 
   // Refs for drag and drop position calculation
-  const calendarContainerRef = useRef<HTMLDivElement>(null);
   const dragOffsetRef = useRef<number>(0);
   const timeSlotsStartRef = useRef<HTMLDivElement>(null);
 
@@ -198,7 +197,7 @@ export default function CalendarPage() {
     // Calculate which hour slot the block's top edge is in
     const calculatedHour = WORK_START_HOUR + Math.floor(relativeY / HOUR_HEIGHT_PX);
     
-    // Clamp to valid range
+    // Clamp to valid range (WORK_START_HOUR to WORK_END_HOUR for start times)
     const hour = Math.max(
       WORK_START_HOUR,
       Math.min(calculatedHour, WORK_END_HOUR)
@@ -551,7 +550,6 @@ export default function CalendarPage() {
             >
               {/* Unified grid layout for day headers and calendar */}
               <div
-                ref={calendarContainerRef}
                 className="grid transition-all duration-500 ease-in-out"
                 style={{
                   gridTemplateColumns:
