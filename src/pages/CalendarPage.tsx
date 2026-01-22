@@ -1,5 +1,5 @@
 // Calendar page - Week view with job planning
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { useApp } from "../context/AppContext";
 import CreateJobCardModal from "../components/CreateJobCardModal";
 import CreateBookingFromSlotModal from "../components/CreateBookingFromSlotModal";
@@ -99,6 +99,13 @@ export default function CalendarPage() {
   // Refs for drag and drop position calculation
   const dragOffsetRef = useRef<number>(0);
   const timeSlotsStartRef = useRef<HTMLDivElement>(null);
+
+  // Touch drag state - use ref for synchronous access during event handlers
+  const touchDraggedBookingRef = useRef<Booking | null>(null);
+  const touchGhostRef = useRef<HTMLDivElement | null>(null);
+  const touchOffsetRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const touchStartPosRef = useRef<{ x: number; y: number } | null>(null);
+  const hasMovedRef = useRef<boolean>(false);
 
   // Generate days for the current week (Monday-Sunday)
   const weekDays = useMemo(() => {
@@ -214,31 +221,51 @@ export default function CalendarPage() {
   };
 
   const isValidDropZone = (day: Date, hour: number): boolean => {
-    if (!draggedBookingId) return false;
+    // Use touchDraggedBookingRef for touch drags (synchronous), draggedBookingId for mouse drags
+    const bookingId = touchDraggedBookingRef.current?.id || draggedBookingId;
+    if (!bookingId) {
+      console.log('🔴 No booking ID found');
+      return false;
+    }
 
-    const booking = bookings.find((b) => b.id === draggedBookingId);
-    if (!booking) return false;
+    const booking = bookings.find((b) => b.id === bookingId);
+    if (!booking) {
+      console.log('🔴 No booking found for ID:', bookingId);
+      return false;
+    }
 
     const duration = booking.durationHours;
 
     // Check if booking extends beyond work hours
-    if (hour + duration > WORK_END_HOUR + 1) return false;
+    if (hour + duration > WORK_END_HOUR + 1) {
+      console.log('🔴 Booking extends beyond work hours:', { hour, duration, end: hour + duration });
+      return false;
+    }
 
     // Check if there are any conflicting bookings in the time range
     const dayBookings = getBookingsForDay(day);
+    console.log('📋 Checking conflicts for hour', hour, 'duration', duration, 'dayBookings:', dayBookings.length);
+    
     for (const existingBooking of dayBookings) {
-      if (existingBooking.id === draggedBookingId) continue; // Skip self
+      if (existingBooking.id === bookingId) {
+        console.log('✅ Skipping self:', existingBooking.id);
+        continue; // Skip self
+      }
 
       const existingStart = existingBooking.scheduledStartHour!;
       const existingEnd = existingStart + existingBooking.durationHours;
       const newEnd = hour + duration;
 
+      console.log('🔍 Checking against booking at', existingStart, '-', existingEnd);
+
       // Check for overlap
       if (hour < existingEnd && newEnd > existingStart) {
+        console.log('🔴 Conflict detected with booking at', existingStart);
         return false;
       }
     }
 
+    console.log('✅ Valid drop zone at hour', hour);
     return true;
   };
 
@@ -274,6 +301,229 @@ export default function CalendarPage() {
     setHoveredSlot(null);
     showToast(booking.status === "EJ_PLANERAD" ? "Planerat" : "Omplanerat");
   };
+
+  // Touch drag handlers (native TouchEvent for non-passive listeners)
+  const createGhostElement = (booking: Booking, rect: DOMRect) => {
+    const ghost = document.createElement("div");
+    ghost.style.position = "fixed";
+    ghost.style.pointerEvents = "none";
+    ghost.style.zIndex = "9999";
+    ghost.style.width = `${rect.width}px`;
+    ghost.style.height = `${rect.height}px`;
+    ghost.style.opacity = "0.8";
+    ghost.style.borderRadius = "0.5rem";
+    ghost.style.padding = "0.5rem";
+    ghost.style.fontSize = "0.75rem";
+    ghost.style.boxShadow = "0 10px 15px -3px rgba(0, 0, 0, 0.3)";
+    
+    // Apply theme-aware colors
+    if (booking.status === "EJ_PLANERAD") {
+      ghost.style.backgroundColor = theme === "dark" ? "rgba(194, 65, 12, 0.5)" : "rgba(254, 243, 199, 1)";
+      ghost.style.color = theme === "dark" ? "rgba(254, 243, 199, 1)" : "rgba(124, 45, 18, 1)";
+      ghost.style.border = theme === "dark" ? "1px solid rgba(194, 65, 12, 0.3)" : "1px solid rgba(253, 186, 116, 1)";
+    } else {
+      ghost.style.backgroundColor = theme === "dark" ? "rgba(37, 99, 235, 0.4)" : "rgba(219, 234, 254, 1)";
+      ghost.style.color = theme === "dark" ? "rgba(191, 219, 254, 1)" : "rgba(30, 58, 138, 1)";
+      ghost.style.border = theme === "dark" ? "1px solid rgba(37, 99, 235, 0.3)" : "1px solid rgba(147, 197, 253, 1)";
+    }
+
+    ghost.innerHTML = `
+      <div style="font-weight: 600;">${booking.vehicleType}</div>
+      <div style="margin-top: 0.25rem;">${booking.action}</div>
+      <div style="position: absolute; top: 0.5rem; right: 0.5rem; font-weight: 500;">${booking.durationHours}h</div>
+    `;
+
+    return ghost;
+  };
+
+  const handleTouchStart = (e: TouchEvent, bookingId: string) => {
+    const booking = bookings.find((b) => b.id === bookingId);
+    if (!booking) return;
+
+    const touch = e.touches[0];
+    const target = e.currentTarget as HTMLElement;
+    const rect = target.getBoundingClientRect();
+
+    // Store initial touch position for tap detection
+    touchStartPosRef.current = {
+      x: touch.clientX,
+      y: touch.clientY,
+    };
+    hasMovedRef.current = false;
+
+    // Store offset from touch point to element's top-left
+    touchOffsetRef.current = {
+      x: touch.clientX - rect.left,
+      y: touch.clientY - rect.top,
+    };
+
+    // Store booking but don't set dragging yet (use ref for synchronous access)
+    touchDraggedBookingRef.current = booking;
+  };
+
+  const handleTouchMove = (e: TouchEvent) => {
+    if (!touchDraggedBookingRef.current || !touchStartPosRef.current) return;
+
+    const touch = e.touches[0];
+
+    // Calculate distance moved from start
+    const deltaX = Math.abs(touch.clientX - touchStartPosRef.current.x);
+    const deltaY = Math.abs(touch.clientY - touchStartPosRef.current.y);
+    const distanceMoved = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+    // Only start drag if moved more than 10px
+    if (distanceMoved > 10 && !hasMovedRef.current) {
+      hasMovedRef.current = true;
+      setDraggedBookingId(touchDraggedBookingRef.current.id);
+
+      // Create ghost element on first significant movement
+      const target = e.target as HTMLElement;
+      const bookingElement = target.closest('[data-booking-id]') as HTMLElement;
+      if (bookingElement) {
+        const rect = bookingElement.getBoundingClientRect();
+        const ghost = createGhostElement(touchDraggedBookingRef.current, rect);
+        document.body.appendChild(ghost);
+        touchGhostRef.current = ghost;
+      }
+    }
+
+    // Only update if we're actually dragging
+    if (hasMovedRef.current && touchGhostRef.current) {
+      e.preventDefault(); // Prevent scrolling while dragging
+
+      // Update ghost position
+      touchGhostRef.current.style.left = `${touch.clientX - touchOffsetRef.current.x}px`;
+      touchGhostRef.current.style.top = `${touch.clientY - touchOffsetRef.current.y}px`;
+
+      // Calculate ghost top edge position
+      const ghostTopY = touch.clientY - touchOffsetRef.current.y;
+      console.log('👆 Touch at Y:', touch.clientY, 'Ghost top Y:', ghostTopY, 'Offset:', touchOffsetRef.current.y);
+
+      // Find element under ghost TOP edge (not finger position)
+      touchGhostRef.current.style.pointerEvents = "none";
+      const elementUnderGhostTop = document.elementFromPoint(touch.clientX, ghostTopY);
+      console.log('🎯 Element under ghost top:', elementUnderGhostTop?.className);
+      
+      if (!elementUnderGhostTop || !timeSlotsStartRef.current) {
+        console.log('❌ No element found or no time slots ref');
+        setHoveredSlot(null);
+        return;
+      }
+
+      // Find the time slot element
+      const slotElement = elementUnderGhostTop.closest("[data-day][data-hour]") as HTMLElement;
+      console.log('🎯 Slot element found:', !!slotElement);
+      
+      if (slotElement) {
+        const dayStr = slotElement.getAttribute("data-day");
+        const hourStr = slotElement.getAttribute("data-hour");
+        console.log('⏰ Day:', dayStr, 'Hour:', hourStr);
+        
+        if (dayStr && hourStr) {
+          const hour = parseInt(hourStr, 10);
+          console.log('✅ Setting hovered slot to hour:', hour);
+          setHoveredSlot({ day: dayStr, hour });
+        }
+      } else {
+        console.log('❌ No slot element with data-day/data-hour found');
+        setHoveredSlot(null);
+      }
+    }
+  };
+
+  const handleTouchEnd = (e: TouchEvent) => {
+    if (!touchDraggedBookingRef.current) return;
+
+    e.preventDefault();
+
+    // Check if it was a tap (no significant movement)
+    if (!hasMovedRef.current) {
+      // It's a tap - open booking details
+      handleBookingClick(touchDraggedBookingRef.current);
+    } else {
+      // It's a drag - handle drop
+      // Clean up ghost element
+      if (touchGhostRef.current) {
+        document.body.removeChild(touchGhostRef.current);
+        touchGhostRef.current = null;
+      }
+
+      // Handle drop if there's a hovered slot
+      if (hoveredSlot) {
+        const day = weekDays.find(
+          (d) => format(d, "yyyy-MM-dd") === hoveredSlot.day
+        );
+        
+        if (day) {
+          handleDrop(day, hoveredSlot.hour);
+        }
+      }
+    }
+
+    // Reset touch drag state
+    touchDraggedBookingRef.current = null;
+    setDraggedBookingId(null);
+    setHoveredSlot(null);
+    touchStartPosRef.current = null;
+    hasMovedRef.current = false;
+  };
+
+  // Store handler refs for fresh closures
+  const handlersRef = useRef({
+    touchStart: handleTouchStart,
+    touchMove: handleTouchMove,
+    touchEnd: handleTouchEnd,
+  });
+
+  // Update handler refs on each render
+  handlersRef.current = {
+    touchStart: handleTouchStart,
+    touchMove: handleTouchMove,
+    touchEnd: handleTouchEnd,
+  };
+
+  // Attach native touch listeners to booking elements (with passive: false)
+  useEffect(() => {
+    let cleanupFn: (() => void) | null = null;
+    
+    // Use setTimeout to ensure DOM is fully updated with all bookings (including scheduled ones)
+    const timeoutId = setTimeout(() => {
+      const bookingElements = document.querySelectorAll('[data-booking-id]');
+      
+      const listeners = new Map<Element, { start: EventListener; move: EventListener; end: EventListener }>();
+
+      bookingElements.forEach((element) => {
+        const bookingId = element.getAttribute('data-booking-id');
+        if (!bookingId) return;
+
+        const startHandler = ((e: Event) => handlersRef.current.touchStart(e as TouchEvent, bookingId)) as EventListener;
+        const moveHandler = ((e: Event) => handlersRef.current.touchMove(e as TouchEvent)) as EventListener;
+        const endHandler = ((e: Event) => handlersRef.current.touchEnd(e as TouchEvent)) as EventListener;
+
+        element.addEventListener('touchstart', startHandler, { passive: false });
+        element.addEventListener('touchmove', moveHandler, { passive: false });
+        element.addEventListener('touchend', endHandler, { passive: false });
+
+        listeners.set(element, { start: startHandler, move: moveHandler, end: endHandler });
+      });
+
+      // Store cleanup function
+      cleanupFn = () => {
+        listeners.forEach((handlers, element) => {
+          element.removeEventListener('touchstart', handlers.start);
+          element.removeEventListener('touchmove', handlers.move);
+          element.removeEventListener('touchend', handlers.end);
+        });
+      };
+    }, 0);
+
+    return () => {
+      clearTimeout(timeoutId);
+      if (cleanupFn) {
+        cleanupFn();
+      }
+    };
+  }, [bookings]); // Re-attach when bookings change (new elements rendered)
 
   const handleBookingClick = (booking: Booking) => {
     setSelectedBooking(booking);
@@ -454,6 +704,7 @@ export default function CalendarPage() {
                   unplannedBookings.map((booking) => (
                     <div
                       key={booking.id}
+                      data-booking-id={booking.id}
                       draggable
                       onDragStart={(e) => handleDragStart(e, booking.id)}
                       onDragEnd={handleDragEnd}
@@ -461,14 +712,15 @@ export default function CalendarPage() {
                       className={`relative cursor-move rounded-lg border p-2 text-xs shadow-sm transition-all hover:shadow-md ${
                         theme === "dark"
                           ? draggedBookingId === booking.id
-                            ? "border-orange-600/30 bg-orange-700/50 opacity-50"
+                            ? "border-orange-600/30 bg-orange-700/50 opacity-50 pointer-events-none"
                             : "border-orange-600/30 bg-orange-600/20 text-orange-100"
                           : draggedBookingId === booking.id
-                            ? "border-orange-400 bg-orange-200 opacity-50"
+                            ? "border-orange-400 bg-orange-200 opacity-50 pointer-events-none"
                             : "border-orange-300 bg-orange-100 text-orange-900"
                       }`}
                       style={{
                         height: `${booking.durationHours * hourHeightPx}px`,
+                        touchAction: "none",
                       }}
                     >
                       <div
@@ -682,6 +934,8 @@ export default function CalendarPage() {
                         return (
                           <div
                             key={hour}
+                            data-day={dayStr}
+                            data-hour={hour}
                             onClick={() => handleSlotClick(day, hour)}
                             className={`relative cursor-pointer border-b border-blue-700/10 transition-colors ${
                               isDragging
@@ -747,6 +1001,7 @@ export default function CalendarPage() {
                         return (
                           <div
                             key={booking.id}
+                            data-booking-id={booking.id}
                             draggable
                             onDragStart={(e) => {
                               e.stopPropagation();
@@ -755,12 +1010,13 @@ export default function CalendarPage() {
                             onDragEnd={handleDragEnd}
                             onClick={() => handleBookingClick(booking)}
                             className={`absolute left-1 right-1 flex cursor-move flex-col rounded-lg p-2 text-xs shadow-md transition-all hover:shadow-lg ${getStatusColors(theme)[booking.status]} ${
-                              isDragging ? "opacity-50" : ""
+                              isDragging ? "opacity-50 pointer-events-none" : ""
                             }`}
                             style={{
                               top: `${topPosition + BOOKING_MARGIN_PX / 2}px`,
                               height: `${height}px`,
                               zIndex: isDragging ? 1 : 5,
+                              touchAction: "none",
                             }}
                           >
                             <div className="flex-1">
