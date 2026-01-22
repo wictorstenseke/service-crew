@@ -5,6 +5,8 @@ import { useEscapeKey } from "../hooks/useEscapeKey";
 import type { Mechanic } from "../types";
 import { ArrowLeft, Check, X } from "lucide-react";
 
+const BASE_URL = "/service-crew/";
+
 interface LoginModalProps {
   isOpen: boolean;
   mechanic: Mechanic | null;
@@ -150,15 +152,15 @@ export default function LoginModal({
               : "border-gray-200 bg-white"
           }`}
         >
-          <h2
-            className={`mb-4 text-2xl font-bold ${
-              theme === "dark" ? "text-white" : "text-gray-800"
-            }`}
-          >
-            🚫 Fel kod i verkstaden
-          </h2>
+          <div className="mb-4 flex justify-center">
+            <img
+              src={`${BASE_URL}cancellation.png`}
+              alt="Fel kod"
+              className="h-40 w-40 object-contain"
+            />
+          </div>
           <p
-            className={`mb-6 text-lg ${
+            className={`mb-6 text-center text-lg ${
               theme === "dark" ? "text-blue-100" : "text-gray-700"
             }`}
           >

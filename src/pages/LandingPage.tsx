@@ -8,6 +8,8 @@ import AddMechanicModal from "../components/AddMechanicModal";
 import LoginModal from "../components/LoginModal";
 import { Plus, Building2, RotateCcw, X, Sun, Moon } from "lucide-react";
 
+const BASE_URL = "/service-crew/";
+
 export default function LandingPage() {
   const {
     workshop,
@@ -85,19 +87,27 @@ export default function LandingPage() {
             )}
           </button>
         </div>
-        <div
-          className={`w-full max-w-md rounded-lg border p-8 shadow-2xl backdrop-blur-sm ${
-            theme === "dark"
-              ? "border-blue-700/30 bg-slate-800/90"
-              : "border-gray-200 bg-white"
-          }`}
-        >
-          <h1
-            className={`mb-6 text-center text-3xl font-bold ${
-              theme === "dark" ? "text-white" : "text-gray-800"
+        <div className="flex flex-col items-center">
+          <div className="mb-6 flex justify-center">
+            <img
+              src={`${BASE_URL}004-mechanic.png`}
+              alt="Mekaniker"
+              className="h-[300px] w-[300px] object-contain transition-transform hover:scale-105"
+            />
+          </div>
+          <div
+            className={`w-full min-w-[520px] max-w-md rounded-lg border p-8 shadow-2xl backdrop-blur-sm ${
+              theme === "dark"
+                ? "border-blue-700/30 bg-slate-800/90"
+                : "border-gray-200 bg-white"
             }`}
           >
-            Välkommen till verkstaden
+            <h1
+              className={`mb-6 text-center text-3xl font-bold ${
+                theme === "dark" ? "text-white" : "text-gray-800"
+              }`}
+            >
+            Välkommen till Service Crew
           </h1>
           <div
             className={`rounded-md border p-6 text-center ${
@@ -111,7 +121,7 @@ export default function LandingPage() {
                 theme === "dark" ? "text-blue-100" : "text-blue-900"
               }`}
             >
-              Ingen verkstad än. Skapa en ny för att börja.
+              Kom igång genom att skapa din första verkstad
             </p>
             <div className="flex justify-center">
               <button
@@ -122,6 +132,7 @@ export default function LandingPage() {
                 Skapa verkstad
               </button>
             </div>
+          </div>
           </div>
         </div>
 
@@ -244,18 +255,26 @@ export default function LandingPage() {
       </div>
 
       <div className="flex flex-1 items-center justify-center">
-        <div
-          className={`w-full max-w-2xl rounded-lg border p-8 shadow-2xl backdrop-blur-sm ${
-            theme === "dark"
-              ? "border-blue-700/30 bg-slate-800/90"
-              : "border-gray-200 bg-white"
-          }`}
-        >
-          <h1
-            className={`mb-2 text-center text-4xl font-bold ${
-              theme === "dark" ? "text-white" : "text-gray-800"
+        <div className="flex flex-col items-center">
+          <div className="mb-6 flex justify-center">
+            <img
+              src={`${BASE_URL}004-mechanic.png`}
+              alt="Mekaniker"
+              className="h-[300px] w-[300px] object-contain transition-transform hover:scale-105"
+            />
+          </div>
+          <div
+            className={`w-full min-w-[520px] max-w-2xl rounded-lg border p-8 shadow-2xl backdrop-blur-sm ${
+              theme === "dark"
+                ? "border-blue-700/30 bg-slate-800/90"
+                : "border-gray-200 bg-white"
             }`}
           >
+            <h1
+              className={`mb-2 text-center text-4xl font-bold ${
+                theme === "dark" ? "text-white" : "text-gray-800"
+              }`}
+            >
             {workshop.name}
           </h1>
           <p
@@ -267,29 +286,14 @@ export default function LandingPage() {
           </p>
 
           {mechanics.length === 0 ? (
-            <div
-              className={`rounded-md border p-6 text-center ${
-                theme === "dark"
-                  ? "border-blue-700/30 bg-blue-900/40"
-                  : "border-blue-200 bg-blue-50"
-              }`}
-            >
-              <p
-                className={`mb-4 ${
-                  theme === "dark" ? "text-blue-100" : "text-blue-900"
-                }`}
+            <div className="flex justify-center">
+              <button
+                onClick={() => setShowAddMechanic(true)}
+                className="flex items-center justify-center gap-2 rounded-lg bg-green-600 px-6 py-3 font-semibold text-white transition hover:bg-green-500"
               >
-                Inga mekaniker ännu. Lägg till första mekanikern.
-              </p>
-              <div className="flex justify-center">
-                <button
-                  onClick={() => setShowAddMechanic(true)}
-                  className="flex items-center justify-center gap-2 rounded-lg bg-green-600 px-6 py-3 font-semibold text-white transition hover:bg-green-500"
-                >
-                  <Plus className="h-5 w-5" />
-                  Lägg till mekaniker
-                </button>
-              </div>
+                <Plus className="h-5 w-5" />
+                Lägg till mekaniker
+              </button>
             </div>
           ) : (
             <>
@@ -301,7 +305,7 @@ export default function LandingPage() {
                       setSelectedMechanic(mechanic);
                       setShowLogin(true);
                     }}
-                    className={`rounded-lg border-2 p-6 text-center font-semibold transition ${
+                    className={`flex items-center justify-center gap-4 rounded-lg border-2 p-6 text-center font-semibold transition ${
                       theme === "dark"
                         ? "border-blue-700/50 bg-slate-700/50 text-white hover:border-blue-500 hover:bg-blue-800/50"
                         : "border-gray-300 bg-white text-gray-800 hover:border-blue-500 hover:bg-blue-50"
@@ -311,7 +315,12 @@ export default function LandingPage() {
                         : "w-full max-w-[calc(50%-0.5rem)]"
                     }`}
                   >
-                    {mechanic.name}
+                    <img
+                      src={`${BASE_URL}001-car-engine.png`}
+                      alt="Motor"
+                      className="h-12 w-12 flex-shrink-0 object-contain"
+                    />
+                    <span className="text-xl">{mechanic.name}</span>
                   </button>
                 ))}
               </div>
@@ -327,6 +336,7 @@ export default function LandingPage() {
               </div>
             </>
           )}
+          </div>
         </div>
       </div>
 

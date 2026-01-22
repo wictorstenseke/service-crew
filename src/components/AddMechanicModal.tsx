@@ -112,7 +112,7 @@ export default function AddMechanicModal({
               setCredential(value);
             }}
             placeholder="Ange 4 siffror"
-            className={`w-full rounded-md border px-4 py-2 text-center text-2xl tracking-widest focus:border-blue-500 focus:outline-none ${
+            className={`w-full rounded-md border px-4 py-2 text-center text-lg tracking-widest focus:border-blue-500 focus:outline-none ${
               theme === "dark"
                 ? "border-blue-700/50 bg-slate-700/50 text-white placeholder-blue-300"
                 : "border-gray-300 bg-white text-gray-800"
