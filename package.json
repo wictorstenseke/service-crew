@@ -19,6 +19,7 @@
     "postcss": "^8.4.38",
     "prettier": "^3.3.1",
     "prettier-plugin-tailwindcss": "^0.6.1",
+    "sharp": "^0.34.5",
     "tailwindcss": "^3.4.4",
     "typescript": "^5.9.3",
     "vite": "^7.3.1"
@@ -27,11 +28,12 @@
   "private": true,
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "npm run generate-icon && tsc -b && vite build",
     "lint": "eslint . --ext js,jsx,ts,tsx --report-unused-disable-directives",
     "preview": "vite preview",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx}\"",
-    "typecheck": "tsc -b --noEmit"
+    "typecheck": "tsc -b --noEmit",
+    "generate-icon": "node scripts/generate-icon.js"
   },
   "type": "module",
   "version": "0.0.0"
