@@ -9,8 +9,15 @@ import LoginModal from "../components/LoginModal";
 import { Plus, Building2, RotateCcw, X, Sun, Moon } from "lucide-react";
 
 export default function LandingPage() {
-  const { workshop, mechanics, setWorkshop, resetWorkshop, showToast, theme, toggleTheme } =
-    useApp();
+  const {
+    workshop,
+    mechanics,
+    setWorkshop,
+    resetWorkshop,
+    showToast,
+    theme,
+    toggleTheme,
+  } = useApp();
   const [showCreateWorkshop, setShowCreateWorkshop] = useState(false);
   const [showAddMechanic, setShowAddMechanic] = useState(false);
   const [workshopName, setWorkshopName] = useState("");
@@ -44,11 +51,13 @@ export default function LandingPage() {
 
   if (!workshop) {
     return (
-      <div className={`flex min-h-screen items-center justify-center p-8 relative ${
-        theme === "dark"
-          ? "bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-950"
-          : "bg-gradient-to-br from-gray-100 via-blue-50 to-indigo-50"
-      }`}>
+      <div
+        className={`relative flex min-h-screen items-center justify-center p-8 ${
+          theme === "dark"
+            ? "bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-950"
+            : "bg-gradient-to-br from-gray-100 via-blue-50 to-indigo-50"
+        }`}
+      >
         <div className="absolute right-8 top-8">
           <button
             onClick={toggleTheme}
@@ -57,7 +66,11 @@ export default function LandingPage() {
                 ? "border-white text-white hover:bg-white hover:text-blue-600"
                 : "border-gray-300 text-gray-700 hover:bg-gray-100"
             }`}
-            title={theme === "dark" ? "Växla till ljust läge" : "Växla till mörkt läge"}
+            title={
+              theme === "dark"
+                ? "Växla till ljust läge"
+                : "Växla till mörkt läge"
+            }
           >
             {theme === "dark" ? (
               <>
@@ -72,24 +85,32 @@ export default function LandingPage() {
             )}
           </button>
         </div>
-        <div className={`w-full max-w-md rounded-lg backdrop-blur-sm border p-8 shadow-2xl ${
-          theme === "dark"
-            ? "bg-slate-800/90 border-blue-700/30"
-            : "bg-white border-gray-200"
-        }`}>
-          <h1 className={`mb-6 text-center text-3xl font-bold ${
-            theme === "dark" ? "text-white" : "text-gray-800"
-          }`}>
+        <div
+          className={`w-full max-w-md rounded-lg border p-8 shadow-2xl backdrop-blur-sm ${
+            theme === "dark"
+              ? "border-blue-700/30 bg-slate-800/90"
+              : "border-gray-200 bg-white"
+          }`}
+        >
+          <h1
+            className={`mb-6 text-center text-3xl font-bold ${
+              theme === "dark" ? "text-white" : "text-gray-800"
+            }`}
+          >
             Välkommen till verkstaden
           </h1>
-          <div className={`rounded-md border p-6 text-center ${
-            theme === "dark"
-              ? "bg-blue-900/40 border-blue-700/30"
-              : "bg-blue-50 border-blue-200"
-          }`}>
-            <p className={`mb-4 ${
-              theme === "dark" ? "text-blue-100" : "text-blue-900"
-            }`}>
+          <div
+            className={`rounded-md border p-6 text-center ${
+              theme === "dark"
+                ? "border-blue-700/30 bg-blue-900/40"
+                : "border-blue-200 bg-blue-50"
+            }`}
+          >
+            <p
+              className={`mb-4 ${
+                theme === "dark" ? "text-blue-100" : "text-blue-900"
+              }`}
+            >
               Ingen verkstad än. Skapa en ny för att börja.
             </p>
             <div className="flex justify-center">
@@ -106,17 +127,25 @@ export default function LandingPage() {
 
         {showCreateWorkshop && (
           <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-sm">
-            <div className={`w-full max-w-md rounded-lg backdrop-blur-sm border p-6 shadow-2xl ${
-              theme === "dark"
-                ? "bg-slate-800/95 border-blue-700/30"
-                : "bg-white border-gray-200"
-            }`}>
-              <h2 className={`mb-4 text-2xl font-bold ${
-                theme === "dark" ? "text-white" : "text-gray-800"
-              }`}>Skapa ny verkstad</h2>
-              <p className={`mb-4 ${
-                theme === "dark" ? "text-blue-100" : "text-gray-600"
-              }`}>
+            <div
+              className={`w-full max-w-md rounded-lg border p-6 shadow-2xl backdrop-blur-sm ${
+                theme === "dark"
+                  ? "border-blue-700/30 bg-slate-800/95"
+                  : "border-gray-200 bg-white"
+              }`}
+            >
+              <h2
+                className={`mb-4 text-2xl font-bold ${
+                  theme === "dark" ? "text-white" : "text-gray-800"
+                }`}
+              >
+                Skapa ny verkstad
+              </h2>
+              <p
+                className={`mb-4 ${
+                  theme === "dark" ? "text-blue-100" : "text-gray-600"
+                }`}
+              >
                 Skapa verkstad och öppna portarna.
               </p>
               <input
@@ -162,11 +191,13 @@ export default function LandingPage() {
   }
 
   return (
-    <div className={`flex min-h-screen flex-col p-8 ${
-      theme === "dark"
-        ? "bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-950"
-        : "bg-gradient-to-br from-gray-100 via-blue-50 to-indigo-50"
-    }`}>
+    <div
+      className={`flex min-h-screen flex-col p-8 ${
+        theme === "dark"
+          ? "bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-950"
+          : "bg-gradient-to-br from-gray-100 via-blue-50 to-indigo-50"
+      }`}
+    >
       <div className="absolute right-8 top-8 flex items-center gap-2">
         <button
           onClick={toggleTheme}
@@ -175,7 +206,9 @@ export default function LandingPage() {
               ? "border-white text-white hover:bg-white hover:text-blue-600"
               : "border-gray-300 text-gray-700 hover:bg-gray-100"
           }`}
-          title={theme === "dark" ? "Växla till ljust läge" : "Växla till mörkt läge"}
+          title={
+            theme === "dark" ? "Växla till ljust läge" : "Växla till mörkt läge"
+          }
         >
           {theme === "dark" ? (
             <>
@@ -211,29 +244,41 @@ export default function LandingPage() {
       </div>
 
       <div className="flex flex-1 items-center justify-center">
-        <div className={`w-full max-w-2xl rounded-lg backdrop-blur-sm border p-8 shadow-2xl ${
-          theme === "dark"
-            ? "bg-slate-800/90 border-blue-700/30"
-            : "bg-white border-gray-200"
-        }`}>
-          <h1 className={`mb-2 text-center text-4xl font-bold ${
-            theme === "dark" ? "text-white" : "text-gray-800"
-          }`}>
+        <div
+          className={`w-full max-w-2xl rounded-lg border p-8 shadow-2xl backdrop-blur-sm ${
+            theme === "dark"
+              ? "border-blue-700/30 bg-slate-800/90"
+              : "border-gray-200 bg-white"
+          }`}
+        >
+          <h1
+            className={`mb-2 text-center text-4xl font-bold ${
+              theme === "dark" ? "text-white" : "text-gray-800"
+            }`}
+          >
             {workshop.name}
           </h1>
-          <p className={`mb-8 text-center ${
-            theme === "dark" ? "text-blue-100" : "text-gray-600"
-          }`}>Välj mekaniker</p>
+          <p
+            className={`mb-8 text-center ${
+              theme === "dark" ? "text-blue-100" : "text-gray-600"
+            }`}
+          >
+            Välj mekaniker
+          </p>
 
           {mechanics.length === 0 ? (
-            <div className={`rounded-md border p-6 text-center ${
-              theme === "dark"
-                ? "bg-blue-900/40 border-blue-700/30"
-                : "bg-blue-50 border-blue-200"
-            }`}>
-              <p className={`mb-4 ${
-                theme === "dark" ? "text-blue-100" : "text-blue-900"
-              }`}>
+            <div
+              className={`rounded-md border p-6 text-center ${
+                theme === "dark"
+                  ? "border-blue-700/30 bg-blue-900/40"
+                  : "border-blue-200 bg-blue-50"
+              }`}
+            >
+              <p
+                className={`mb-4 ${
+                  theme === "dark" ? "text-blue-100" : "text-blue-900"
+                }`}
+              >
                 Inga mekaniker ännu. Lägg till första mekanikern.
               </p>
               <div className="flex justify-center">

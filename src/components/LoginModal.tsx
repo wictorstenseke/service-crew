@@ -143,17 +143,27 @@ export default function LoginModal({
   if (showError) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-sm">
-        <div className={`w-full max-w-md rounded-lg backdrop-blur-sm border p-6 shadow-2xl ${
-          theme === "dark"
-            ? "bg-slate-800/95 border-blue-700/30"
-            : "bg-white border-gray-200"
-        }`}>
-          <h2 className={`mb-4 text-2xl font-bold ${
-            theme === "dark" ? "text-white" : "text-gray-800"
-          }`}>🚫 Fel kod i verkstaden</h2>
-          <p className={`mb-6 text-lg ${
-            theme === "dark" ? "text-blue-100" : "text-gray-700"
-          }`}>{errorMessage}</p>
+        <div
+          className={`w-full max-w-md rounded-lg border p-6 shadow-2xl backdrop-blur-sm ${
+            theme === "dark"
+              ? "border-blue-700/30 bg-slate-800/95"
+              : "border-gray-200 bg-white"
+          }`}
+        >
+          <h2
+            className={`mb-4 text-2xl font-bold ${
+              theme === "dark" ? "text-white" : "text-gray-800"
+            }`}
+          >
+            🚫 Fel kod i verkstaden
+          </h2>
+          <p
+            className={`mb-6 text-lg ${
+              theme === "dark" ? "text-blue-100" : "text-gray-700"
+            }`}
+          >
+            {errorMessage}
+          </p>
           <div className="flex gap-2">
             <button
               onClick={() => setShowError(false)}
@@ -180,22 +190,34 @@ export default function LoginModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-sm">
-      <div className={`w-full max-w-md rounded-lg backdrop-blur-sm border p-6 shadow-2xl ${
-        theme === "dark"
-          ? "bg-slate-800/95 border-blue-700/30"
-          : "bg-white border-gray-200"
-      }`}>
-        <h2 className={`mb-2 text-2xl font-bold ${
-          theme === "dark" ? "text-white" : "text-gray-800"
-        }`}>Logga in</h2>
-        <p className={`mb-4 ${
-          theme === "dark" ? "text-blue-100" : "text-gray-600"
-        }`}>{mechanic.name}</p>
+      <div
+        className={`w-full max-w-md rounded-lg border p-6 shadow-2xl backdrop-blur-sm ${
+          theme === "dark"
+            ? "border-blue-700/30 bg-slate-800/95"
+            : "border-gray-200 bg-white"
+        }`}
+      >
+        <h2
+          className={`mb-2 text-2xl font-bold ${
+            theme === "dark" ? "text-white" : "text-gray-800"
+          }`}
+        >
+          Logga in
+        </h2>
+        <p
+          className={`mb-4 ${
+            theme === "dark" ? "text-blue-100" : "text-gray-600"
+          }`}
+        >
+          {mechanic.name}
+        </p>
 
         <div className="mb-6">
-          <p className={`mb-3 text-center text-sm ${
-            theme === "dark" ? "text-blue-200" : "text-gray-600"
-          }`}>
+          <p
+            className={`mb-3 text-center text-sm ${
+              theme === "dark" ? "text-blue-200" : "text-gray-600"
+            }`}
+          >
             Ange din 4-siffriga kod
           </p>
           <div className="mb-4 flex justify-center gap-2">

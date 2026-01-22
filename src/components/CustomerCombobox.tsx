@@ -197,9 +197,13 @@ export default function CustomerCombobox({
               }`}
             >
               <div className="font-medium">{customer.name}</div>
-              <div className={`text-xs ${
-                theme === "dark" ? "text-blue-300" : "text-gray-500"
-              }`}>{customer.phone}</div>
+              <div
+                className={`text-xs ${
+                  theme === "dark" ? "text-blue-300" : "text-gray-500"
+                }`}
+              >
+                {customer.phone}
+              </div>
             </button>
           ))}
         </div>

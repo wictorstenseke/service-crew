@@ -85,34 +85,44 @@ export default function BookingDetailsModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-      <div className={`w-full max-w-4xl rounded-lg p-6 shadow-xl ${
-        theme === "dark"
-          ? "bg-slate-800/95 backdrop-blur-sm border border-blue-700/30"
-          : "bg-white"
-      }`}>
+      <div
+        className={`w-full max-w-4xl rounded-lg p-6 shadow-xl ${
+          theme === "dark"
+            ? "border border-blue-700/30 bg-slate-800/95 backdrop-blur-sm"
+            : "bg-white"
+        }`}
+      >
         {/* Header */}
         <div className="mb-6 flex items-center justify-between gap-4">
-          <h2 className={`text-2xl font-bold ${
-            theme === "dark" ? "text-white" : "text-gray-800"
-          }`}>Jobbkort</h2>
-          
+          <h2
+            className={`text-2xl font-bold ${
+              theme === "dark" ? "text-white" : "text-gray-800"
+            }`}
+          >
+            Jobbkort
+          </h2>
+
           {/* Mechanic buttons and Status dropdown - top right */}
-          <div className="flex flex-row gap-6 items-end">
+          <div className="flex flex-row items-end gap-6">
             {/* Mechanic selection buttons */}
             <div className="text-left">
-              <label className={`mb-2 block text-left text-sm font-medium ${
-                theme === "dark" ? "text-blue-200" : "text-gray-700"
-              }`}>
+              <label
+                className={`mb-2 block text-left text-sm font-medium ${
+                  theme === "dark" ? "text-blue-200" : "text-gray-700"
+                }`}
+              >
                 Mekaniker
               </label>
               {showMechanicError && (
-                <p className={`mb-2 text-xs ${
-                  theme === "dark" ? "text-red-300" : "text-red-600"
-                }`}>
+                <p
+                  className={`mb-2 text-xs ${
+                    theme === "dark" ? "text-red-300" : "text-red-600"
+                  }`}
+                >
                   Välj en mekaniker först
                 </p>
               )}
-              <div className="flex flex-wrap gap-2 justify-start">
+              <div className="flex flex-wrap justify-start gap-2">
                 <button
                   onClick={() => setSelectedMechanicId(null)}
                   className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
@@ -145,9 +155,11 @@ export default function BookingDetailsModal({
 
             {/* Status dropdown */}
             <div className="text-left">
-              <label className={`mb-2 block text-left text-sm font-medium ${
-                theme === "dark" ? "text-blue-200" : "text-gray-700"
-              }`}>
+              <label
+                className={`mb-2 block text-left text-sm font-medium ${
+                  theme === "dark" ? "text-blue-200" : "text-gray-700"
+                }`}
+              >
                 Status
               </label>
               <div className="group relative">
@@ -156,7 +168,7 @@ export default function BookingDetailsModal({
                   onChange={(e) =>
                     setSelectedStatus(e.target.value as BookingStatus)
                   }
-                  className={`w-full cursor-pointer appearance-none rounded-lg border pl-4 pr-10 py-2 text-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 ${
+                  className={`w-full cursor-pointer appearance-none rounded-lg border py-2 pl-4 pr-10 text-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 ${
                     theme === "dark"
                       ? "border-blue-700/50 bg-slate-700 text-white hover:border-blue-600 focus:ring-blue-500/50"
                       : "border-gray-300 bg-white text-gray-800 hover:border-gray-400 focus:ring-blue-200"
@@ -200,78 +212,108 @@ export default function BookingDetailsModal({
           </div>
         </div>
 
-
-
         {/* Details section */}
         <div className="space-y-6">
           {/* Row 1: FORDONSTYP, Åtgärd */}
           <div className="flex flex-col gap-6 md:flex-row md:items-start">
             <div className="text-left">
-              <h3 className={`mb-1 text-left text-xs font-medium uppercase tracking-wide ${
-                theme === "dark" ? "text-blue-300" : "text-gray-500"
-              }`}>
+              <h3
+                className={`mb-1 text-left text-xs font-medium uppercase tracking-wide ${
+                  theme === "dark" ? "text-blue-300" : "text-gray-500"
+                }`}
+              >
                 FORDONSTYP
               </h3>
-              <p className={`text-left text-lg font-semibold ${
-                theme === "dark" ? "text-white" : "text-gray-900"
-              }`}>
+              <p
+                className={`text-left text-lg font-semibold ${
+                  theme === "dark" ? "text-white" : "text-gray-900"
+                }`}
+              >
                 {booking.vehicleType}
               </p>
             </div>
             <div className="text-left">
-              <h3 className={`mb-1 text-left text-xs font-medium uppercase tracking-wide ${
-                theme === "dark" ? "text-blue-300" : "text-gray-500"
-              }`}>
+              <h3
+                className={`mb-1 text-left text-xs font-medium uppercase tracking-wide ${
+                  theme === "dark" ? "text-blue-300" : "text-gray-500"
+                }`}
+              >
                 Åtgärd
               </h3>
-              <p className={`text-left ${
-                theme === "dark" ? "text-white" : "text-gray-900"
-              }`}>{booking.action}</p>
+              <p
+                className={`text-left ${
+                  theme === "dark" ? "text-white" : "text-gray-900"
+                }`}
+              >
+                {booking.action}
+              </p>
             </div>
           </div>
 
           {/* Row 2: Kund, Planerad tid, Tid */}
           <div className="flex flex-col gap-6 md:flex-row md:items-start">
             <div className="text-left">
-              <h3 className={`mb-1 text-left text-xs font-medium uppercase tracking-wide ${
-                theme === "dark" ? "text-blue-300" : "text-gray-500"
-              }`}>
+              <h3
+                className={`mb-1 text-left text-xs font-medium uppercase tracking-wide ${
+                  theme === "dark" ? "text-blue-300" : "text-gray-500"
+                }`}
+              >
                 Kund
               </h3>
-              <p className={`text-left text-lg ${
-                theme === "dark" ? "text-white" : "text-gray-900"
-              }`}>{booking.customerName}</p>
-              <p className={`text-left text-sm ${
-                theme === "dark" ? "text-blue-200" : "text-gray-600"
-              }`}>{booking.customerPhone}</p>
+              <p
+                className={`text-left text-lg ${
+                  theme === "dark" ? "text-white" : "text-gray-900"
+                }`}
+              >
+                {booking.customerName}
+              </p>
+              <p
+                className={`text-left text-sm ${
+                  theme === "dark" ? "text-blue-200" : "text-gray-600"
+                }`}
+              >
+                {booking.customerPhone}
+              </p>
             </div>
             <div className="text-left">
-              <h3 className={`mb-1 text-left text-xs font-medium uppercase tracking-wide ${
-                theme === "dark" ? "text-blue-300" : "text-gray-500"
-              }`}>
+              <h3
+                className={`mb-1 text-left text-xs font-medium uppercase tracking-wide ${
+                  theme === "dark" ? "text-blue-300" : "text-gray-500"
+                }`}
+              >
                 Planerad tid
               </h3>
               {booking.scheduledDate && booking.scheduledStartHour ? (
-                <p className={`text-left text-lg ${
-                  theme === "dark" ? "text-white" : "text-gray-900"
-                }`}>
+                <p
+                  className={`text-left text-lg ${
+                    theme === "dark" ? "text-white" : "text-gray-900"
+                  }`}
+                >
                   {booking.scheduledDate} kl {booking.scheduledStartHour}:00
                 </p>
               ) : (
-                <p className={`text-left text-sm ${
-                  theme === "dark" ? "text-blue-300" : "text-gray-500"
-                }`}>Ej planerad</p>
+                <p
+                  className={`text-left text-sm ${
+                    theme === "dark" ? "text-blue-300" : "text-gray-500"
+                  }`}
+                >
+                  Ej planerad
+                </p>
               )}
             </div>
             <div className="text-left">
-              <h3 className={`mb-1 text-left text-xs font-medium uppercase tracking-wide ${
-                theme === "dark" ? "text-blue-300" : "text-gray-500"
-              }`}>
+              <h3
+                className={`mb-1 text-left text-xs font-medium uppercase tracking-wide ${
+                  theme === "dark" ? "text-blue-300" : "text-gray-500"
+                }`}
+              >
                 Tid
               </h3>
-              <p className={`text-left text-lg ${
-                theme === "dark" ? "text-white" : "text-gray-900"
-              }`}>
+              <p
+                className={`text-left text-lg ${
+                  theme === "dark" ? "text-white" : "text-gray-900"
+                }`}
+              >
                 {booking.durationHours} timmar
               </p>
             </div>
@@ -300,7 +342,6 @@ export default function BookingDetailsModal({
           </button>
         </div>
       </div>
-
     </div>
   );
 }

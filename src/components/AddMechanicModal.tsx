@@ -56,19 +56,27 @@ export default function AddMechanicModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className={`w-full max-w-md rounded-lg p-6 shadow-xl ${
-        theme === "dark"
-          ? "bg-slate-800/95 backdrop-blur-sm border border-blue-700/30"
-          : "bg-white"
-      }`}>
-        <h2 className={`mb-4 text-2xl font-bold ${
-          theme === "dark" ? "text-white" : "text-gray-800"
-        }`}>Lägg till mekaniker</h2>
+      <div
+        className={`w-full max-w-md rounded-lg p-6 shadow-xl ${
+          theme === "dark"
+            ? "border border-blue-700/30 bg-slate-800/95 backdrop-blur-sm"
+            : "bg-white"
+        }`}
+      >
+        <h2
+          className={`mb-4 text-2xl font-bold ${
+            theme === "dark" ? "text-white" : "text-gray-800"
+          }`}
+        >
+          Lägg till mekaniker
+        </h2>
 
         <div className="mb-4">
-          <label className={`mb-2 block text-sm font-semibold ${
-            theme === "dark" ? "text-blue-200" : "text-gray-700"
-          }`}>
+          <label
+            className={`mb-2 block text-sm font-semibold ${
+              theme === "dark" ? "text-blue-200" : "text-gray-700"
+            }`}
+          >
             Namn
           </label>
           <input
@@ -86,9 +94,11 @@ export default function AddMechanicModal({
         </div>
 
         <div className="mb-6">
-          <label className={`mb-2 block text-sm font-semibold ${
-            theme === "dark" ? "text-blue-200" : "text-gray-700"
-          }`}>
+          <label
+            className={`mb-2 block text-sm font-semibold ${
+              theme === "dark" ? "text-blue-200" : "text-gray-700"
+            }`}
+          >
             PIN-kod
           </label>
           <input

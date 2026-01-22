@@ -1,16 +1,21 @@
-// Create Job Card Modal
+// Create Booking From Slot Modal
 import { useState, useEffect } from "react";
 import { useApp } from "../context/AppContext";
 import { generateId } from "../utils/idGenerator";
 import { useEscapeKey } from "../hooks/useEscapeKey";
 import { storageService } from "../services/StorageService";
 import type { VehicleType, Booking, Customer } from "../types";
-import { Plus, Minus, FilePlus, X } from "lucide-react";
+import { Plus, Minus, CalendarPlus, X } from "lucide-react";
 import CustomerCombobox from "./CustomerCombobox";
+import { format } from "date-fns";
+import { sv } from "date-fns/locale";
 
-interface CreateJobCardModalProps {
+interface CreateBookingFromSlotModalProps {
   isOpen: boolean;
   onClose: () => void;
+  day: Date;
+  hour: number;
+  onValidate: (durationHours: number) => { valid: boolean; error?: string };
 }
 
 const defaultVehicleTypes: VehicleType[] = [
@@ -23,10 +28,13 @@ const defaultVehicleTypes: VehicleType[] = [
   "TRAKTOR",
 ];
 
-export default function CreateJobCardModal({
+export default function CreateBookingFromSlotModal({
   isOpen,
   onClose,
-}: CreateJobCardModalProps) {
+  day,
+  hour,
+  onValidate,
+}: CreateBookingFromSlotModalProps) {
   const { addBooking, addCustomer, customers, showToast, theme } = useApp();
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
@@ -113,6 +121,13 @@ export default function CreateJobCardModal({
       return;
     }
 
+    // Validate booking slot
+    const validation = onValidate(durationHours);
+    if (!validation.valid) {
+      showToast(validation.error || "Ogiltig tidslucka", "error");
+      return;
+    }
+
     // Save or update customer if it's a new customer or phone changed
     let customerId: string;
     if (selectedCustomer) {
@@ -159,7 +174,9 @@ export default function CreateJobCardModal({
       vehicleType: selectedVehicleType,
       action: action.trim(),
       durationHours: Math.max(1, durationHours),
-      status: "EJ_PLANERAD",
+      status: "PLANERAD",
+      scheduledDate: format(day, "yyyy-MM-dd"),
+      scheduledStartHour: hour,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -174,7 +191,7 @@ export default function CreateJobCardModal({
     setAction("");
     setDurationHours(1);
 
-    showToast("Jobbkort skapat");
+    showToast("Bokning skapad");
     onClose();
   };
 
@@ -192,8 +209,23 @@ export default function CreateJobCardModal({
             theme === "dark" ? "text-white" : "text-gray-800"
           }`}
         >
-          Skapa jobbkort
+          Skapa bokning
         </h2>
+
+        {/* Pre-filled date/time info */}
+        <div
+          className={`mb-4 rounded-lg p-4 ${
+            theme === "dark" ? "bg-blue-900/30" : "bg-blue-50"
+          }`}
+        >
+          <div
+            className={`text-sm font-medium ${
+              theme === "dark" ? "text-blue-200" : "text-blue-700"
+            }`}
+          >
+            {format(day, "EEEE d MMMM", { locale: sv })} • {hour}:00
+          </div>
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Customer name and phone - same row */}
@@ -386,8 +418,8 @@ export default function CreateJobCardModal({
               type="submit"
               className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-700"
             >
-              <FilePlus className="h-5 w-5" />
-              Skapa jobbkort
+              <CalendarPlus className="h-5 w-5" />
+              Skapa bokning
             </button>
             <button
               type="button"
