@@ -66,7 +66,7 @@ export default function BookingDetailsModal({
 
   // Close dropdown when clicking outside
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
       if (
         statusDropdownRef.current &&
         !statusDropdownRef.current.contains(event.target as Node)
