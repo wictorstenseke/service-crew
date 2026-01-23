@@ -183,8 +183,6 @@ export default function CalendarPage() {
 
   // Drag & drop handlers
   const handleDragStart = (e: React.DragEvent, bookingId: string) => {
-    console.log("🚀 DRAG START CALLED - Desktop drag initiated!", bookingId);
-
     // Set data for HTML5 drag-and-drop API (required for desktop browsers)
     e.dataTransfer.effectAllowed = "move";
     e.dataTransfer.setData("text/plain", bookingId);
@@ -199,10 +197,7 @@ export default function CalendarPage() {
     // Use setTimeout to defer the state update until after the browser's drag initialization
     requestAnimationFrame(() => {
       setDraggedBookingId(bookingId);
-      console.log("✅ State updated, original element should now fade");
     });
-
-    console.log("✅ Drag initiated, cursor should show dragging");
   };
 
   const handleDragEnd = () => {
@@ -214,9 +209,6 @@ export default function CalendarPage() {
     e.preventDefault(); // Allow drop
 
     if (!timeSlotsStartRef.current || !draggedBookingId) {
-      if (!draggedBookingId) {
-        console.log("⚠️ DragOver but no draggedBookingId");
-      }
       return;
     }
 
@@ -561,19 +553,10 @@ export default function CalendarPage() {
     const isTouchDevice =
       "ontouchstart" in window || navigator.maxTouchPoints > 0;
 
-    console.log("🔍 Device detection:", {
-      isTouchDevice,
-      ontouchstart: "ontouchstart" in window,
-      maxTouchPoints: navigator.maxTouchPoints,
-    });
-
     // Skip touch event setup on non-touch devices (desktop mouse-only)
     if (!isTouchDevice) {
-      console.log("✅ Desktop mode - using HTML5 drag-and-drop only");
       return;
     }
-
-    console.log("📱 Touch mode - attaching touch handlers");
 
     let cleanupFn: (() => void) | null = null;
 
@@ -807,13 +790,6 @@ export default function CalendarPage() {
                       key={booking.id}
                       data-booking-id={booking.id}
                       draggable={!isTouchDevice}
-                      onMouseDown={(e) => {
-                        console.log(
-                          "🖱️ MOUSEDOWN on unplanned booking",
-                          booking.id,
-                          e.button,
-                        );
-                      }}
                       onDragStart={(e) => handleDragStart(e, booking.id)}
                       onDragEnd={handleDragEnd}
                       onClick={() => handleBookingClick(booking)}
@@ -1153,13 +1129,6 @@ export default function CalendarPage() {
                             key={booking.id}
                             data-booking-id={booking.id}
                             draggable={!isTouchDevice}
-                            onMouseDown={(e) => {
-                              console.log(
-                                "🖱️ MOUSEDOWN on scheduled booking",
-                                booking.id,
-                                e.button,
-                              );
-                            }}
                             onDragStart={(e) => {
                               e.stopPropagation();
                               handleDragStart(e, booking.id);
