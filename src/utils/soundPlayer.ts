@@ -27,7 +27,7 @@ export function preloadSound(filename: string): Promise<void> {
       const element =
         extension === "mov"
           ? document.createElement("video")
-          : new Audio() as HTMLAudioElement;
+          : new Audio();
 
       element.src = soundPath;
       element.preload = "auto";
@@ -87,7 +87,8 @@ export function playSound(
         clone.addEventListener(
           "ended",
           () => {
-            clone.remove();
+            clone.src = "";
+            clone.load();
           },
           { once: true },
         );
@@ -110,7 +111,7 @@ export function playSound(
       const element =
         extension === "mov"
           ? document.createElement("video")
-          : new Audio() as HTMLAudioElement;
+          : new Audio();
 
       element.src = soundPath;
       element.volume = Math.max(0, Math.min(1, volume));
@@ -119,7 +120,8 @@ export function playSound(
       element.addEventListener(
         "ended",
         () => {
-          element.remove();
+          element.src = "";
+          element.load();
         },
         { once: true },
       );
