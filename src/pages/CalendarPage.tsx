@@ -38,11 +38,11 @@ const getStatusColors = (
   if (theme === "dark") {
     return {
       EJ_PLANERAD:
-        "bg-orange-600/40 hover:bg-orange-600/50 text-orange-100 border border-orange-600/30",
+        "bg-red-600/40 hover:bg-red-600/50 text-red-100 border border-red-600/30",
       PLANERAD:
-        "bg-blue-600/40 hover:bg-blue-600/50 text-blue-100 border border-blue-600/30",
-      PAGAR:
         "bg-yellow-600/40 hover:bg-yellow-600/50 text-yellow-100 border border-yellow-600/30",
+      PAGAR:
+        "bg-blue-600/40 hover:bg-blue-600/50 text-blue-100 border border-blue-600/30",
       KLAR: "bg-green-600/40 hover:bg-green-600/50 text-green-100 border border-green-600/30",
       HAMTAD:
         "bg-gray-600/40 hover:bg-gray-600/50 text-gray-100 border border-gray-600/30",
@@ -50,11 +50,11 @@ const getStatusColors = (
   } else {
     return {
       EJ_PLANERAD:
-        "bg-orange-100 hover:bg-orange-200 text-orange-900 border border-orange-300",
+        "bg-red-100 hover:bg-red-200 text-red-900 border border-red-300",
       PLANERAD:
-        "bg-blue-100 hover:bg-blue-200 text-blue-900 border border-blue-300",
-      PAGAR:
         "bg-yellow-100 hover:bg-yellow-200 text-yellow-900 border border-yellow-300",
+      PAGAR:
+        "bg-blue-100 hover:bg-blue-200 text-blue-900 border border-blue-300",
       KLAR: "bg-green-100 hover:bg-green-200 text-green-900 border border-green-300",
       HAMTAD:
         "bg-gray-100 hover:bg-gray-200 text-gray-900 border border-gray-300",
@@ -328,25 +328,71 @@ export default function CalendarPage() {
     ghost.style.fontSize = "0.75rem";
     ghost.style.boxShadow = "0 10px 15px -3px rgba(0, 0, 0, 0.3)";
 
-    // Apply theme-aware colors
-    if (booking.status === "EJ_PLANERAD") {
-      ghost.style.backgroundColor =
-        theme === "dark" ? "rgba(194, 65, 12, 0.5)" : "rgba(254, 243, 199, 1)";
-      ghost.style.color =
-        theme === "dark" ? "rgba(254, 243, 199, 1)" : "rgba(124, 45, 18, 1)";
-      ghost.style.border =
-        theme === "dark"
-          ? "1px solid rgba(194, 65, 12, 0.3)"
-          : "1px solid rgba(253, 186, 116, 1)";
-    } else {
-      ghost.style.backgroundColor =
-        theme === "dark" ? "rgba(37, 99, 235, 0.4)" : "rgba(219, 234, 254, 1)";
-      ghost.style.color =
-        theme === "dark" ? "rgba(191, 219, 254, 1)" : "rgba(30, 58, 138, 1)";
-      ghost.style.border =
-        theme === "dark"
-          ? "1px solid rgba(37, 99, 235, 0.3)"
-          : "1px solid rgba(147, 197, 253, 1)";
+    // Apply theme-aware colors based on status
+    switch (booking.status) {
+      case "EJ_PLANERAD":
+        // Red for unplanned
+        ghost.style.backgroundColor =
+          theme === "dark"
+            ? "rgba(220, 38, 38, 0.5)"
+            : "rgba(254, 226, 226, 1)";
+        ghost.style.color =
+          theme === "dark" ? "rgba(254, 226, 226, 1)" : "rgba(153, 27, 27, 1)";
+        ghost.style.border =
+          theme === "dark"
+            ? "1px solid rgba(220, 38, 38, 0.3)"
+            : "1px solid rgba(252, 165, 165, 1)";
+        break;
+      case "PLANERAD":
+        // Yellow for planned
+        ghost.style.backgroundColor =
+          theme === "dark"
+            ? "rgba(202, 138, 4, 0.5)"
+            : "rgba(254, 243, 199, 1)";
+        ghost.style.color =
+          theme === "dark" ? "rgba(254, 243, 199, 1)" : "rgba(113, 63, 18, 1)";
+        ghost.style.border =
+          theme === "dark"
+            ? "1px solid rgba(202, 138, 4, 0.3)"
+            : "1px solid rgba(253, 224, 71, 1)";
+        break;
+      case "PAGAR":
+        // Blue for ongoing
+        ghost.style.backgroundColor =
+          theme === "dark"
+            ? "rgba(37, 99, 235, 0.4)"
+            : "rgba(219, 234, 254, 1)";
+        ghost.style.color =
+          theme === "dark" ? "rgba(191, 219, 254, 1)" : "rgba(30, 58, 138, 1)";
+        ghost.style.border =
+          theme === "dark"
+            ? "1px solid rgba(37, 99, 235, 0.3)"
+            : "1px solid rgba(147, 197, 253, 1)";
+        break;
+      case "KLAR":
+        // Green for completed
+        ghost.style.backgroundColor =
+          theme === "dark"
+            ? "rgba(22, 163, 74, 0.4)"
+            : "rgba(220, 252, 231, 1)";
+        ghost.style.color =
+          theme === "dark" ? "rgba(187, 247, 208, 1)" : "rgba(20, 83, 45, 1)";
+        ghost.style.border =
+          theme === "dark"
+            ? "1px solid rgba(22, 163, 74, 0.3)"
+            : "1px solid rgba(134, 239, 172, 1)";
+        break;
+      case "HAMTAD":
+        // Gray for picked up
+        ghost.style.backgroundColor =
+          theme === "dark" ? "rgba(75, 85, 99, 0.4)" : "rgba(243, 244, 246, 1)";
+        ghost.style.color =
+          theme === "dark" ? "rgba(209, 213, 219, 1)" : "rgba(31, 41, 55, 1)";
+        ghost.style.border =
+          theme === "dark"
+            ? "1px solid rgba(75, 85, 99, 0.3)"
+            : "1px solid rgba(209, 213, 219, 1)";
+        break;
     }
 
     ghost.innerHTML = `

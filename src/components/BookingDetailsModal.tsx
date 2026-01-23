@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { useApp } from "../context/AppContext";
 import { useEscapeKey } from "../hooks/useEscapeKey";
 import type { Booking, BookingStatus } from "../types";
-import { Save, X, ChevronDown, AlertCircle } from "lucide-react";
+import { Save, X, ChevronDown } from "lucide-react";
 
 interface BookingDetailsModalProps {
   booking: Booking | null;
@@ -51,10 +51,6 @@ export default function BookingDetailsModal({
       setSelectedMechanicId(booking.mechanicId || null);
     }
   }, [isOpen, booking]);
-
-  // Check if mechanic is required for current status
-  const requiresMechanic = false;
-  const showMechanicError = false;
 
   const handleClose = () => {
     onClose();

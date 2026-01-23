@@ -217,6 +217,20 @@ class StorageService {
       console.error("Error saving custom vehicle type:", error);
     }
   }
+
+  removeCustomVehicleType(type: string): void {
+    try {
+      const customTypes = this.getCustomVehicleTypes();
+      const upperType = type.trim().toUpperCase();
+      const filtered = customTypes.filter((t) => t !== upperType);
+      localStorage.setItem(
+        "service-crew-custom-vehicle-types",
+        JSON.stringify(filtered),
+      );
+    } catch (error) {
+      console.error("Error removing custom vehicle type:", error);
+    }
+  }
 }
 
 // Export singleton instance

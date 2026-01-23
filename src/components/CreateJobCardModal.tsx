@@ -5,7 +5,7 @@ import { generateId } from "../utils/idGenerator";
 import { useEscapeKey } from "../hooks/useEscapeKey";
 import { storageService } from "../services/StorageService";
 import type { VehicleType, Booking, Customer } from "../types";
-import { Plus, Minus, FilePlus, X } from "lucide-react";
+import { Plus, Minus, FilePlus, X, Trash2 } from "lucide-react";
 import CustomerCombobox from "./CustomerCombobox";
 import { defaultVehicleTypes } from "../utils/vehicleTypes";
 
@@ -103,6 +103,25 @@ export default function CreateJobCardModal({
       setShowAddTypeInput(false);
       setNewTypeInput("");
     }
+  };
+
+  const handleRemoveType = (type: string, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent selecting the type when clicking delete
+
+    // Confirmation dialog
+    if (
+      !window.confirm(`Är du säker på att du vill ta bort typen "${type}"?`)
+    ) {
+      return;
+    }
+
+    if (selectedVehicleType === type) {
+      // If the type being removed is currently selected, switch to default
+      setSelectedVehicleType("CYKEL");
+    }
+    storageService.removeCustomVehicleType(type);
+    setCustomVehicleTypes(customVehicleTypes.filter((t) => t !== type));
+    showToast("Typ borttagen");
   };
 
   useEscapeKey(handleCancel, isOpen);
@@ -278,22 +297,41 @@ export default function CreateJobCardModal({
           {/* Vehicle type */}
           <div>
             <div className="flex flex-wrap gap-2">
-              {allVehicleTypes.map((type) => (
-                <button
-                  key={type}
-                  type="button"
-                  onClick={() => setSelectedVehicleType(type)}
-                  className={`rounded-full px-4 py-2 text-sm font-medium transition ${
-                    selectedVehicleType === type
-                      ? "bg-blue-600 text-white"
-                      : theme === "dark"
-                        ? "bg-slate-700 text-blue-200 hover:bg-slate-600"
-                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                  }`}
-                >
-                  {type}
-                </button>
-              ))}
+              {allVehicleTypes.map((type) => {
+                const isCustom = customVehicleTypes.includes(type);
+                return (
+                  <button
+                    key={type}
+                    type="button"
+                    onClick={() => setSelectedVehicleType(type)}
+                    className={`group relative flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition ${
+                      selectedVehicleType === type
+                        ? "bg-blue-600 text-white"
+                        : theme === "dark"
+                          ? "bg-slate-700 text-blue-200 hover:bg-slate-600"
+                          : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                    }`}
+                  >
+                    <span>{type}</span>
+                    {isCustom && (
+                      <button
+                        type="button"
+                        onClick={(e) => handleRemoveType(type, e)}
+                        className={`ml-1 rounded-full p-0.5 transition ${
+                          selectedVehicleType === type
+                            ? "text-white/80 hover:bg-white/20 hover:text-white"
+                            : theme === "dark"
+                              ? "text-red-400 hover:bg-red-900/30 hover:text-red-300"
+                              : "text-red-600 hover:bg-red-50 hover:text-red-700"
+                        }`}
+                        title="Ta bort typ"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                  </button>
+                );
+              })}
               {showAddTypeInput ? (
                 <div className="flex items-center gap-2">
                   <input

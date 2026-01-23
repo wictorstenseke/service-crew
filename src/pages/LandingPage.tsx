@@ -104,7 +104,7 @@ export default function LandingPage() {
             <img
               src={`${BASE_URL}004-mechanic.png`}
               alt="Mekaniker"
-              className="h-[200px] w-[200px] xl:h-[300px] xl:w-[300px] object-contain transition-transform hover:scale-105"
+              className="h-[200px] w-[200px] object-contain transition-transform hover:scale-105 xl:h-[300px] xl:w-[300px]"
             />
           </div>
           <div
@@ -316,7 +316,7 @@ export default function LandingPage() {
             <img
               src={`${BASE_URL}${workshop.icon || "004-mechanic.png"}`}
               alt="Verkstad"
-              className="h-[200px] w-[200px] xl:h-[300px] xl:w-[300px] object-contain transition-transform hover:scale-105"
+              className="h-[200px] w-[200px] object-contain transition-transform hover:scale-105 xl:h-[300px] xl:w-[300px]"
             />
           </div>
           <div
