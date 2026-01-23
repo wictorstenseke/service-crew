@@ -6,7 +6,7 @@ import BookingDetailsModal from "../components/BookingDetailsModal";
 import SettingsModal from "../components/SettingsModal.tsx";
 import { useResponsiveHourHeight } from "../hooks/useResponsiveHourHeight";
 import type { Booking } from "../types";
-import { playSound, preloadSound } from "../utils/soundPlayer";
+import { playSound } from "../utils/soundPlayer";
 import {
   format,
   startOfWeek,
@@ -125,17 +125,6 @@ export default function CalendarPage() {
   const touchOffsetRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const touchStartPosRef = useRef<{ x: number; y: number } | null>(null);
   const hasMovedRef = useRef<boolean>(false);
-
-  // Preload drop sound effects for instant playback
-  useEffect(() => {
-    // Preload both drop sounds on component mount
-    preloadSound("done.mp3").catch((err) =>
-      console.warn("Failed to preload done.mp3:", err),
-    );
-    preloadSound("fart.mov").catch((err) =>
-      console.warn("Failed to preload fart.mov:", err),
-    );
-  }, []); // Empty dependency array - only run once on mount
 
   // Generate days for the current week (Monday-Sunday)
   const weekDays = useMemo(() => {
