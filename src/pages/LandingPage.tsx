@@ -7,6 +7,7 @@ import type { Workshop, Mechanic } from "../types";
 import AddMechanicModal from "../components/AddMechanicModal";
 import LoginModal from "../components/LoginModal";
 import { Plus, Building2, RotateCcw, X, Sun, Moon } from "lucide-react";
+import { playSound } from "../utils/soundPlayer";
 
 const BASE_URL = "/service-crew/";
 
@@ -60,6 +61,7 @@ export default function LandingPage() {
     setWorkshopName("");
     setSelectedIcon("004-mechanic.png");
     setShowCreateWorkshop(false);
+    playSound("borr.mov");
     showToast("Ny verkstad skapad");
   };
 

@@ -8,6 +8,7 @@ import type { VehicleType, Booking, Customer } from "../types";
 import { Plus, Minus, FilePlus, X, Trash2 } from "lucide-react";
 import CustomerCombobox from "./CustomerCombobox";
 import { defaultVehicleTypes } from "../utils/vehicleTypes";
+import { playSound } from "../utils/soundPlayer";
 
 interface CreateJobCardModalProps {
   isOpen: boolean;
@@ -230,6 +231,7 @@ export default function CreateJobCardModal({
     setAction("");
     setDurationHours(1);
 
+    playSound("check.mp3");
     showToast("Jobbkort skapat");
     onClose();
   };

@@ -6,6 +6,7 @@ import BookingDetailsModal from "../components/BookingDetailsModal";
 import SettingsModal from "../components/SettingsModal";
 import { useResponsiveHourHeight } from "../hooks/useResponsiveHourHeight";
 import type { Booking } from "../types";
+import { playSound } from "../utils/soundPlayer";
 import {
   format,
   startOfWeek,
@@ -315,6 +316,7 @@ export default function CalendarPage() {
     updateBooking(updatedBooking);
     setDraggedBookingId(null);
     setHoveredSlot(null);
+    playSound("done.mp3");
     showToast(booking.status === "EJ_PLANERAD" ? "Planerat" : "Omplanerat");
   };
 

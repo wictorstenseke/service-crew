@@ -5,6 +5,7 @@ import { generateId } from "../utils/idGenerator";
 import { useEscapeKey } from "../hooks/useEscapeKey";
 import type { Mechanic } from "../types";
 import { Save, X } from "lucide-react";
+import { playSound } from "../utils/soundPlayer";
 
 interface AddMechanicModalProps {
   isOpen: boolean;
@@ -50,6 +51,7 @@ export default function AddMechanicModal({
     addMechanic(newMechanic);
     setName("");
     setCredential("");
+    playSound("tuta.mp3");
     showToast("Mekaniker tillagd");
     onClose();
   };

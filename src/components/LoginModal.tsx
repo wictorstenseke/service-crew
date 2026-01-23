@@ -4,6 +4,7 @@ import { useApp } from "../context/AppContext";
 import { useEscapeKey } from "../hooks/useEscapeKey";
 import type { Mechanic } from "../types";
 import { ArrowLeft, Check, X } from "lucide-react";
+import { playSound } from "../utils/soundPlayer";
 
 const BASE_URL = "/service-crew/";
 
@@ -71,6 +72,7 @@ export default function LoginModal({
       // Success!
       setCurrentMechanicId(mechanic.id);
       setPin("");
+      playSound("inlogg.mp3");
       onSuccess();
     } else {
       // Wrong code - show playful error
@@ -109,6 +111,7 @@ export default function LoginModal({
             // Success!
             setCurrentMechanicId(mechanic.id);
             setPin("");
+            playSound("inlogg.mp3");
             onSuccess();
           } else {
             // Wrong code - show playful error
@@ -133,6 +136,7 @@ export default function LoginModal({
     setCurrentMechanicId(mechanic.id);
     setPin("");
     setShowError(false);
+    playSound("inlogg.mp3");
     onSuccess();
   };
 

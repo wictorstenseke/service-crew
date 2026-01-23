@@ -4,6 +4,7 @@ import { useApp } from "../context/AppContext";
 import { useEscapeKey } from "../hooks/useEscapeKey";
 import type { Booking, BookingStatus } from "../types";
 import { Save, X, ChevronDown } from "lucide-react";
+import { playSound } from "../utils/soundPlayer";
 
 interface BookingDetailsModalProps {
   booking: Booking | null;
@@ -93,6 +94,13 @@ export default function BookingDetailsModal({
     };
 
     updateBooking(updatedBooking);
+
+    // Play sound effects based on status
+    if (selectedStatus === "PAGAR") {
+      playSound("borr.mov");
+    } else if (selectedStatus === "HAMTAD") {
+      playSound("betalt.mp3");
+    }
 
     // Show success toast based on status
     const statusMessages: Record<BookingStatus, string> = {
