@@ -41,6 +41,9 @@ export default function CreateJobCardModal({
   const [action, setAction] = useState("");
   const [durationHours, setDurationHours] = useState(1);
   const [customVehicleTypes, setCustomVehicleTypes] = useState<string[]>([]);
+  const [pendingRemoveType, setPendingRemoveType] = useState<string | null>(
+    null,
+  );
   const [showAddTypeInput, setShowAddTypeInput] = useState(false);
   const [newTypeInput, setNewTypeInput] = useState("");
 
@@ -105,16 +108,12 @@ export default function CreateJobCardModal({
     }
   };
 
-  const handleRemoveType = (type: string, e: React.MouseEvent) => {
+  const handleRemoveTypeClick = (type: string, e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent selecting the type when clicking delete
+    setPendingRemoveType(type);
+  };
 
-    // Confirmation dialog
-    if (
-      !window.confirm(`Är du säker på att du vill ta bort typen "${type}"?`)
-    ) {
-      return;
-    }
-
+  const performRemoveType = (type: string) => {
     if (selectedVehicleType === type) {
       // If the type being removed is currently selected, switch to default
       setSelectedVehicleType("CYKEL");
@@ -122,6 +121,16 @@ export default function CreateJobCardModal({
     storageService.removeCustomVehicleType(type);
     setCustomVehicleTypes(customVehicleTypes.filter((t) => t !== type));
     showToast("Typ borttagen");
+  };
+
+  const handleConfirmRemoveType = () => {
+    if (!pendingRemoveType) return;
+    performRemoveType(pendingRemoveType);
+    setPendingRemoveType(null);
+  };
+
+  const handleCancelRemoveType = () => {
+    setPendingRemoveType(null);
   };
 
   useEscapeKey(handleCancel, isOpen);
@@ -316,7 +325,7 @@ export default function CreateJobCardModal({
                     {isCustom && (
                       <button
                         type="button"
-                        onClick={(e) => handleRemoveType(type, e)}
+                        onClick={(e) => handleRemoveTypeClick(type, e)}
                         className={`ml-1 rounded-full p-0.5 transition ${
                           selectedVehicleType === type
                             ? "text-white/80 hover:bg-white/20 hover:text-white"
@@ -382,6 +391,40 @@ export default function CreateJobCardModal({
                   <Plus className="h-4 w-4" />
                   ADD
                 </button>
+              )}
+              {pendingRemoveType && (
+                <div
+                  className={`mt-3 flex w-full items-center justify-between rounded-lg border px-3 py-2 text-sm ${
+                    theme === "dark"
+                      ? "border-red-500/40 bg-red-900/40 text-red-100"
+                      : "border-red-500/40 bg-red-50 text-red-800"
+                  }`}
+                >
+                  <span>
+                    Är du säker på att du vill ta bort typen&nbsp; &quot;
+                    {pendingRemoveType}&quot;?
+                  </span>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={handleCancelRemoveType}
+                      className={`rounded px-3 py-1 font-medium ${
+                        theme === "dark"
+                          ? "bg-slate-700 text-blue-200 hover:bg-slate-600"
+                          : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                      }`}
+                    >
+                      Avbryt
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleConfirmRemoveType}
+                      className="rounded bg-red-600 px-3 py-1 font-medium text-white hover:bg-red-700"
+                    >
+                      Ta bort
+                    </button>
+                  </div>
+                </div>
               )}
             </div>
           </div>

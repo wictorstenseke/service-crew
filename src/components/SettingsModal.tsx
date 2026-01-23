@@ -17,13 +17,8 @@ function formatHour(hour: number): string {
 }
 
 export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
-  const {
-    theme,
-    weeklyEvents,
-    addWeeklyEvent,
-    deleteWeeklyEvent,
-    showToast,
-  } = useApp();
+  const { theme, weeklyEvents, addWeeklyEvent, deleteWeeklyEvent, showToast } =
+    useApp();
 
   const [title, setTitle] = useState("");
   const [fromHour, setFromHour] = useState(9);
@@ -291,5 +286,3 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     </div>
   );
 }
-
-

@@ -144,7 +144,9 @@ class StorageService {
     if (!state.weeklyEvents) {
       state.weeklyEvents = [];
     }
-    const existingIndex = state.weeklyEvents.findIndex((e) => e.id === event.id);
+    const existingIndex = state.weeklyEvents.findIndex(
+      (e) => e.id === event.id,
+    );
 
     if (existingIndex >= 0) {
       state.weeklyEvents[existingIndex] = event;
