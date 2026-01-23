@@ -664,7 +664,7 @@ export default function CalendarPage() {
       }`}
     >
       {/* Main content */}
-      <main className="mx-auto max-w-[95%] px-2 py-6 md:px-4 lg:px-4 xl:max-w-[1600px]">
+      <main className="mx-auto max-w-[95%] px-2 py-4 md:px-4 md:py-5 lg:px-4 xl:max-w-[1600px]">
         {/* Week navigation */}
         <div className="mb-4 flex items-center gap-4">
           {/* Spacer to match unplanned column width */}

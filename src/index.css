@@ -19,3 +19,66 @@
     background-size: 800% 800%;
     animation: gradient 15s ease infinite;
 }
+
+/* iPad-only scroll lock */
+html.is-ipad {
+    height: 100% !important;
+    overflow: hidden !important;
+    position: fixed !important;
+    width: 100% !important;
+    top: 0;
+    left: 0;
+    /* Ensure background fills entire screen including behind status bar */
+    background-color: transparent;
+}
+
+html.is-ipad body {
+    height: 100vh !important;
+    max-height: 100vh !important;
+    overflow: hidden !important;
+    position: relative !important;
+    width: 100% !important;
+    overscroll-behavior: none !important;
+    overscroll-behavior-y: none !important;
+    overscroll-behavior-x: none !important;
+    -webkit-overflow-scrolling: auto !important;
+    /* Ensure background extends behind status bar */
+    background-color: inherit;
+    min-height: 100vh;
+}
+
+html.is-ipad #root {
+    height: 100% !important;
+    max-height: 100vh !important;
+    overflow: hidden !important;
+    position: relative !important;
+    width: 100% !important;
+    /* Ensure background fills entire container */
+    min-height: 100%;
+}
+
+/* Prevent any scrolling on child elements that might cause page scroll */
+html.is-ipad * {
+    overscroll-behavior: none;
+}
+
+/* Theme-matched background colors for iPad to blend with status bar */
+/* Dark mode: transparent/translucent status bar with dark background */
+html.is-ipad.dark {
+    background-color: #0f172a; /* slate-900 - matches dark theme gradient start */
+}
+
+html.is-ipad.dark body,
+html.is-ipad.dark #root {
+    background-color: #0f172a; /* slate-900 - matches dark theme gradient start */
+}
+
+/* Light mode: solid background */
+html.is-ipad.light {
+    background-color: #f3f4f6; /* gray-100 - matches light theme gradient start */
+}
+
+html.is-ipad.light body,
+html.is-ipad.light #root {
+    background-color: #f3f4f6; /* gray-100 - matches light theme gradient start */
+}
