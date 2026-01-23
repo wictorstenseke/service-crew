@@ -176,7 +176,7 @@ export default function BookingDetailsModal({
           </div>
 
           {/* Status dropdown - right */}
-          <div className="text-left min-w-[140px]">
+          <div className="min-w-[140px] text-left">
             <label
               className={`mb-2 block text-left text-sm font-medium ${
                 theme === "dark" ? "text-blue-200" : "text-gray-700"
@@ -184,68 +184,68 @@ export default function BookingDetailsModal({
             >
               Status
             </label>
-              <div className="relative" ref={statusDropdownRef}>
-                <button
-                  type="button"
-                  onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
-                  className={`flex w-full items-center justify-between rounded-lg border px-4 py-2 text-sm font-medium transition focus:border-blue-500 focus:outline-none focus:ring-2 ${
+            <div className="relative" ref={statusDropdownRef}>
+              <button
+                type="button"
+                onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
+                className={`flex w-full items-center justify-between rounded-lg border px-4 py-2 text-sm font-medium transition focus:border-blue-500 focus:outline-none focus:ring-2 ${
+                  theme === "dark"
+                    ? "border-blue-700/50 bg-slate-700 text-white hover:border-blue-600 focus:ring-blue-500/50"
+                    : "border-gray-300 bg-white text-gray-800 hover:border-gray-400 focus:ring-blue-200"
+                }`}
+              >
+                <span className="flex-1 text-left">
+                  {selectedStatus
+                    ? statusLabels[selectedStatus]
+                    : "Välj status"}
+                </span>
+                <ChevronDown
+                  className={`ml-2 h-4 w-4 flex-shrink-0 transition-transform ${
+                    isStatusDropdownOpen ? "rotate-180" : ""
+                  } ${theme === "dark" ? "text-blue-400" : "text-gray-400"}`}
+                />
+              </button>
+              {isStatusDropdownOpen && (
+                <div
+                  className={`absolute z-50 mt-1 w-full rounded-lg border shadow-lg ${
                     theme === "dark"
-                      ? "border-blue-700/50 bg-slate-700 text-white hover:border-blue-600 focus:ring-blue-500/50"
-                      : "border-gray-300 bg-white text-gray-800 hover:border-gray-400 focus:ring-blue-200"
+                      ? "border-blue-700/50 bg-slate-700"
+                      : "border-gray-300 bg-white"
                   }`}
                 >
-                  <span className="flex-1 text-left">
-                    {selectedStatus ? statusLabels[selectedStatus] : "Välj status"}
-                  </span>
-                  <ChevronDown
-                    className={`ml-2 h-4 w-4 flex-shrink-0 transition-transform ${
-                      isStatusDropdownOpen ? "rotate-180" : ""
-                    } ${
-                      theme === "dark" ? "text-blue-400" : "text-gray-400"
-                    }`}
-                  />
-                </button>
-                {isStatusDropdownOpen && (
-                  <div
-                    className={`absolute z-50 mt-1 w-full rounded-lg border shadow-lg ${
-                      theme === "dark"
-                        ? "border-blue-700/50 bg-slate-700"
-                        : "border-gray-300 bg-white"
-                    }`}
-                  >
-                    {(
-                      [
-                        "EJ_PLANERAD",
-                        "PLANERAD",
-                        "PAGAR",
-                        "KLAR",
-                        "HAMTAD",
-                      ] as BookingStatus[]
-                    ).map((status) => (
-                      <button
-                        key={status}
-                        type="button"
-                        onClick={() => {
-                          setSelectedStatus(status);
-                          setIsStatusDropdownOpen(false);
-                        }}
-                        className={`w-full px-4 py-2 text-left text-sm transition first:rounded-t-lg last:rounded-b-lg ${
-                          selectedStatus === status
-                            ? theme === "dark"
-                              ? "bg-blue-600 text-white"
-                              : "bg-blue-100 text-blue-900"
-                            : theme === "dark"
-                              ? "text-white hover:bg-slate-600"
-                              : "text-gray-800 hover:bg-gray-100"
-                        }`}
-                      >
-                        {statusLabels[status]}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+                  {(
+                    [
+                      "EJ_PLANERAD",
+                      "PLANERAD",
+                      "PAGAR",
+                      "KLAR",
+                      "HAMTAD",
+                    ] as BookingStatus[]
+                  ).map((status) => (
+                    <button
+                      key={status}
+                      type="button"
+                      onClick={() => {
+                        setSelectedStatus(status);
+                        setIsStatusDropdownOpen(false);
+                      }}
+                      className={`w-full px-4 py-2 text-left text-sm transition first:rounded-t-lg last:rounded-b-lg ${
+                        selectedStatus === status
+                          ? theme === "dark"
+                            ? "bg-blue-600 text-white"
+                            : "bg-blue-100 text-blue-900"
+                          : theme === "dark"
+                            ? "text-white hover:bg-slate-600"
+                            : "text-gray-800 hover:bg-gray-100"
+                      }`}
+                    >
+                      {statusLabels[status]}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
+          </div>
         </div>
 
         {/* Details section */}

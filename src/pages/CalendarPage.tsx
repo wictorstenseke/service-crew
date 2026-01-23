@@ -75,10 +75,11 @@ export default function CalendarPage() {
     theme,
     toggleTheme,
   } = useApp();
-  
+
   // Detect if device is touch-capable (for conditional draggable attribute)
-  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-  
+  const isTouchDevice =
+    "ontouchstart" in window || navigator.maxTouchPoints > 0;
+
   // Responsive hour height based on viewport
   const hourHeightPx = useResponsiveHourHeight();
   const [currentWeekStart, setCurrentWeekStart] = useState<Date>(() =>
@@ -181,24 +182,24 @@ export default function CalendarPage() {
   // Drag & drop handlers
   const handleDragStart = (e: React.DragEvent, bookingId: string) => {
     console.log("🚀 DRAG START CALLED - Desktop drag initiated!", bookingId);
-    
+
     // Set data for HTML5 drag-and-drop API (required for desktop browsers)
     e.dataTransfer.effectAllowed = "move";
     e.dataTransfer.setData("text/plain", bookingId);
     e.dataTransfer.dropEffect = "move";
-    
+
     // Capture the offset from the cursor to the dragged element's top edge
     const target = e.currentTarget as HTMLElement;
     const rect = target.getBoundingClientRect();
     dragOffsetRef.current = e.clientY - rect.top;
-    
+
     // IMPORTANT: Set state AFTER browser has captured the drag image
     // Use setTimeout to defer the state update until after the browser's drag initialization
     requestAnimationFrame(() => {
       setDraggedBookingId(bookingId);
       console.log("✅ State updated, original element should now fade");
     });
-    
+
     console.log("✅ Drag initiated, cursor should show dragging");
   };
 
@@ -209,31 +210,32 @@ export default function CalendarPage() {
 
   const handleDragOver = (e: React.DragEvent, day: Date) => {
     e.preventDefault(); // Allow drop
-    
+
     if (!timeSlotsStartRef.current || !draggedBookingId) {
       if (!draggedBookingId) {
         console.log("⚠️ DragOver but no draggedBookingId");
       }
       return;
     }
-    
+
     // Calculate the dragged element's top edge position
     const clientY = e.clientY;
     const elementTopY = clientY - dragOffsetRef.current;
-    
+
     // Get time slots container's position (this excludes the header)
     const timeSlotsRect = timeSlotsStartRef.current.getBoundingClientRect();
     const relativeY = elementTopY - timeSlotsRect.top;
-    
+
     // Calculate which hour slot the block's top edge is in
-    const calculatedHour = WORK_START_HOUR + Math.floor(relativeY / hourHeightPx);
-    
+    const calculatedHour =
+      WORK_START_HOUR + Math.floor(relativeY / hourHeightPx);
+
     // Clamp to valid range (WORK_START_HOUR to WORK_END_HOUR for start times)
     const hour = Math.max(
       WORK_START_HOUR,
-      Math.min(calculatedHour, WORK_END_HOUR)
+      Math.min(calculatedHour, WORK_END_HOUR),
     );
-    
+
     const dayStr = format(day, "yyyy-MM-dd");
     setHoveredSlot({ day: dayStr, hour });
   };
@@ -263,7 +265,7 @@ export default function CalendarPage() {
 
     // Check if there are any conflicting bookings in the time range
     const dayBookings = getBookingsForDay(day);
-    
+
     for (const existingBooking of dayBookings) {
       if (existingBooking.id === bookingId) {
         continue; // Skip self
@@ -328,16 +330,26 @@ export default function CalendarPage() {
     ghost.style.padding = "0.5rem";
     ghost.style.fontSize = "0.75rem";
     ghost.style.boxShadow = "0 10px 15px -3px rgba(0, 0, 0, 0.3)";
-    
+
     // Apply theme-aware colors
     if (booking.status === "EJ_PLANERAD") {
-      ghost.style.backgroundColor = theme === "dark" ? "rgba(194, 65, 12, 0.5)" : "rgba(254, 243, 199, 1)";
-      ghost.style.color = theme === "dark" ? "rgba(254, 243, 199, 1)" : "rgba(124, 45, 18, 1)";
-      ghost.style.border = theme === "dark" ? "1px solid rgba(194, 65, 12, 0.3)" : "1px solid rgba(253, 186, 116, 1)";
+      ghost.style.backgroundColor =
+        theme === "dark" ? "rgba(194, 65, 12, 0.5)" : "rgba(254, 243, 199, 1)";
+      ghost.style.color =
+        theme === "dark" ? "rgba(254, 243, 199, 1)" : "rgba(124, 45, 18, 1)";
+      ghost.style.border =
+        theme === "dark"
+          ? "1px solid rgba(194, 65, 12, 0.3)"
+          : "1px solid rgba(253, 186, 116, 1)";
     } else {
-      ghost.style.backgroundColor = theme === "dark" ? "rgba(37, 99, 235, 0.4)" : "rgba(219, 234, 254, 1)";
-      ghost.style.color = theme === "dark" ? "rgba(191, 219, 254, 1)" : "rgba(30, 58, 138, 1)";
-      ghost.style.border = theme === "dark" ? "1px solid rgba(37, 99, 235, 0.3)" : "1px solid rgba(147, 197, 253, 1)";
+      ghost.style.backgroundColor =
+        theme === "dark" ? "rgba(37, 99, 235, 0.4)" : "rgba(219, 234, 254, 1)";
+      ghost.style.color =
+        theme === "dark" ? "rgba(191, 219, 254, 1)" : "rgba(30, 58, 138, 1)";
+      ghost.style.border =
+        theme === "dark"
+          ? "1px solid rgba(37, 99, 235, 0.3)"
+          : "1px solid rgba(147, 197, 253, 1)";
     }
 
     ghost.innerHTML = `
@@ -391,7 +403,7 @@ export default function CalendarPage() {
 
       // Create ghost element on first significant movement
       const target = e.target as HTMLElement;
-      const bookingElement = target.closest('[data-booking-id]') as HTMLElement;
+      const bookingElement = target.closest("[data-booking-id]") as HTMLElement;
       if (bookingElement) {
         const rect = bookingElement.getBoundingClientRect();
         const ghost = createGhostElement(touchDraggedBookingRef.current, rect);
@@ -413,20 +425,25 @@ export default function CalendarPage() {
 
       // Find element under ghost TOP edge (not finger position)
       touchGhostRef.current.style.pointerEvents = "none";
-      const elementUnderGhostTop = document.elementFromPoint(touch.clientX, ghostTopY);
-      
+      const elementUnderGhostTop = document.elementFromPoint(
+        touch.clientX,
+        ghostTopY,
+      );
+
       if (!elementUnderGhostTop || !timeSlotsStartRef.current) {
         setHoveredSlot(null);
         return;
       }
 
       // Find the time slot element
-      const slotElement = elementUnderGhostTop.closest("[data-day][data-hour]") as HTMLElement;
-      
+      const slotElement = elementUnderGhostTop.closest(
+        "[data-day][data-hour]",
+      ) as HTMLElement;
+
       if (slotElement) {
         const dayStr = slotElement.getAttribute("data-day");
         const hourStr = slotElement.getAttribute("data-hour");
-        
+
         if (dayStr && hourStr) {
           const hour = parseInt(hourStr, 10);
           setHoveredSlot({ day: dayStr, hour });
@@ -457,9 +474,9 @@ export default function CalendarPage() {
       // Handle drop if there's a hovered slot
       if (hoveredSlot) {
         const day = weekDays.find(
-          (d) => format(d, "yyyy-MM-dd") === hoveredSlot.day
+          (d) => format(d, "yyyy-MM-dd") === hoveredSlot.day,
         );
-        
+
         if (day) {
           handleDrop(day, hoveredSlot.hour);
         }
@@ -492,51 +509,67 @@ export default function CalendarPage() {
   // Only attach on touch-capable devices to avoid interference with mouse drag on desktop
   useEffect(() => {
     // Check if device supports touch events
-    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-    
+    const isTouchDevice =
+      "ontouchstart" in window || navigator.maxTouchPoints > 0;
+
     console.log("🔍 Device detection:", {
       isTouchDevice,
-      ontouchstart: 'ontouchstart' in window,
-      maxTouchPoints: navigator.maxTouchPoints
+      ontouchstart: "ontouchstart" in window,
+      maxTouchPoints: navigator.maxTouchPoints,
     });
-    
+
     // Skip touch event setup on non-touch devices (desktop mouse-only)
     if (!isTouchDevice) {
       console.log("✅ Desktop mode - using HTML5 drag-and-drop only");
       return;
     }
-    
+
     console.log("📱 Touch mode - attaching touch handlers");
-    
+
     let cleanupFn: (() => void) | null = null;
-    
+
     // Use setTimeout to ensure DOM is fully updated with all bookings (including scheduled ones)
     const timeoutId = setTimeout(() => {
-      const bookingElements = document.querySelectorAll('[data-booking-id]');
-      
-      const listeners = new Map<Element, { start: EventListener; move: EventListener; end: EventListener }>();
+      const bookingElements = document.querySelectorAll("[data-booking-id]");
+
+      const listeners = new Map<
+        Element,
+        { start: EventListener; move: EventListener; end: EventListener }
+      >();
 
       bookingElements.forEach((element) => {
-        const bookingId = element.getAttribute('data-booking-id');
+        const bookingId = element.getAttribute("data-booking-id");
         if (!bookingId) return;
 
-        const startHandler = ((e: Event) => handlersRef.current.touchStart(e as TouchEvent, bookingId)) as EventListener;
-        const moveHandler = ((e: Event) => handlersRef.current.touchMove(e as TouchEvent)) as EventListener;
-        const endHandler = ((e: Event) => handlersRef.current.touchEnd(e as TouchEvent)) as EventListener;
+        const startHandler = ((e: Event) =>
+          handlersRef.current.touchStart(
+            e as TouchEvent,
+            bookingId,
+          )) as EventListener;
+        const moveHandler = ((e: Event) =>
+          handlersRef.current.touchMove(e as TouchEvent)) as EventListener;
+        const endHandler = ((e: Event) =>
+          handlersRef.current.touchEnd(e as TouchEvent)) as EventListener;
 
-        element.addEventListener('touchstart', startHandler, { passive: false });
-        element.addEventListener('touchmove', moveHandler, { passive: false });
-        element.addEventListener('touchend', endHandler, { passive: false });
+        element.addEventListener("touchstart", startHandler, {
+          passive: false,
+        });
+        element.addEventListener("touchmove", moveHandler, { passive: false });
+        element.addEventListener("touchend", endHandler, { passive: false });
 
-        listeners.set(element, { start: startHandler, move: moveHandler, end: endHandler });
+        listeners.set(element, {
+          start: startHandler,
+          move: moveHandler,
+          end: endHandler,
+        });
       });
 
       // Store cleanup function
       cleanupFn = () => {
         listeners.forEach((handlers, element) => {
-          element.removeEventListener('touchstart', handlers.start);
-          element.removeEventListener('touchmove', handlers.move);
-          element.removeEventListener('touchend', handlers.end);
+          element.removeEventListener("touchstart", handlers.start);
+          element.removeEventListener("touchmove", handlers.move);
+          element.removeEventListener("touchend", handlers.end);
         });
       };
     }, 0);
@@ -635,7 +668,7 @@ export default function CalendarPage() {
         {/* Week navigation */}
         <div className="mb-4 flex items-center gap-4">
           {/* Spacer to match unplanned column width */}
-          <div className="w-36 lg:w-44 xl:w-48 flex-shrink-0"></div>
+          <div className="w-36 flex-shrink-0 lg:w-44 xl:w-48"></div>
           {/* Calendar-aligned navigation */}
           <div
             className="flex flex-1 items-center justify-between"
@@ -689,7 +722,7 @@ export default function CalendarPage() {
         {/* Calendar grid */}
         <div className="flex gap-4">
           {/* Unplanned jobs column */}
-          <div className="flex w-36 lg:w-44 xl:w-48 flex-shrink-0 flex-col gap-4">
+          <div className="flex w-36 flex-shrink-0 flex-col gap-4 lg:w-44 xl:w-48">
             <button
               onClick={() => setShowCreateJobCard(true)}
               className="flex w-full items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
@@ -731,25 +764,31 @@ export default function CalendarPage() {
                       data-booking-id={booking.id}
                       draggable={!isTouchDevice}
                       onMouseDown={(e) => {
-                        console.log("🖱️ MOUSEDOWN on unplanned booking", booking.id, e.button);
+                        console.log(
+                          "🖱️ MOUSEDOWN on unplanned booking",
+                          booking.id,
+                          e.button,
+                        );
                       }}
                       onDragStart={(e) => handleDragStart(e, booking.id)}
                       onDragEnd={handleDragEnd}
                       onClick={() => handleBookingClick(booking)}
-                      className={`relative cursor-move rounded-lg border p-2 text-xs shadow-sm transition-all hover:shadow-md select-none ${
+                      className={`relative cursor-move select-none rounded-lg border p-2 text-xs shadow-sm transition-all hover:shadow-md ${
                         theme === "dark"
                           ? draggedBookingId === booking.id
-                            ? "border-orange-600/30 bg-orange-700/50 opacity-50 pointer-events-none"
+                            ? "pointer-events-none border-orange-600/30 bg-orange-700/50 opacity-50"
                             : "border-orange-600/30 bg-orange-600/20 text-orange-100"
                           : draggedBookingId === booking.id
-                            ? "border-orange-400 bg-orange-200 opacity-50 pointer-events-none"
+                            ? "pointer-events-none border-orange-400 bg-orange-200 opacity-50"
                             : "border-orange-300 bg-orange-100 text-orange-900"
                       }`}
-                      style={{
-                        height: `${booking.durationHours * hourHeightPx}px`,
-                        WebkitUserDrag: "element",
-                        userSelect: "none",
-                      } as React.CSSProperties}
+                      style={
+                        {
+                          height: `${booking.durationHours * hourHeightPx}px`,
+                          WebkitUserDrag: "element",
+                          userSelect: "none",
+                        } as React.CSSProperties
+                      }
                     >
                       <div
                         className={`absolute right-2 top-2 font-medium ${
@@ -1032,7 +1071,11 @@ export default function CalendarPage() {
                             data-booking-id={booking.id}
                             draggable={!isTouchDevice}
                             onMouseDown={(e) => {
-                              console.log("🖱️ MOUSEDOWN on scheduled booking", booking.id, e.button);
+                              console.log(
+                                "🖱️ MOUSEDOWN on scheduled booking",
+                                booking.id,
+                                e.button,
+                              );
                             }}
                             onDragStart={(e) => {
                               e.stopPropagation();
@@ -1040,16 +1083,18 @@ export default function CalendarPage() {
                             }}
                             onDragEnd={handleDragEnd}
                             onClick={() => handleBookingClick(booking)}
-                            className={`absolute left-1 right-1 flex cursor-move flex-col rounded-lg p-2 text-xs shadow-md transition-all hover:shadow-lg select-none ${getStatusColors(theme)[booking.status]} ${
-                              isDragging ? "opacity-50 pointer-events-none" : ""
+                            className={`absolute left-1 right-1 flex cursor-move select-none flex-col rounded-lg p-2 text-xs shadow-md transition-all hover:shadow-lg ${getStatusColors(theme)[booking.status]} ${
+                              isDragging ? "pointer-events-none opacity-50" : ""
                             }`}
-                            style={{
-                              top: `${topPosition + BOOKING_MARGIN_PX / 2}px`,
-                              height: `${height}px`,
-                              zIndex: isDragging ? 1 : 5,
-                              WebkitUserDrag: "element",
-                              userSelect: "none",
-                            } as React.CSSProperties}
+                            style={
+                              {
+                                top: `${topPosition + BOOKING_MARGIN_PX / 2}px`,
+                                height: `${height}px`,
+                                zIndex: isDragging ? 1 : 5,
+                                WebkitUserDrag: "element",
+                                userSelect: "none",
+                              } as React.CSSProperties
+                            }
                           >
                             <div className="flex-1">
                               <div

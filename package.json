@@ -28,11 +28,12 @@
   "private": true,
   "scripts": {
     "dev": "vite",
-    "build": "npm run generate-icon && tsc -b && vite build",
+    "build": "npm run tsc -b && vite build",
     "lint": "eslint . --ext js,jsx,ts,tsx --report-unused-disable-directives",
     "preview": "vite preview",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx}\"",
     "typecheck": "tsc -b --noEmit",
+    "ddo": "npm run format && npm run typecheck && npm run lint",
     "generate-icon": "node scripts/generate-icon.js"
   },
   "type": "module",

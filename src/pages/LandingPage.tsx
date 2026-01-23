@@ -119,32 +119,32 @@ export default function LandingPage() {
                 theme === "dark" ? "text-white" : "text-gray-800"
               }`}
             >
-            Välkommen till Service Crew
-          </h1>
-          <div
-            className={`rounded-md border p-6 text-center ${
-              theme === "dark"
-                ? "border-blue-700/30 bg-blue-900/40"
-                : "border-blue-200 bg-blue-50"
-            }`}
-          >
-            <p
-              className={`mb-4 ${
-                theme === "dark" ? "text-blue-100" : "text-blue-900"
+              Välkommen till Service Crew
+            </h1>
+            <div
+              className={`rounded-md border p-6 text-center ${
+                theme === "dark"
+                  ? "border-blue-700/30 bg-blue-900/40"
+                  : "border-blue-200 bg-blue-50"
               }`}
             >
-              Kom igång genom att skapa din första verkstad
-            </p>
-            <div className="flex justify-center">
-              <button
-                onClick={() => setShowCreateWorkshop(true)}
-                className="flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-500"
+              <p
+                className={`mb-4 ${
+                  theme === "dark" ? "text-blue-100" : "text-blue-900"
+                }`}
               >
-                <Building2 className="h-5 w-5" />
-                Skapa verkstad
-              </button>
+                Kom igång genom att skapa din första verkstad
+              </p>
+              <div className="flex justify-center">
+                <button
+                  onClick={() => setShowCreateWorkshop(true)}
+                  className="flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-500"
+                >
+                  <Building2 className="h-5 w-5" />
+                  Skapa verkstad
+                </button>
+              </div>
             </div>
-          </div>
           </div>
         </div>
 
@@ -331,58 +331,10 @@ export default function LandingPage() {
                 theme === "dark" ? "text-white" : "text-gray-800"
               }`}
             >
-            {workshop.name}
-          </h1>
+              {workshop.name}
+            </h1>
 
-          {mechanics.length === 0 ? (
-            <div className="flex justify-center">
-              <button
-                onClick={() => setShowAddMechanic(true)}
-                className="flex items-center justify-center gap-2 rounded-lg bg-green-600 px-6 py-3 font-semibold text-white transition hover:bg-green-500"
-              >
-                <Plus className="h-5 w-5" />
-                Lägg till mekaniker
-              </button>
-            </div>
-          ) : (
-            <>
-              <p
-                className={`mb-8 text-center ${
-                  theme === "dark" ? "text-blue-100" : "text-gray-600"
-                }`}
-              >
-                Välj mekaniker
-              </p>
-              <div className="mb-6 flex flex-wrap justify-center gap-4">
-                {mechanics.map((mechanic, index) => {
-                  // Cycle through available icons for each mechanic
-                  const iconIndex = index % availableIcons.length;
-                  const mechanicIcon = availableIcons[iconIndex];
-                  
-                  return (
-                    <button
-                      key={mechanic.id}
-                      onClick={() => {
-                        setSelectedMechanic(mechanic);
-                        setShowLogin(true);
-                      }}
-                      className={`flex items-center justify-center gap-4 rounded-lg border-2 pl-10 pr-12 py-6 text-center font-semibold transition ${
-                        theme === "dark"
-                          ? "border-blue-700/50 bg-slate-700/50 text-white hover:border-blue-500 hover:bg-blue-800/50"
-                          : "border-gray-300 bg-white text-gray-800 hover:border-blue-500 hover:bg-blue-50"
-                      }`}
-                    >
-                      <img
-                        src={`${BASE_URL}${mechanicIcon}`}
-                        alt={mechanicIcon.replace(".png", "")}
-                        className="h-12 w-12 flex-shrink-0 object-contain"
-                      />
-                      <span className="text-xl whitespace-nowrap">{mechanic.name}</span>
-                    </button>
-                  );
-                })}
-              </div>
-
+            {mechanics.length === 0 ? (
               <div className="flex justify-center">
                 <button
                   onClick={() => setShowAddMechanic(true)}
@@ -392,8 +344,58 @@ export default function LandingPage() {
                   Lägg till mekaniker
                 </button>
               </div>
-            </>
-          )}
+            ) : (
+              <>
+                <p
+                  className={`mb-8 text-center ${
+                    theme === "dark" ? "text-blue-100" : "text-gray-600"
+                  }`}
+                >
+                  Välj mekaniker
+                </p>
+                <div className="mb-6 flex flex-wrap justify-center gap-4">
+                  {mechanics.map((mechanic, index) => {
+                    // Cycle through available icons for each mechanic
+                    const iconIndex = index % availableIcons.length;
+                    const mechanicIcon = availableIcons[iconIndex];
+
+                    return (
+                      <button
+                        key={mechanic.id}
+                        onClick={() => {
+                          setSelectedMechanic(mechanic);
+                          setShowLogin(true);
+                        }}
+                        className={`flex items-center justify-center gap-4 rounded-lg border-2 py-6 pl-10 pr-12 text-center font-semibold transition ${
+                          theme === "dark"
+                            ? "border-blue-700/50 bg-slate-700/50 text-white hover:border-blue-500 hover:bg-blue-800/50"
+                            : "border-gray-300 bg-white text-gray-800 hover:border-blue-500 hover:bg-blue-50"
+                        }`}
+                      >
+                        <img
+                          src={`${BASE_URL}${mechanicIcon}`}
+                          alt={mechanicIcon.replace(".png", "")}
+                          className="h-12 w-12 flex-shrink-0 object-contain"
+                        />
+                        <span className="whitespace-nowrap text-xl">
+                          {mechanic.name}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="flex justify-center">
+                  <button
+                    onClick={() => setShowAddMechanic(true)}
+                    className="flex items-center justify-center gap-2 rounded-lg bg-green-600 px-6 py-3 font-semibold text-white transition hover:bg-green-500"
+                  >
+                    <Plus className="h-5 w-5" />
+                    Lägg till mekaniker
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
