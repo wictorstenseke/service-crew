@@ -758,7 +758,9 @@ export default function CalendarPage() {
   };
 
   const handleTouchEnd = (e: TouchEvent) => {
-    e.preventDefault();
+    if (e.cancelable) {
+      e.preventDefault();
+    }
 
     // Resize is disabled for touch devices - only handle normal drag/tap
     if (!touchDraggedBookingRef.current) return;
