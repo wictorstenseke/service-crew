@@ -1,9 +1,9 @@
 // Calendar page - Week view with job planning
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import { useApp } from "../context/AppContext";
 import CreateJobCardModal from "../components/CreateJobCardModal";
 import BookingDetailsModal from "../components/BookingDetailsModal";
-import SettingsModal from "../components/SettingsModal";
+import SettingsModal from "../components/SettingsModal.tsx";
 import { useResponsiveHourHeight } from "../hooks/useResponsiveHourHeight";
 import type { Booking } from "../types";
 import { playSound } from "../utils/soundPlayer";
@@ -16,6 +16,7 @@ import {
   subWeeks,
   isSameDay,
   parseISO,
+  getDay,
 } from "date-fns";
 import { sv } from "date-fns/locale";
 import type { BookingStatus } from "../types";
@@ -102,6 +103,18 @@ export default function CalendarPage() {
   } | null>(null);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
 
+  // Resize state
+  const [resizingBookingId, setResizingBookingId] = useState<string | null>(
+    null,
+  );
+  const [resizePreviewDuration, setResizePreviewDuration] = useState<
+    number | null
+  >(null);
+  const [resizeStartY, setResizeStartY] = useState<number | null>(null);
+  const [resizeInitialDuration, setResizeInitialDuration] = useState<
+    number | null
+  >(null);
+
   // Refs for drag and drop position calculation
   const dragOffsetRef = useRef<number>(0);
   const timeSlotsStartRef = useRef<HTMLDivElement>(null);
@@ -141,15 +154,18 @@ export default function CalendarPage() {
   }, [bookings]);
 
   // Get bookings for a specific day (not per hour - render once)
-  const getBookingsForDay = (day: Date) => {
-    const dayStr = format(day, "yyyy-MM-dd");
-    return bookings.filter(
-      (b) =>
-        b.scheduledDate === dayStr &&
-        b.scheduledStartHour !== undefined &&
-        b.status !== "EJ_PLANERAD",
-    );
-  };
+  const getBookingsForDay = useCallback(
+    (day: Date) => {
+      const dayStr = format(day, "yyyy-MM-dd");
+      return bookings.filter(
+        (b) =>
+          b.scheduledDate === dayStr &&
+          b.scheduledStartHour !== undefined &&
+          b.status !== "EJ_PLANERAD",
+      );
+    },
+    [bookings],
+  );
 
   // Navigate weeks
   const goToPreviousWeek = () => {
@@ -181,8 +197,239 @@ export default function CalendarPage() {
     }
   };
 
+  // Validation function for booking slot
+  const isValidBookingSlot = useCallback(
+    (
+      day: Date,
+      hour: number,
+      durationHours: number,
+      excludeBookingId?: string,
+    ): { valid: boolean; error?: string; suggestedDuration?: number } => {
+      // Check if extends beyond work hours
+      const maxAvailableHours = WORK_END_HOUR + 1 - hour;
+      if (hour + durationHours > WORK_END_HOUR + 1) {
+        return {
+          valid: false,
+          error: "Bokningen sträcker sig utanför arbetstid",
+          suggestedDuration: Math.max(1, maxAvailableHours),
+        };
+      }
+
+      // Check for conflicts
+      const dayBookings = getBookingsForDay(day);
+      const newEnd = hour + durationHours;
+
+      // Find the earliest conflict
+      let earliestConflict: number | null = null;
+      for (const existingBooking of dayBookings) {
+        // Skip the booking being resized/moved
+        if (excludeBookingId && existingBooking.id === excludeBookingId) {
+          continue;
+        }
+
+        const existingStart = existingBooking.scheduledStartHour!;
+        const existingEnd = existingStart + existingBooking.durationHours;
+
+        if (hour < existingEnd && newEnd > existingStart) {
+          // Calculate how many hours fit before this conflict
+          const availableBeforeConflict = existingStart - hour;
+          if (
+            earliestConflict === null ||
+            availableBeforeConflict < earliestConflict
+          ) {
+            earliestConflict = availableBeforeConflict;
+          }
+        }
+      }
+
+      if (earliestConflict !== null) {
+        return {
+          valid: false,
+          error: "Tidsluckan är redan upptagen",
+          suggestedDuration: Math.max(1, earliestConflict),
+        };
+      }
+
+      return { valid: true };
+    },
+    [getBookingsForDay],
+  );
+
+  // Check if a booking overlaps with any weekly event (for fart sound!)
+  const checkWeeklyEventOverlap = useCallback(
+    (day: Date, startHour: number, durationHours: number): boolean => {
+      // Weekly events only apply Monday-Friday (getDay: 1=Monday, 5=Friday)
+      const dayOfWeek = getDay(day);
+      if (dayOfWeek === 0 || dayOfWeek === 6) {
+        // Sunday or Saturday - no weekly events
+        return false;
+      }
+
+      const bookingEnd = startHour + durationHours;
+
+      // Check if booking overlaps with any weekly event
+      for (const event of weeklyEvents) {
+        // Check if time ranges overlap
+        // Booking: [startHour, bookingEnd)
+        // Event: [event.fromHour, event.toHour)
+        // They overlap if: startHour < event.toHour && bookingEnd > event.fromHour
+        if (startHour < event.toHour && bookingEnd > event.fromHour) {
+          return true;
+        }
+      }
+
+      return false;
+    },
+    [weeklyEvents],
+  );
+
+  // Mouse resize handlers (for desktop)
+  const handleResizeMouseDown = (e: React.MouseEvent, bookingId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const booking = bookings.find((b) => b.id === bookingId);
+    if (
+      !booking ||
+      !booking.scheduledDate ||
+      booking.scheduledStartHour === undefined
+    ) {
+      return;
+    }
+
+    const day = weekDays.find(
+      (d) => format(d, "yyyy-MM-dd") === booking.scheduledDate,
+    );
+    if (!day) return;
+
+    // Start resize
+    setResizingBookingId(bookingId);
+    setResizeStartY(e.clientY);
+    setResizeInitialDuration(booking.durationHours);
+    setResizePreviewDuration(booking.durationHours);
+  };
+
+  // Global mouse move handler for resize
+  useEffect(() => {
+    if (
+      !resizingBookingId ||
+      resizeStartY === null ||
+      resizeInitialDuration === null
+    ) {
+      return;
+    }
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (resizeStartY === null || resizeInitialDuration === null) return;
+
+      const booking = bookings.find((b) => b.id === resizingBookingId);
+      if (
+        !booking ||
+        !booking.scheduledDate ||
+        booking.scheduledStartHour === undefined
+      ) {
+        return;
+      }
+
+      const deltaY = e.clientY - resizeStartY;
+      const deltaHours = Math.round(deltaY / hourHeightPx);
+      const newDuration = Math.max(1, resizeInitialDuration + deltaHours);
+
+      const day = weekDays.find(
+        (d) => format(d, "yyyy-MM-dd") === booking.scheduledDate,
+      );
+      if (day) {
+        const validation = isValidBookingSlot(
+          day,
+          booking.scheduledStartHour,
+          newDuration,
+          resizingBookingId,
+        );
+        if (validation.valid) {
+          setResizePreviewDuration(newDuration);
+        } else {
+          if (validation.suggestedDuration) {
+            setResizePreviewDuration(validation.suggestedDuration);
+          }
+        }
+      }
+    };
+
+    const handleMouseUp = () => {
+      if (
+        resizingBookingId &&
+        resizePreviewDuration !== null &&
+        resizeInitialDuration !== null
+      ) {
+        const booking = bookings.find((b) => b.id === resizingBookingId);
+        if (
+          booking &&
+          booking.scheduledDate &&
+          booking.scheduledStartHour !== undefined
+        ) {
+          const day = weekDays.find(
+            (d) => format(d, "yyyy-MM-dd") === booking.scheduledDate,
+          );
+          if (day) {
+            const validation = isValidBookingSlot(
+              day,
+              booking.scheduledStartHour,
+              resizePreviewDuration,
+              resizingBookingId,
+            );
+
+            if (validation.valid) {
+              const updatedBooking = {
+                ...booking,
+                durationHours: resizePreviewDuration,
+                updatedAt: new Date().toISOString(),
+              };
+              updateBooking(updatedBooking);
+              showToast("Varaktighet uppdaterad");
+              playSound("done.mp3");
+            } else {
+              showToast(validation.error || "Ogiltig varaktighet", "error");
+            }
+          }
+        }
+      }
+
+      // Reset resize state
+      setResizingBookingId(null);
+      setResizePreviewDuration(null);
+      setResizeStartY(null);
+      setResizeInitialDuration(null);
+    };
+
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [
+    resizingBookingId,
+    resizeStartY,
+    resizeInitialDuration,
+    resizePreviewDuration,
+    bookings,
+    weekDays,
+    hourHeightPx,
+    updateBooking,
+    showToast,
+    isValidBookingSlot,
+  ]);
+
   // Drag & drop handlers
   const handleDragStart = (e: React.DragEvent, bookingId: string) => {
+    // Don't allow drag if we're resizing
+    if (resizingBookingId) {
+      e.preventDefault();
+      return;
+    }
+
+    // Normal drag (move booking)
     // Set data for HTML5 drag-and-drop API (required for desktop browsers)
     e.dataTransfer.effectAllowed = "move";
     e.dataTransfer.setData("text/plain", bookingId);
@@ -208,6 +455,12 @@ export default function CalendarPage() {
   const handleDragOver = (e: React.DragEvent, day: Date) => {
     e.preventDefault(); // Allow drop
 
+    // Don't handle drag over if we're resizing
+    if (resizingBookingId) {
+      return;
+    }
+
+    // Normal drag (move booking)
     if (!timeSlotsStartRef.current || !draggedBookingId) {
       return;
     }
@@ -308,7 +561,14 @@ export default function CalendarPage() {
     updateBooking(updatedBooking);
     setDraggedBookingId(null);
     setHoveredSlot(null);
-    playSound("done.mp3");
+
+    // Check for overlap with weekly events (like lunch) - play fart sound!
+    if (checkWeeklyEventOverlap(day, hour, booking.durationHours)) {
+      playSound("fart.mov");
+    } else {
+      playSound("done.mp3");
+    }
+
     showToast(booking.status === "EJ_PLANERAD" ? "Planerat" : "Omplanerat");
   };
 
@@ -410,6 +670,7 @@ export default function CalendarPage() {
     const target = e.currentTarget as HTMLElement;
     const rect = target.getBoundingClientRect();
 
+    // Resize is disabled for touch devices - only allow drag (move booking)
     // Store initial touch position for tap detection
     touchStartPosRef.current = {
       x: touch.clientX,
@@ -428,6 +689,7 @@ export default function CalendarPage() {
   };
 
   const handleTouchMove = (e: TouchEvent) => {
+    // Resize is disabled for touch devices - only handle normal drag
     if (!touchDraggedBookingRef.current || !touchStartPosRef.current) return;
 
     const touch = e.touches[0];
@@ -496,9 +758,10 @@ export default function CalendarPage() {
   };
 
   const handleTouchEnd = (e: TouchEvent) => {
-    if (!touchDraggedBookingRef.current) return;
-
     e.preventDefault();
+
+    // Resize is disabled for touch devices - only handle normal drag/tap
+    if (!touchDraggedBookingRef.current) return;
 
     // Check if it was a tap (no significant movement)
     if (!hasMovedRef.current) {
@@ -622,55 +885,6 @@ export default function CalendarPage() {
   const handleCloseBookingDetails = () => {
     setShowBookingDetails(false);
     setSelectedBooking(null);
-  };
-
-  // Validation function for booking slot
-  const isValidBookingSlot = (
-    day: Date,
-    hour: number,
-    durationHours: number,
-  ): { valid: boolean; error?: string; suggestedDuration?: number } => {
-    // Check if extends beyond work hours
-    const maxAvailableHours = WORK_END_HOUR + 1 - hour;
-    if (hour + durationHours > WORK_END_HOUR + 1) {
-      return {
-        valid: false,
-        error: "Bokningen sträcker sig utanför arbetstid",
-        suggestedDuration: Math.max(1, maxAvailableHours),
-      };
-    }
-
-    // Check for conflicts
-    const dayBookings = getBookingsForDay(day);
-    const newEnd = hour + durationHours;
-
-    // Find the earliest conflict
-    let earliestConflict: number | null = null;
-    for (const existingBooking of dayBookings) {
-      const existingStart = existingBooking.scheduledStartHour!;
-      const existingEnd = existingStart + existingBooking.durationHours;
-
-      if (hour < existingEnd && newEnd > existingStart) {
-        // Calculate how many hours fit before this conflict
-        const availableBeforeConflict = existingStart - hour;
-        if (
-          earliestConflict === null ||
-          availableBeforeConflict < earliestConflict
-        ) {
-          earliestConflict = availableBeforeConflict;
-        }
-      }
-    }
-
-    if (earliestConflict !== null) {
-      return {
-        valid: false,
-        error: "Tidsluckan är redan upptagen",
-        suggestedDuration: Math.max(1, earliestConflict),
-      };
-    }
-
-    return { valid: true };
   };
 
   // Handle slot click to create booking
@@ -1116,9 +1330,13 @@ export default function CalendarPage() {
                         const startHour = booking.scheduledStartHour!;
                         const topPosition =
                           (startHour - WORK_START_HOUR) * hourHeightPx;
+                        const isResizing = resizingBookingId === booking.id;
+                        const displayDuration =
+                          isResizing && resizePreviewDuration !== null
+                            ? resizePreviewDuration
+                            : booking.durationHours;
                         const height =
-                          booking.durationHours * hourHeightPx -
-                          BOOKING_MARGIN_PX;
+                          displayDuration * hourHeightPx - BOOKING_MARGIN_PX;
                         const isDragging = draggedBookingId === booking.id;
                         const assignedMechanic = booking.mechanicId
                           ? mechanics.find((m) => m.id === booking.mechanicId)
@@ -1134,15 +1352,24 @@ export default function CalendarPage() {
                               handleDragStart(e, booking.id);
                             }}
                             onDragEnd={handleDragEnd}
-                            onClick={() => handleBookingClick(booking)}
-                            className={`absolute left-1 right-1 flex cursor-move select-none flex-col rounded-lg p-2 text-xs shadow-md transition-all hover:shadow-lg ${getStatusColors(theme)[booking.status]} ${
+                            onClick={() => {
+                              // Don't open modal if resizing
+                              if (!isResizing) {
+                                handleBookingClick(booking);
+                              }
+                            }}
+                            className={`absolute left-1 right-1 flex select-none flex-col rounded-lg p-2 text-xs shadow-md transition-all hover:shadow-lg ${getStatusColors(theme)[booking.status]} ${
                               isDragging ? "pointer-events-none opacity-50" : ""
+                            } ${
+                              isResizing
+                                ? "ring-2 ring-blue-500 ring-offset-1"
+                                : "cursor-move"
                             }`}
                             style={
                               {
                                 top: `${topPosition + BOOKING_MARGIN_PX / 2}px`,
                                 height: `${height}px`,
-                                zIndex: isDragging ? 1 : 5,
+                                zIndex: isDragging || isResizing ? 1 : 5,
                                 WebkitUserDrag: "element",
                                 userSelect: "none",
                               } as React.CSSProperties
@@ -1163,6 +1390,17 @@ export default function CalendarPage() {
                               >
                                 {booking.action}
                               </div>
+                              {isResizing && (
+                                <div
+                                  className={`mt-1 text-xs font-medium ${
+                                    theme === "dark"
+                                      ? "text-blue-300"
+                                      : "text-blue-600"
+                                  }`}
+                                >
+                                  {displayDuration}h
+                                </div>
+                              )}
                             </div>
                             {assignedMechanic && (
                               <div className="mt-auto pt-1">
@@ -1177,6 +1415,28 @@ export default function CalendarPage() {
                                 </span>
                               </div>
                             )}
+                            {/* Resize zone at bottom - only show for scheduled bookings and desktop (not touch devices) */}
+                            {!isTouchDevice &&
+                              booking.scheduledDate &&
+                              booking.scheduledStartHour !== undefined && (
+                                <div
+                                  className={`absolute bottom-0 left-0 right-0 cursor-ns-resize ${
+                                    isResizing
+                                      ? "h-full bg-blue-500/20"
+                                      : "h-2.5 hover:bg-blue-500/10"
+                                  }`}
+                                  style={{
+                                    borderBottomLeftRadius: "0.5rem",
+                                    borderBottomRightRadius: "0.5rem",
+                                  }}
+                                  onMouseDown={(e) => {
+                                    handleResizeMouseDown(e, booking.id);
+                                  }}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                  }}
+                                />
+                              )}
                           </div>
                         );
                       })}

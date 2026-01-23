@@ -9,6 +9,7 @@ import { Plus, Minus, FilePlus, X, Trash2 } from "lucide-react";
 import CustomerCombobox from "./CustomerCombobox";
 import { defaultVehicleTypes } from "../utils/vehicleTypes";
 import { playSound } from "../utils/soundPlayer";
+import { parseISO, getDay } from "date-fns";
 
 interface CreateJobCardModalProps {
   isOpen: boolean;
@@ -31,7 +32,8 @@ export default function CreateJobCardModal({
   scheduledStartHour,
   onValidateSlot,
 }: CreateJobCardModalProps) {
-  const { addBooking, addCustomer, customers, showToast, theme } = useApp();
+  const { addBooking, addCustomer, customers, showToast, theme, weeklyEvents } =
+    useApp();
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
@@ -223,6 +225,35 @@ export default function CreateJobCardModal({
 
     addBooking(newBooking);
 
+    // Check for overlap with weekly events (like lunch) - play fart sound!
+    if (isPlanned && scheduledDate && scheduledStartHour !== undefined) {
+      const day = parseISO(scheduledDate);
+      const dayOfWeek = getDay(day);
+      // Weekly events only apply Monday-Friday (getDay: 1=Monday, 5=Friday)
+      if (dayOfWeek >= 1 && dayOfWeek <= 5) {
+        const bookingEnd = scheduledStartHour + durationHours;
+        const overlaps = weeklyEvents.some((event) => {
+          // Check if time ranges overlap
+          // Booking: [scheduledStartHour, bookingEnd)
+          // Event: [event.fromHour, event.toHour)
+          // They overlap if: scheduledStartHour < event.toHour && bookingEnd > event.fromHour
+          return (
+            scheduledStartHour < event.toHour && bookingEnd > event.fromHour
+          );
+        });
+
+        if (overlaps) {
+          playSound("fart.mov");
+        } else {
+          playSound("check.mp3");
+        }
+      } else {
+        playSound("check.mp3");
+      }
+    } else {
+      playSound("check.mp3");
+    }
+
     // Reset form
     setCustomerName("");
     setCustomerPhone("");
@@ -231,7 +262,6 @@ export default function CreateJobCardModal({
     setAction("");
     setDurationHours(1);
 
-    playSound("check.mp3");
     showToast("Jobbkort skapat");
     onClose();
   };
