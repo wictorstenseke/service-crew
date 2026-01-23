@@ -45,8 +45,27 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   // Apply theme to document
   useEffect(() => {
-    document.documentElement.classList.remove("light", "dark");
-    document.documentElement.classList.add(theme);
+    const root = document.documentElement;
+
+    root.classList.remove("light", "dark");
+    root.classList.add(theme);
+
+    // Keep iOS status bar and browser UI in sync with app theme
+    const statusBarMeta = document.querySelector<HTMLMetaElement>(
+      'meta[name="apple-mobile-web-app-status-bar-style"]',
+    );
+    if (statusBarMeta) {
+      statusBarMeta.content = theme === "dark" ? "default" : "black";
+    }
+
+    const themeColorMeta = document.querySelector<HTMLMetaElement>(
+      'meta[name="theme-color"]',
+    );
+    if (themeColorMeta) {
+      // Match the colors used for iPad backgrounds in index.css
+      themeColorMeta.content = theme === "dark" ? "#0f172a" : "#f3f4f6";
+    }
+
     localStorage.setItem("theme", theme);
   }, [theme]);
 
