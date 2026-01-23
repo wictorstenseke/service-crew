@@ -14,13 +14,11 @@ interface CreateJobCardModalProps {
 }
 
 const defaultVehicleTypes: VehicleType[] = [
-  "CYKEL",
-  "MOPED",
-  "MOTORCYKEL",
   "BIL",
-  "LASTBIL",
-  "BUSS",
   "TRAKTOR",
+  "CYKEL",
+  "FYRHJULIING",
+  "GRÄVMASKIN",
 ];
 
 export default function CreateJobCardModal({
@@ -179,25 +177,27 @@ export default function CreateJobCardModal({
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4"
-      onClick={handleCancel}
-    >
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
       <div
-        className={`w-full max-w-2xl rounded-lg p-6 shadow-xl ${
+        className={`relative w-full max-w-2xl rounded-lg p-6 shadow-xl ${
           theme === "dark"
             ? "border border-blue-700/30 bg-slate-800/95 backdrop-blur-sm"
             : "bg-white"
         }`}
-        onClick={(e) => e.stopPropagation()}
       >
-        <h2
-          className={`mb-6 text-2xl font-bold ${
-            theme === "dark" ? "text-white" : "text-gray-800"
+        {/* Close button */}
+        <button
+          type="button"
+          onClick={handleCancel}
+          className={`absolute right-4 top-4 rounded-lg p-1 transition ${
+            theme === "dark"
+              ? "text-blue-200 hover:bg-slate-700 hover:text-white"
+              : "text-gray-500 hover:bg-gray-100 hover:text-gray-700"
           }`}
+          aria-label="Stäng"
         >
-          Skapa jobbkort
-        </h2>
+          <X className="h-5 w-5" />
+        </button>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Customer name and phone - same row */}
@@ -332,12 +332,21 @@ export default function CreateJobCardModal({
               id="action"
               value={action}
               onChange={(e) => setAction(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+                  e.preventDefault();
+                  const form = e.currentTarget.form;
+                  if (form) {
+                    form.requestSubmit();
+                  }
+                }
+              }}
               className={`m-0 w-full resize-none rounded-lg border px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 ${
                 theme === "dark"
                   ? "border-blue-700/50 bg-slate-700/50 text-white placeholder-blue-300 focus:ring-blue-500/50"
                   : "border-gray-300 bg-white text-gray-800 focus:ring-blue-200"
               }`}
-              rows={4}
+              rows={3}
               placeholder="Skriv vad kunden sa"
               required
             />

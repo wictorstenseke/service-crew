@@ -53,10 +53,8 @@ export default function BookingDetailsModal({
   }, [isOpen, booking]);
 
   // Check if mechanic is required for current status
-  const requiresMechanic = selectedStatus
-    ? ["PAGAR", "KLAR", "HAMTAD"].includes(selectedStatus)
-    : false;
-  const showMechanicError = requiresMechanic && !selectedMechanicId;
+  const requiresMechanic = false;
+  const showMechanicError = false;
 
   const handleClose = () => {
     onClose();
@@ -90,11 +88,6 @@ export default function BookingDetailsModal({
 
   const handleSaveChanges = () => {
     if (!selectedStatus) return;
-
-    // Check if mechanic is required for certain statuses
-    if (requiresMechanic && !selectedMechanicId) {
-      return; // Error is shown inline, don't proceed
-    }
 
     const updatedBooking: Booking = {
       ...booking,
@@ -357,23 +350,6 @@ export default function BookingDetailsModal({
         </div>
 
         {/* Bottom buttons */}
-        {showMechanicError && (
-          <div
-            className={`mt-6 flex items-center gap-3 rounded-lg border px-4 py-3 ${
-              theme === "dark"
-                ? "border-red-500/50 bg-red-900/20 text-red-300"
-                : "border-red-300 bg-red-50 text-red-700"
-            }`}
-            role="alert"
-          >
-            <AlertCircle
-              className={`h-5 w-5 flex-shrink-0 ${
-                theme === "dark" ? "text-red-400" : "text-red-600"
-              }`}
-            />
-            <p className="text-sm font-medium">Välj en mekaniker först</p>
-          </div>
-        )}
         <div className="mt-6 flex gap-4">
           <button
             onClick={handleClose}
