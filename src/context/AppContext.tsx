@@ -9,6 +9,7 @@ import type {
   WeeklyEvent,
 } from "../types";
 import { storageService } from "../services/StorageService";
+import { preloadSound } from "../utils/soundPlayer";
 
 export interface ToastMessage {
   id: string;
@@ -78,6 +79,31 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     localStorage.setItem("theme", theme);
   }, [theme]);
+
+  // Preload all sound effects on app initialization for instant playback
+  useEffect(() => {
+    const soundFiles = [
+      "betalt.mp3", // Payment sound (BookingDetailsModal)
+      "borr.mov", // Drilling sound (LandingPage, BookingDetailsModal)
+      "check.mp3", // Check/confirm sound (CreateJobCardModal)
+      "done.mp3", // Success sound (CalendarPage drop)
+      "fart.mov", // Error/overlap sound (CalendarPage drop, CreateJobCardModal)
+      "inlogg.mp3", // Login sound (LoginModal)
+      "tuta.mp3", // Toot/horn sound (AddMechanicModal)
+    ];
+
+    // Preload all sounds in parallel
+    Promise.all(
+      soundFiles.map((file) =>
+        preloadSound(file).catch(() => {
+          // Silently ignore preload failures - sounds will load on demand
+          console.warn(`Failed to preload ${file}, will load on demand`);
+        }),
+      ),
+    ).then(() => {
+      console.log("All sound effects preloaded successfully");
+    });
+  }, []); // Empty dependency array - only run once on mount
 
   const toggleTheme = () => {
     setTheme((prev) => (prev === "dark" ? "light" : "dark"));
