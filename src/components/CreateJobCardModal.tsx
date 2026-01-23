@@ -7,23 +7,28 @@ import { storageService } from "../services/StorageService";
 import type { VehicleType, Booking, Customer } from "../types";
 import { Plus, Minus, FilePlus, X } from "lucide-react";
 import CustomerCombobox from "./CustomerCombobox";
+import { defaultVehicleTypes } from "../utils/vehicleTypes";
 
 interface CreateJobCardModalProps {
   isOpen: boolean;
   onClose: () => void;
+  // Optional: when provided, the created job card will be planned
+  // into this slot instead of being unplanned.
+  scheduledDate?: string;
+  scheduledStartHour?: number;
+  onValidateSlot?: (durationHours: number) => {
+    valid: boolean;
+    error?: string;
+    suggestedDuration?: number;
+  };
 }
-
-const defaultVehicleTypes: VehicleType[] = [
-  "BIL",
-  "TRAKTOR",
-  "CYKEL",
-  "FYRHJULIING",
-  "GRÄVMASKIN",
-];
 
 export default function CreateJobCardModal({
   isOpen,
   onClose,
+  scheduledDate,
+  scheduledStartHour,
+  onValidateSlot,
 }: CreateJobCardModalProps) {
   const { addBooking, addCustomer, customers, showToast, theme } = useApp();
   const [customerName, setCustomerName] = useState("");
@@ -107,8 +112,25 @@ export default function CreateJobCardModal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!customerName.trim() || !customerPhone.trim() || !action.trim()) {
+    const trimmedName = customerName.trim();
+    const trimmedPhone = customerPhone.trim();
+    const trimmedAction = action.trim();
+
+    if (!trimmedName || !trimmedPhone || !trimmedAction) {
       return;
+    }
+
+    const hasSlot =
+      Boolean(scheduledDate) && typeof scheduledStartHour === "number";
+
+    // When creating directly from a calendar slot, validate the slot in the
+    // background without showing any extra UI – only a toast on error.
+    if (hasSlot && onValidateSlot) {
+      const validation = onValidateSlot(durationHours);
+      if (!validation.valid) {
+        showToast(validation.error || "Ogiltig tidslucka", "error");
+        return;
+      }
     }
 
     // Save or update customer if it's a new customer or phone changed
@@ -117,47 +139,55 @@ export default function CreateJobCardModal({
       // Existing customer - use their ID
       customerId = selectedCustomer.id;
       // Update customer if phone number changed
-      if (selectedCustomer.phone !== customerPhone.trim()) {
+      if (selectedCustomer.phone !== trimmedPhone) {
         const updatedCustomer: Customer = {
           ...selectedCustomer,
-          phone: customerPhone.trim(),
+          phone: trimmedPhone,
         };
         addCustomer(updatedCustomer);
       }
     } else {
       // New customer - check if customer with same name exists
       const existingCustomer = customers.find(
-        (c) => c.name.toLowerCase() === customerName.trim().toLowerCase(),
+        (c) => c.name.toLowerCase() === trimmedName.toLowerCase(),
       );
       if (existingCustomer) {
         // Update existing customer with new phone
         customerId = existingCustomer.id;
         const updatedCustomer: Customer = {
           ...existingCustomer,
-          phone: customerPhone.trim(),
+          phone: trimmedPhone,
         };
         addCustomer(updatedCustomer);
       } else {
         // Create new customer
         const newCustomer: Customer = {
           id: generateId(),
-          name: customerName.trim(),
-          phone: customerPhone.trim(),
+          name: trimmedName,
+          phone: trimmedPhone,
         };
         addCustomer(newCustomer);
         customerId = newCustomer.id;
       }
     }
 
+    const isPlanned = hasSlot;
+
     const newBooking: Booking = {
       id: generateId(),
       customerId,
-      customerName: customerName.trim(),
-      customerPhone: customerPhone.trim(),
+      customerName: trimmedName,
+      customerPhone: trimmedPhone,
       vehicleType: selectedVehicleType,
-      action: action.trim(),
+      action: trimmedAction,
       durationHours: Math.max(1, durationHours),
-      status: "EJ_PLANERAD",
+      status: isPlanned ? "PLANERAD" : "EJ_PLANERAD",
+      ...(isPlanned
+        ? {
+            scheduledDate: scheduledDate!,
+            scheduledStartHour: scheduledStartHour!,
+          }
+        : {}),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };

@@ -2,7 +2,6 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { useApp } from "../context/AppContext";
 import CreateJobCardModal from "../components/CreateJobCardModal";
-import CreateBookingFromSlotModal from "../components/CreateBookingFromSlotModal";
 import BookingDetailsModal from "../components/BookingDetailsModal";
 import { useResponsiveHourHeight } from "../hooks/useResponsiveHourHeight";
 import type { Booking } from "../types";
@@ -97,8 +96,6 @@ export default function CalendarPage() {
     day: Date;
     hour: number;
   } | null>(null);
-  const [showCreateBookingFromSlot, setShowCreateBookingFromSlot] =
-    useState(false);
 
   // Refs for drag and drop position calculation
   const dragOffsetRef = useRef<number>(0);
@@ -647,12 +644,7 @@ export default function CalendarPage() {
     if (draggedBookingId) return;
 
     setSelectedSlot({ day, hour });
-    setShowCreateBookingFromSlot(true);
-  };
-
-  const handleCloseCreateBookingFromSlot = () => {
-    setShowCreateBookingFromSlot(false);
-    setSelectedSlot(null);
+    setShowCreateJobCard(true);
   };
 
   return (
@@ -1137,28 +1129,28 @@ export default function CalendarPage() {
         </div>
       </main>
 
-      {/* Create Job Card Modal */}
+      {/* Create Job Card Modal (also used when creating directly from a slot) */}
       <CreateJobCardModal
         isOpen={showCreateJobCard}
-        onClose={() => setShowCreateJobCard(false)}
+        onClose={() => {
+          setShowCreateJobCard(false);
+          setSelectedSlot(null);
+        }}
+        scheduledDate={
+          selectedSlot ? format(selectedSlot.day, "yyyy-MM-dd") : undefined
+        }
+        scheduledStartHour={selectedSlot?.hour}
+        onValidateSlot={
+          selectedSlot
+            ? (durationHours) =>
+                isValidBookingSlot(
+                  selectedSlot.day,
+                  selectedSlot.hour,
+                  durationHours,
+                )
+            : undefined
+        }
       />
-
-      {/* Create Booking From Slot Modal */}
-      {selectedSlot && (
-        <CreateBookingFromSlotModal
-          isOpen={showCreateBookingFromSlot}
-          onClose={handleCloseCreateBookingFromSlot}
-          day={selectedSlot.day}
-          hour={selectedSlot.hour}
-          onValidate={(durationHours) =>
-            isValidBookingSlot(
-              selectedSlot.day,
-              selectedSlot.hour,
-              durationHours,
-            )
-          }
-        />
-      )}
 
       {/* Booking Details Modal */}
       <BookingDetailsModal
