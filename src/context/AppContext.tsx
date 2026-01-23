@@ -1,6 +1,13 @@
 // AppContext - Global state management for Service Crew
 import { createContext, useContext, useState, useEffect } from "react";
-import type { AppState, Workshop, Mechanic, Booking, Customer } from "../types";
+import type {
+  AppState,
+  Workshop,
+  Mechanic,
+  Booking,
+  Customer,
+  WeeklyEvent,
+} from "../types";
 import { storageService } from "../services/StorageService";
 
 export interface ToastMessage {
@@ -20,6 +27,9 @@ interface AppContextType extends AppState {
   addBooking: (booking: Booking) => void;
   updateBooking: (booking: Booking) => void;
   deleteBooking: (id: string) => void;
+  addWeeklyEvent: (event: WeeklyEvent) => void;
+  updateWeeklyEvent: (event: WeeklyEvent) => void;
+  deleteWeeklyEvent: (id: string) => void;
   setCurrentMechanicId: (id: string | null) => void;
   setSelectedWorkday: (date: string | null) => void;
   resetWorkshop: () => void;
@@ -139,6 +149,21 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     refreshState();
   };
 
+  const addWeeklyEvent = (event: WeeklyEvent) => {
+    storageService.saveWeeklyEvent(event);
+    refreshState();
+  };
+
+  const updateWeeklyEvent = (event: WeeklyEvent) => {
+    storageService.saveWeeklyEvent(event);
+    refreshState();
+  };
+
+  const deleteWeeklyEvent = (id: string) => {
+    storageService.deleteWeeklyEvent(id);
+    refreshState();
+  };
+
   const setCurrentMechanicId = (id: string | null) => {
     storageService.setCurrentMechanicId(id);
     refreshState();
@@ -175,6 +200,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     removeToast,
     theme,
     toggleTheme,
+    addWeeklyEvent,
+    updateWeeklyEvent,
+    deleteWeeklyEvent,
   };
 
   return (

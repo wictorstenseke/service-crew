@@ -48,6 +48,21 @@ export interface Booking {
   updatedAt: string;
 }
 
+export interface WeeklyEvent {
+  id: string;
+  title: string;
+  /**
+   * Hour of day (24h) when the event starts, inclusive.
+   * Example: 9 for 09:00.
+   */
+  fromHour: number;
+  /**
+   * Hour of day (24h) when the event ends, exclusive.
+   * Example: 10 for a 09:00–10:00 block.
+   */
+  toHour: number;
+}
+
 export interface AppState {
   workshop: Workshop | null;
   mechanics: Mechanic[];
@@ -55,4 +70,5 @@ export interface AppState {
   bookings: Booking[];
   currentMechanicId: string | null;
   selectedWorkday: string | null; // ISO date string for "IDAG"
+  weeklyEvents: WeeklyEvent[];
 }

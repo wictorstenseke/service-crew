@@ -3,6 +3,7 @@ import { useState, useMemo, useRef, useEffect } from "react";
 import { useApp } from "../context/AppContext";
 import CreateJobCardModal from "../components/CreateJobCardModal";
 import BookingDetailsModal from "../components/BookingDetailsModal";
+import SettingsModal from "../components/SettingsModal";
 import { useResponsiveHourHeight } from "../hooks/useResponsiveHourHeight";
 import type { Booking } from "../types";
 import {
@@ -24,6 +25,7 @@ import {
   Calendar,
   Moon,
   Sun,
+  Settings,
 } from "lucide-react";
 
 // Constants
@@ -73,6 +75,7 @@ export default function CalendarPage() {
     mechanics,
     theme,
     toggleTheme,
+    weeklyEvents,
   } = useApp();
 
   // Detect if device is touch-capable (for conditional draggable attribute)
@@ -96,6 +99,7 @@ export default function CalendarPage() {
     day: Date;
     hour: number;
   } | null>(null);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
 
   // Refs for drag and drop position calculation
   const dragOffsetRef = useRef<number>(0);
@@ -861,10 +865,21 @@ export default function CalendarPage() {
               </div>
             </div>
             <button
+              onClick={() => setShowSettingsModal(true)}
+              className={`flex w-full items-center justify-center gap-2 rounded-lg border-2 px-4 py-2 text-sm font-medium transition ${
+                theme === "dark"
+                  ? "border-blue-700/50 text-blue-200 hover:bg-blue-900/30"
+                  : "border-gray-300 bg-white text-gray-700 shadow-sm hover:bg-gray-50"
+              }`}
+            >
+              <Settings className="h-4 w-4" />
+              Inställningar
+            </button>
+            <button
               onClick={toggleTheme}
               className={`flex w-full items-center justify-center gap-2 rounded-lg border-2 px-4 py-2 text-sm font-medium transition ${
                 theme === "dark"
-                  ? "border-blue-700/50 bg-slate-800/90 text-blue-200 hover:bg-blue-900/30"
+                  ? "border-blue-700/50 text-blue-200 hover:bg-blue-900/30"
                   : "border-gray-300 bg-white text-gray-700 shadow-sm hover:bg-gray-50"
               }`}
               title={
@@ -1027,6 +1042,11 @@ export default function CalendarPage() {
                     >
                       {/* Hour grid lines */}
                       {timeSlots.map((hour) => {
+                        const eventsForCell = weeklyEvents.filter(
+                          (event) =>
+                            hour >= event.fromHour && hour < event.toHour,
+                        );
+                        const hasWeeklyEvent = eventsForCell.length > 0;
                         const isHovered =
                           hoveredSlot?.day === dayStr &&
                           hoveredSlot?.hour === hour;
@@ -1043,13 +1063,17 @@ export default function CalendarPage() {
                             data-hour={hour}
                             onClick={() => handleSlotClick(day, hour)}
                             className={`relative cursor-pointer border-b border-blue-700/10 transition-colors ${
-                              isDragging
-                                ? isHovered
-                                  ? isValid
-                                    ? "bg-green-900/30"
-                                    : "bg-red-900/30"
-                                  : "bg-slate-700/20"
+                              hasWeeklyEvent
+                                ? theme === "dark"
+                                  ? "bg-blue-900/20 hover:bg-blue-800/30"
+                                  : "bg-blue-100 hover:bg-blue-200"
                                 : "hover:bg-slate-600/20"
+                            } ${
+                              isDragging && isHovered
+                                ? isValid
+                                  ? "bg-green-900/40"
+                                  : "bg-red-900/40"
+                                : ""
                             }`}
                             style={{ height: `${hourHeightPx}px` }}
                           >
@@ -1086,6 +1110,25 @@ export default function CalendarPage() {
                                 </div>
                               </div>
                             )}
+
+                            {/* Weekly event label on Monday (first cell of range) */}
+                            {dayIndex === 0 &&
+                              eventsForCell.some(
+                                (event) => event.fromHour === hour,
+                              ) && (
+                                <div
+                                  className={`pointer-events-none absolute left-1 top-1 rounded px-1.5 py-0.5 text-[10px] font-medium ${
+                                    theme === "dark"
+                                      ? "bg-blue-900/70 text-blue-100"
+                                      : "bg-blue-200 text-blue-900"
+                                  }`}
+                                >
+                                  {eventsForCell
+                                    .filter((event) => event.fromHour === hour)
+                                    .map((event) => event.title)
+                                    .join(", ")}
+                                </div>
+                              )}
                           </div>
                         );
                       })}
@@ -1203,6 +1246,12 @@ export default function CalendarPage() {
         booking={selectedBooking}
         isOpen={showBookingDetails}
         onClose={handleCloseBookingDetails}
+      />
+
+      {/* Settings Modal */}
+      <SettingsModal
+        isOpen={showSettingsModal}
+        onClose={() => setShowSettingsModal(false)}
       />
     </div>
   );

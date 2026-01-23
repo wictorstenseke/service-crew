@@ -1,5 +1,12 @@
 // StorageService - Abstraction layer for LocalStorage
-import type { AppState, Workshop, Mechanic, Booking, Customer } from "../types";
+import type {
+  AppState,
+  Workshop,
+  Mechanic,
+  Booking,
+  Customer,
+  WeeklyEvent,
+} from "../types";
 
 const STORAGE_KEY = "service-crew-data";
 const STORAGE_VERSION = "1.0";
@@ -13,6 +20,7 @@ class StorageService {
       bookings: [],
       currentMechanicId: null,
       selectedWorkday: null,
+      weeklyEvents: [],
     };
   }
 
@@ -35,6 +43,10 @@ class StorageService {
       // Ensure customers array exists for backward compatibility
       if (!state.customers) {
         state.customers = [];
+      }
+      // Ensure weeklyEvents array exists for backward compatibility
+      if (!state.weeklyEvents) {
+        state.weeklyEvents = [];
       }
       return state;
     } catch (error) {
@@ -118,6 +130,37 @@ class StorageService {
   deleteBooking(id: string): void {
     const state = this.loadState();
     state.bookings = state.bookings.filter((b) => b.id !== id);
+    this.saveState(state);
+  }
+
+  // Weekly events (Veckobokningar)
+  getWeeklyEvents(): WeeklyEvent[] {
+    const state = this.loadState();
+    return state.weeklyEvents || [];
+  }
+
+  saveWeeklyEvent(event: WeeklyEvent): void {
+    const state = this.loadState();
+    if (!state.weeklyEvents) {
+      state.weeklyEvents = [];
+    }
+    const existingIndex = state.weeklyEvents.findIndex((e) => e.id === event.id);
+
+    if (existingIndex >= 0) {
+      state.weeklyEvents[existingIndex] = event;
+    } else {
+      state.weeklyEvents.push(event);
+    }
+
+    this.saveState(state);
+  }
+
+  deleteWeeklyEvent(id: string): void {
+    const state = this.loadState();
+    if (!state.weeklyEvents) {
+      state.weeklyEvents = [];
+    }
+    state.weeklyEvents = state.weeklyEvents.filter((e) => e.id !== id);
     this.saveState(state);
   }
 
