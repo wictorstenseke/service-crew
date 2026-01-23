@@ -93,10 +93,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     ];
 
     // Preload all sounds in parallel
-    Promise.all(soundFiles.map((file) => preloadSound(file).catch(() => {
-      // Silently ignore preload failures - sounds will load on demand
-      console.warn(`Failed to preload ${file}, will load on demand`);
-    }))).then(() => {
+    Promise.all(
+      soundFiles.map((file) =>
+        preloadSound(file).catch(() => {
+          // Silently ignore preload failures - sounds will load on demand
+          console.warn(`Failed to preload ${file}, will load on demand`);
+        }),
+      ),
+    ).then(() => {
       console.log("All sound effects preloaded successfully");
     });
   }, []); // Empty dependency array - only run once on mount

@@ -25,9 +25,7 @@ export function preloadSound(filename: string): Promise<void> {
 
       // Create appropriate media element
       const element =
-        extension === "mov"
-          ? document.createElement("video")
-          : new Audio();
+        extension === "mov" ? document.createElement("video") : new Audio();
 
       element.src = soundPath;
       element.preload = "auto";
@@ -109,9 +107,7 @@ export function playSound(
       const extension = filename.split(".").pop()?.toLowerCase();
 
       const element =
-        extension === "mov"
-          ? document.createElement("video")
-          : new Audio();
+        extension === "mov" ? document.createElement("video") : new Audio();
 
       element.src = soundPath;
       element.volume = Math.max(0, Math.min(1, volume));
