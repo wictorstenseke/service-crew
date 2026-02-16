@@ -291,7 +291,10 @@ export default function CalendarPage() {
   );
 
   // Mouse resize handlers (for desktop)
-  const handleResizeMouseDown = (e: MouseEvent, bookingId: string) => {
+  const handleResizeMouseDown = (
+    e: JSX.TargetedMouseEvent<HTMLElement>,
+    bookingId: string,
+  ) => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -429,7 +432,10 @@ export default function CalendarPage() {
   ]);
 
   // Drag & drop handlers
-  const handleDragStart = (e: DragEvent, bookingId: string) => {
+  const handleDragStart = (
+    e: JSX.TargetedDragEvent<HTMLElement>,
+    bookingId: string,
+  ) => {
     // Don't allow drag if we're resizing
     if (resizingBookingId) {
       e.preventDefault();
@@ -461,7 +467,7 @@ export default function CalendarPage() {
     setHoveredSlot(null);
   };
 
-  const handleDragOver = (e: DragEvent, day: Date) => {
+  const handleDragOver = (e: JSX.TargetedDragEvent<HTMLElement>, day: Date) => {
     e.preventDefault(); // Allow drop
 
     // Don't handle drag over if we're resizing

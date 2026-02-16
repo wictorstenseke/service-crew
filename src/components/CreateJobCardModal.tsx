@@ -1,5 +1,6 @@
 // Create Job Card Modal
 import { useState, useEffect } from "preact/hooks";
+import { JSX } from "preact";
 import { useApp } from "../context/AppContext";
 import { generateId } from "../utils/idGenerator";
 import { useEscapeKey } from "../hooks/useEscapeKey";
@@ -101,7 +102,9 @@ export default function CreateJobCardModal({
     }
   };
 
-  const handleAddTypeKeyPress = (e: KeyboardEvent) => {
+  const handleAddTypeKeyPress = (
+    e: JSX.TargetedKeyboardEvent<HTMLInputElement>,
+  ) => {
     if (e.key === "Enter") {
       e.preventDefault();
       handleAddType();
@@ -111,7 +114,10 @@ export default function CreateJobCardModal({
     }
   };
 
-  const handleRemoveTypeClick = (type: string, e: MouseEvent) => {
+  const handleRemoveTypeClick = (
+    type: string,
+    e: JSX.TargetedMouseEvent<HTMLElement>,
+  ) => {
     e.stopPropagation(); // Prevent selecting the type when clicking delete
     setPendingRemoveType(type);
   };
@@ -140,7 +146,7 @@ export default function CreateJobCardModal({
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: Event) => {
+  const handleSubmit = (e: JSX.TargetedEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     const trimmedName = customerName.trim();
