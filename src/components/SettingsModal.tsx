@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState } from "preact/hooks";
 import { useEscapeKey } from "../hooks/useEscapeKey";
 import { useApp } from "../context/AppContext";
 import { generateId } from "../utils/idGenerator";
@@ -187,7 +187,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               <input
                 type="text"
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                onChange={(e) => setTitle(e.currentTarget.value)}
                 placeholder="Till exempel: Frukost"
                 className={`w-full rounded-md border px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 ${
                   theme === "dark"
@@ -208,7 +208,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 </label>
                 <select
                   value={fromHour}
-                  onChange={(e) => setFromHour(Number(e.target.value))}
+                  onChange={(e) => setFromHour(Number(e.currentTarget.value))}
                   className={`rounded-md border px-2 py-1 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 ${
                     theme === "dark"
                       ? "border-blue-700/50 bg-slate-800/80 text-white focus:ring-blue-500/40"
@@ -233,7 +233,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 </label>
                 <select
                   value={toHour}
-                  onChange={(e) => setToHour(Number(e.target.value))}
+                  onChange={(e) => setToHour(Number(e.currentTarget.value))}
                   className={`rounded-md border px-2 py-1 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 ${
                     theme === "dark"
                       ? "border-blue-700/50 bg-slate-800/80 text-white focus:ring-blue-500/40"

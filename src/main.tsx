@@ -1,5 +1,4 @@
-import React from "react";
-import ReactDOM from "react-dom/client";
+import { render } from "preact";
 import App from "./App";
 import "./index.css";
 
@@ -20,11 +19,7 @@ function detectiPad() {
   }
 }
 
-// Run detection before React renders
+// Run detection before Preact renders
 detectiPad();
 
-ReactDOM.createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-);
+render(<App />, document.getElementById("root")!);

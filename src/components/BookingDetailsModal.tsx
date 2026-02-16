@@ -1,9 +1,9 @@
 // Booking Details Modal - Shows full job information with status management
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "preact/hooks";
 import { useApp } from "../context/AppContext";
 import { useEscapeKey } from "../hooks/useEscapeKey";
 import type { Booking, BookingStatus, VehicleType } from "../types";
-import { Save, X, ChevronDown, Plus, Minus } from "lucide-react";
+import { Save, X, ChevronDown, Plus, Minus } from "lucide-preact";
 import { playSound } from "../utils/soundPlayer";
 import { storageService } from "../services/StorageService";
 import { defaultVehicleTypes } from "../utils/vehicleTypes";

@@ -1,5 +1,5 @@
 // Toast notification component for user feedback
-import { useEffect } from "react";
+import { useEffect } from "preact/hooks";
 
 interface ToastProps {
   message: string;

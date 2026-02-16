@@ -1,5 +1,5 @@
 // Hook to calculate responsive hour height based on viewport
-import { useState, useEffect } from "react";
+import { useState, useEffect } from "preact/hooks";
 
 export const useResponsiveHourHeight = () => {
   const [hourHeight, setHourHeight] = useState(72);
