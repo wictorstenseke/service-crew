@@ -1,9 +1,9 @@
 // Login Modal - PIN numpad and password entry for mechanic login
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "preact/hooks";
 import { useApp } from "../context/AppContext";
 import { useEscapeKey } from "../hooks/useEscapeKey";
 import type { Mechanic } from "../types";
-import { ArrowLeft, Check, X } from "lucide-react";
+import { ArrowLeft, Check, X } from "lucide-preact";
 import { playSound } from "../utils/soundPlayer";
 
 const BASE_URL = "/service-crew/";

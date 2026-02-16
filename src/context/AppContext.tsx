@@ -1,5 +1,6 @@
 // AppContext - Global state management for Service Crew
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, ComponentChildren } from "preact";
+import { useContext, useState, useEffect } from "preact/hooks";
 import type {
   AppState,
   Workshop,
@@ -44,7 +45,7 @@ interface AppContextType extends AppState {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-export function AppProvider({ children }: { children: React.ReactNode }) {
+export function AppProvider({ children }: { children: ComponentChildren }) {
   const [state, setState] = useState<AppState>(() =>
     storageService.loadState(),
   );
@@ -236,7 +237,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
 export function useApp() {
   const context = useContext(AppContext);
   if (context === undefined) {

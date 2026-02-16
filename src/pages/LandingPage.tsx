@@ -1,12 +1,12 @@
 // Landing page - Workshop selection and mechanic login
-import { useState } from "react";
+import { useState } from "preact/hooks";
 import { useApp } from "../context/AppContext";
 import { generateId } from "../utils/idGenerator";
 import { useEscapeKey } from "../hooks/useEscapeKey";
 import type { Workshop, Mechanic } from "../types";
 import AddMechanicModal from "../components/AddMechanicModal";
 import LoginModal from "../components/LoginModal";
-import { Plus, Building2, RotateCcw, X, Sun, Moon } from "lucide-react";
+import { Plus, Building2, RotateCcw, X, Sun, Moon } from "lucide-preact";
 import { playSound } from "../utils/soundPlayer";
 
 const BASE_URL = "/service-crew/";
@@ -218,7 +218,7 @@ export default function LandingPage() {
                 <input
                   type="text"
                   value={workshopName}
-                  onChange={(e) => setWorkshopName(e.target.value)}
+                  onChange={(e) => setWorkshopName(e.currentTarget.value)}
                   placeholder="Verkstadsnamn"
                   className={`w-full rounded-md border px-4 py-2 text-center text-xl focus:outline-none focus:ring-2 ${
                     theme === "dark"

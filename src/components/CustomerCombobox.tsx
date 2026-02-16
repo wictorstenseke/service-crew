@@ -1,6 +1,6 @@
 // Customer Combobox - Autocomplete input for selecting or creating customers
-import { useState, useRef, useEffect } from "react";
-import { ChevronDown, X } from "lucide-react";
+import { useState, useRef, useEffect } from "preact/hooks";
+import { ChevronDown, X } from "lucide-preact";
 import { useApp } from "../context/AppContext";
 import type { Customer } from "../types";
 
@@ -35,8 +35,8 @@ export default function CustomerCombobox({
     : customers;
 
   // Handle input change
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = e.target.value;
+  const handleInputChange = (e: Event) => {
+    const newValue = (e.target as HTMLInputElement).value;
     onChange(newValue);
     setIsOpen(true);
     setHighlightedIndex(-1);
@@ -52,7 +52,7 @@ export default function CustomerCombobox({
   };
 
   // Handle clear
-  const handleClear = (e: React.MouseEvent) => {
+  const handleClear = (e: MouseEvent) => {
     e.stopPropagation();
     onChange("");
     onSelect(null);
@@ -62,7 +62,7 @@ export default function CustomerCombobox({
   };
 
   // Handle keyboard navigation
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (e: KeyboardEvent) => {
     if (!isOpen && (e.key === "ArrowDown" || e.key === "Enter")) {
       setIsOpen(true);
       return;

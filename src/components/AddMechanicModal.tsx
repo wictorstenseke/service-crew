@@ -1,10 +1,10 @@
 // Add Mechanic Modal - Form to add new mechanic
-import { useState } from "react";
+import { useState } from "preact/hooks";
 import { useApp } from "../context/AppContext";
 import { generateId } from "../utils/idGenerator";
 import { useEscapeKey } from "../hooks/useEscapeKey";
 import type { Mechanic } from "../types";
-import { Save, X } from "lucide-react";
+import { Save, X } from "lucide-preact";
 import { playSound } from "../utils/soundPlayer";
 
 interface AddMechanicModalProps {
@@ -88,7 +88,7 @@ export default function AddMechanicModal({
           <input
             type="text"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => setName(e.currentTarget.value)}
             placeholder="För- och efternamn"
             className={`w-full rounded-md border px-4 py-2 focus:border-blue-500 focus:outline-none ${
               theme === "dark"
@@ -114,7 +114,7 @@ export default function AddMechanicModal({
             maxLength={4}
             value={credential}
             onChange={(e) => {
-              const value = e.target.value.replace(/[^0-9]/g, "");
+              const value = e.currentTarget.value.replace(/[^0-9]/g, "");
               setCredential(value);
             }}
             placeholder="Ange 4 siffror"

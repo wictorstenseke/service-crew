@@ -1,5 +1,5 @@
 // Custom hook to handle ESC key press
-import { useEffect } from "react";
+import { useEffect } from "preact/hooks";
 
 export function useEscapeKey(onEscape: () => void, isActive: boolean = true) {
   useEffect(() => {

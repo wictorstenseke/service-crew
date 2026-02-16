@@ -1,11 +1,11 @@
 // Create Job Card Modal
-import { useState, useEffect } from "react";
+import { useState, useEffect } from "preact/hooks";
 import { useApp } from "../context/AppContext";
 import { generateId } from "../utils/idGenerator";
 import { useEscapeKey } from "../hooks/useEscapeKey";
 import { storageService } from "../services/StorageService";
 import type { VehicleType, Booking, Customer } from "../types";
-import { Plus, Minus, FilePlus, X, Trash2 } from "lucide-react";
+import { Plus, Minus, FilePlus, X, Trash2 } from "lucide-preact";
 import CustomerCombobox from "./CustomerCombobox";
 import { defaultVehicleTypes } from "../utils/vehicleTypes";
 import { playSound } from "../utils/soundPlayer";
@@ -101,7 +101,7 @@ export default function CreateJobCardModal({
     }
   };
 
-  const handleAddTypeKeyPress = (e: React.KeyboardEvent) => {
+  const handleAddTypeKeyPress = (e: KeyboardEvent) => {
     if (e.key === "Enter") {
       e.preventDefault();
       handleAddType();
@@ -111,7 +111,7 @@ export default function CreateJobCardModal({
     }
   };
 
-  const handleRemoveTypeClick = (type: string, e: React.MouseEvent) => {
+  const handleRemoveTypeClick = (type: string, e: MouseEvent) => {
     e.stopPropagation(); // Prevent selecting the type when clicking delete
     setPendingRemoveType(type);
   };
@@ -140,7 +140,7 @@ export default function CreateJobCardModal({
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: Event) => {
     e.preventDefault();
 
     const trimmedName = customerName.trim();
@@ -323,7 +323,7 @@ export default function CreateJobCardModal({
                 id="customerPhone"
                 type="tel"
                 value={customerPhone}
-                onChange={(e) => setCustomerPhone(e.target.value)}
+                onChange={(e) => setCustomerPhone(e.currentTarget.value)}
                 className={`w-full rounded-lg border px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 ${
                   theme === "dark"
                     ? "border-blue-700/50 bg-slate-700/50 text-white placeholder-blue-300 focus:ring-blue-500/50"
@@ -378,7 +378,7 @@ export default function CreateJobCardModal({
                   <input
                     type="text"
                     value={newTypeInput}
-                    onChange={(e) => setNewTypeInput(e.target.value)}
+                    onChange={(e) => setNewTypeInput(e.currentTarget.value)}
                     onKeyDown={handleAddTypeKeyPress}
                     placeholder="Ny typ..."
                     className={`rounded-full border-2 border-blue-500 px-4 py-2 text-sm font-medium focus:outline-none focus:ring-2 ${
@@ -474,7 +474,7 @@ export default function CreateJobCardModal({
             <textarea
               id="action"
               value={action}
-              onChange={(e) => setAction(e.target.value)}
+              onChange={(e) => setAction(e.currentTarget.value)}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
                   e.preventDefault();

@@ -1,5 +1,12 @@
 // Calendar page - Week view with job planning
-import { useState, useMemo, useRef, useEffect, useCallback } from "react";
+import {
+  useState,
+  useMemo,
+  useRef,
+  useEffect,
+  useCallback,
+} from "preact/hooks";
+import { JSX } from "preact";
 import { useApp } from "../context/AppContext";
 import CreateJobCardModal from "../components/CreateJobCardModal";
 import BookingDetailsModal from "../components/BookingDetailsModal";
@@ -28,7 +35,7 @@ import {
   Moon,
   Sun,
   Settings,
-} from "lucide-react";
+} from "lucide-preact";
 
 // Constants
 const WORK_START_HOUR = 7;
@@ -284,7 +291,7 @@ export default function CalendarPage() {
   );
 
   // Mouse resize handlers (for desktop)
-  const handleResizeMouseDown = (e: React.MouseEvent, bookingId: string) => {
+  const handleResizeMouseDown = (e: MouseEvent, bookingId: string) => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -422,7 +429,7 @@ export default function CalendarPage() {
   ]);
 
   // Drag & drop handlers
-  const handleDragStart = (e: React.DragEvent, bookingId: string) => {
+  const handleDragStart = (e: DragEvent, bookingId: string) => {
     // Don't allow drag if we're resizing
     if (resizingBookingId) {
       e.preventDefault();
@@ -431,9 +438,11 @@ export default function CalendarPage() {
 
     // Normal drag (move booking)
     // Set data for HTML5 drag-and-drop API (required for desktop browsers)
-    e.dataTransfer.effectAllowed = "move";
-    e.dataTransfer.setData("text/plain", bookingId);
-    e.dataTransfer.dropEffect = "move";
+    if (e.dataTransfer) {
+      e.dataTransfer.effectAllowed = "move";
+      e.dataTransfer.setData("text/plain", bookingId);
+      e.dataTransfer.dropEffect = "move";
+    }
 
     // Capture the offset from the cursor to the dragged element's top edge
     const target = e.currentTarget as HTMLElement;
@@ -452,7 +461,7 @@ export default function CalendarPage() {
     setHoveredSlot(null);
   };
 
-  const handleDragOver = (e: React.DragEvent, day: Date) => {
+  const handleDragOver = (e: DragEvent, day: Date) => {
     e.preventDefault(); // Allow drop
 
     // Don't handle drag over if we're resizing
@@ -1023,7 +1032,7 @@ export default function CalendarPage() {
                           height: `${booking.durationHours * hourHeightPx}px`,
                           WebkitUserDrag: "element",
                           userSelect: "none",
-                        } as React.CSSProperties
+                        } as JSX.CSSProperties
                       }
                     >
                       <div
@@ -1374,7 +1383,7 @@ export default function CalendarPage() {
                                 zIndex: isDragging || isResizing ? 1 : 5,
                                 WebkitUserDrag: "element",
                                 userSelect: "none",
-                              } as React.CSSProperties
+                              } as JSX.CSSProperties
                             }
                           >
                             <div className="flex-1">
